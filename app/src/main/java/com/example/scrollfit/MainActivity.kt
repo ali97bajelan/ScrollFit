@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.scrollfit.ui.ScrollFitApp
 import com.example.scrollfit.spike.SpikeRuntime
+import com.example.scrollfit.monitoring.MonitorRuntime
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,5 +18,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         SpikeRuntime.onActivityResume()
+        MonitorRuntime.activityResumed()
+    }
+
+    override fun onPause() {
+        MonitorRuntime.activityPaused()
+        super.onPause()
     }
 }

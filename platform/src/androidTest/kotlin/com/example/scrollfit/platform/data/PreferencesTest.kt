@@ -27,6 +27,7 @@ class PreferencesTest {
         try {
             var repo = repository()
             repo.update { it.copy(
+                monitoringEnabled = true,
                 zeroBaseEnabled = true, speechEnabled = false, camera = CameraChoice.FRONT,
                 lastExercise = Exercise.ALTERNATING_KNEE_RAISE, sessionBoundaryMs = 60_000,
                 rewardRules = it.rewardRules + (Exercise.SQUAT to RewardRule(12, 90)),
@@ -39,6 +40,7 @@ class PreferencesTest {
             assertEquals(123_000L, expected.combinedCeilingMs)
             assertEquals(45_000L, expected.sessionBoundaryMs)
             assertTrue(expected.zeroBaseEnabled); assertFalse(expected.speechEnabled)
+            assertTrue(expected.monitoringEnabled)
             assertEquals(CameraChoice.FRONT, expected.camera)
             assertEquals(Exercise.ALTERNATING_KNEE_RAISE, expected.lastExercise)
             assertEquals(RewardRule(12, 90), expected.rewardRules.getValue(Exercise.SQUAT))

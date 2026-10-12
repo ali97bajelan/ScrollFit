@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.provider.Settings
+import com.example.scrollfit.monitoring.TargetApps
 
 data class SpikeApp(val packageName: String, val label: String)
 
@@ -13,7 +14,7 @@ object SpikeApps {
     @Suppress("DEPRECATION")
     fun list(context: Context): List<SpikeApp> {
         val manager = context.packageManager
-        val excluded = mutableSetOf(context.packageName)
+        val excluded = TargetApps.protectedPackages(context).toMutableSet()
         listOf(
             Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
             Intent(Settings.ACTION_SETTINGS),

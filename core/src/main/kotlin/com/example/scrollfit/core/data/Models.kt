@@ -72,6 +72,7 @@ data class UsageCursor(val timelineId: String, val throughElapsedMs: Long) {
 enum class CameraChoice { REAR, FRONT }
 
 data class AppPreferences(
+    val monitoringEnabled: Boolean = false,
     val combinedCeilingMs: Long = ProductDefaults.COMBINED_CEILING_SECONDS * 1000,
     val zeroBaseEnabled: Boolean = ProductDefaults.ZERO_BASE_ENABLED,
     val speechEnabled: Boolean = ProductDefaults.SPEECH_ENABLED,

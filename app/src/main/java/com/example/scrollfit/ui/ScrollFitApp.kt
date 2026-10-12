@@ -34,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.scrollfit.R
 import com.example.scrollfit.BuildConfig
 import com.example.scrollfit.spike.SpikeEntry
+import com.example.scrollfit.monitoring.MonitoringSetup
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.exercise.ProductDefaults
 
@@ -80,6 +81,9 @@ fun ScrollFitApp() {
                         Page(R.string.welcome) {
                             Text(stringResource(R.string.welcome_body))
                             Text(stringResource(R.string.bootstrap_notice))
+                            Button(onClick = { navController.navigate("monitoring") }) {
+                                Text(stringResource(R.string.monitor_title))
+                            }
                             Button(onClick = {
                                 navController.navigate(Destination.DASHBOARD.route) {
                                     popUpTo("welcome") { inclusive = true }
@@ -90,6 +94,9 @@ fun ScrollFitApp() {
                     composable(Destination.DASHBOARD.route) {
                         Page(R.string.dashboard) {
                             Text(stringResource(R.string.bootstrap_notice))
+                            Button(onClick = { navController.navigate("monitoring") }) {
+                                Text(stringResource(R.string.monitor_title))
+                            }
                             if (BuildConfig.DEBUG) {
                                 Button(onClick = { navController.navigate("spike") }) {
                                     Text(stringResource(R.string.open_spike))
@@ -101,6 +108,7 @@ fun ScrollFitApp() {
                         }
                     }
                     composable("spike") { SpikeEntry() }
+                    composable("monitoring") { MonitoringSetup() }
                     composable(Destination.EXERCISES.route) {
                         Page(R.string.exercises) {
                             Text(stringResource(R.string.exercise_catalog_notice))
@@ -121,6 +129,9 @@ fun ScrollFitApp() {
                     }
                     composable(Destination.SETTINGS.route) {
                         Page(R.string.settings) {
+                            Button(onClick = { navController.navigate("monitoring") }) {
+                                Text(stringResource(R.string.monitor_title))
+                            }
                             Text(stringResource(R.string.defaults_notice))
                             Text(stringResource(R.string.default_allowance, ProductDefaults.BASE_ALLOWANCE_SECONDS / 60))
                             Text(stringResource(R.string.default_ceiling, ProductDefaults.COMBINED_CEILING_SECONDS / 60))

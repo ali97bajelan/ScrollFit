@@ -23,6 +23,7 @@ class PreferencesRepository(private val store: DataStore<Preferences>) {
             val value = transform(decode(preferences))
             // Revalidate a caller-owned mutable reward map before writing anything.
             val validated = value.copy(rewardRules = value.rewardRules.toMap())
+            preferences[monitoringEnabled] = validated.monitoringEnabled
             preferences[ceiling] = validated.combinedCeilingMs
             preferences[zeroBase] = validated.zeroBaseEnabled
             preferences[speech] = validated.speechEnabled
@@ -39,6 +40,7 @@ class PreferencesRepository(private val store: DataStore<Preferences>) {
     companion object {
         fun open(context: Context) = PreferencesRepository(context.applicationContext.exerciseGatePreferences)
         private val ceiling = longPreferencesKey("combined_ceiling_ms")
+        private val monitoringEnabled = booleanPreferencesKey("monitoring_enabled")
         private val zeroBase = booleanPreferencesKey("zero_base_enabled")
         private val speech = booleanPreferencesKey("speech_enabled")
         private val camera = stringPreferencesKey("camera")
@@ -49,6 +51,7 @@ class PreferencesRepository(private val store: DataStore<Preferences>) {
         private fun decode(value: Preferences): AppPreferences {
             val defaults = AppPreferences()
             return AppPreferences(
+                monitoringEnabled = value[monitoringEnabled] ?: defaults.monitoringEnabled,
                 combinedCeilingMs = value[ceiling] ?: defaults.combinedCeilingMs,
                 zeroBaseEnabled = value[zeroBase] ?: defaults.zeroBaseEnabled,
                 speechEnabled = value[speech] ?: defaults.speechEnabled,

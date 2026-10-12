@@ -33,15 +33,27 @@ class BudgetEngine(
         readForCurrentDay(day) { current -> budgetFor(packageName, current, prefs) }
     }
 
-    suspend fun spend(interval: UsageInterval): SpendResult = policy { day, prefs ->
+    suspend fun spend(interval: UsageInterval): SpendResult = spendForPolicy(interval, observed = false)
+
+    /** Monitor-only: flush a sampled segment across midnight into yesterday's retained rows. */
+    suspend fun spendObserved(interval: UsageInterval): SpendResult {
+        require(interval.endElapsedMs - interval.startElapsedMs <= 5000) { "Observed checkpoint exceeds five seconds" }
+        return spendForPolicy(interval, observed = true)
+    }
+
+    private suspend fun spendForPolicy(interval: UsageInterval, observed: Boolean): SpendResult = policy { day, prefs ->
         require(interval.endElapsedMs <= monotonicClock.elapsedRealtimeMillis()) { "Future interval" }
         val through = cursor(timelineId)?.throughElapsedMs ?: 0
         if (interval.endElapsedMs <= through) return@policy SpendResult(disposition = SpendDisposition.DUPLICATE)
         // Even rejected/over-budget tails must not be re-applied after a settings edit.
         putCursor(UsageCursor(timelineId, interval.endElapsedMs))
-        if (interval.day != day) return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
-        val budget = budgetFor(interval.packageName, day, prefs)
-        if (!stillToday(day)) return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
+        val yesterday = java.time.LocalDate.parse(day).minusDays(1).toString()
+        if (interval.day != day && !(observed && interval.day == yesterday)) {
+            return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
+        }
+        val accountingDay = interval.day
+        val budget = budgetFor(interval.packageName, accountingDay, prefs)
+        if (!spendingDateStillValid(day, accountingDay, observed)) return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
         if (budget.blockedBy == BudgetBlock.TARGET_UNAVAILABLE) {
             return@policy SpendResult(disposition = SpendDisposition.TARGET_UNAVAILABLE)
         }
@@ -50,10 +62,10 @@ class BudgetEngine(
         val base = minOf(spent, budget.baseRemainingMs)
         val earned = spent - base
         if (spent > 0) {
-            val usage = usage(interval.packageName, day) ?: DailyUsage(interval.packageName, day)
-            val combined = combined(day) ?: CombinedUsage(day)
-            val session = session(interval.packageName, day) ?: SessionState(interval.packageName, day)
-            if (!stillToday(day)) return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
+            val usage = usage(interval.packageName, accountingDay) ?: DailyUsage(interval.packageName, accountingDay)
+            val combined = combined(accountingDay) ?: CombinedUsage(accountingDay)
+            val session = session(interval.packageName, accountingDay) ?: SessionState(interval.packageName, accountingDay)
+            if (!spendingDateStillValid(day, accountingDay, observed)) return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
             putUsage(usage.copy(
                 baseConsumedMs = Math.addExact(usage.baseConsumedMs, base),
                 earnedConsumedMs = Math.addExact(usage.earnedConsumedMs, earned),
@@ -150,6 +162,13 @@ class BudgetEngine(
     }
 
     private fun remaining(limit: Long, consumed: Long) = if (consumed >= limit) 0L else limit - consumed
+
+    private suspend fun DataTransaction.spendingDateStillValid(day: String, accountingDay: String, observed: Boolean): Boolean {
+        val current = wallClock.localDate().toString()
+        if (current != day) cancelChallengesOutsideDay(current)
+        if (!observed) return current == day
+        return accountingDay == current || accountingDay == java.time.LocalDate.parse(current).minusDays(1).toString()
+    }
 
     private suspend fun <T> DataTransaction.readForCurrentDay(initialDay: String, read: suspend (String) -> T): T {
         var day = initialDay

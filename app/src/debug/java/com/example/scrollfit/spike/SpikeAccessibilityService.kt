@@ -18,6 +18,7 @@ import android.widget.Toast
 import com.example.scrollfit.R
 import com.example.scrollfit.core.spike.SpikeCountdown
 import com.example.scrollfit.core.usage.BlockReason
+import com.example.scrollfit.monitoring.MonitorRuntime
 
 /** Debug-only T02 feasibility experiment. Receives package transitions, never screen content. */
 class SpikeAccessibilityService : AccessibilityService() {
@@ -132,6 +133,11 @@ class SpikeAccessibilityService : AccessibilityService() {
         handler.removeCallbacks(tick)
         val eligible = store.enabled && validTarget != null && targetForeground && interactive() &&
             SpikeAccess.hasUsageAccess(this) && errorResource == null
+        if (store.enabled && errorResource == null && !MonitorRuntime.ownership.acquire(this)) {
+            fail(R.string.monitor_owner_busy)
+            return
+        }
+        if (!store.enabled || errorResource != null) MonitorRuntime.ownership.release(this)
         clock.update(SystemClock.elapsedRealtime(), eligible && !overlay.blocked)
         if (clock.consumedMillis != store.consumedMillis && !store.persistConsumption(clock.consumedMillis)) {
             fail(R.string.spike_storage_failed)
@@ -150,6 +156,7 @@ class SpikeAccessibilityService : AccessibilityService() {
     }
 
     private fun fail(message: Int) {
+        MonitorRuntime.ownership.release(this)
         errorResource = message
         targetForeground = false
         clock.update(SystemClock.elapsedRealtime(), false)
@@ -171,6 +178,7 @@ class SpikeAccessibilityService : AccessibilityService() {
         runCatching { store.stop() }.onFailure { fail(R.string.spike_storage_failed) }
         targetForeground = false
         refresh()
+        MonitorRuntime.configurationChanged()
     }
 
     override fun onInterrupt() {
@@ -198,6 +206,7 @@ class SpikeAccessibilityService : AccessibilityService() {
         overlay.dismiss()
         targetForeground = false
         connected = false
+        MonitorRuntime.ownership.release(this)
         SpikeRuntime.disconnected(this)
     }
 }

@@ -1,18 +1,18 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01, the T02 feasibility experiment, T03 persistence and the T04 budget/reward engine**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T05: bootstrap, feasibility experiment, persistence, budgets and production monitoring integration**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy is implemented; T05–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06–T16 are not implemented.
 
 ## Current delivery status
 
-The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. Camera and exercise counting are not implemented. T04 budgets/rewards are domain APIs; the debug spike and product screens are not yet connected to them.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. Camera and exercise counting are not implemented. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
 
-**There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Official Google Maven and Android SDK downloads returned HTTP 404 from this environment, including outside the sandbox. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
+**There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Earlier T01/T02 Google Maven and Android SDK download attempts returned HTTP 404, including outside the sandbox; T05 rechecked the offline build only. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **49 tests passed** (27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
+The actual Kotlin/JVM core compiled and **71 tests passed** (22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
 
-Evidence: [T04 Android build attempt](docs/verification/T04-build.log), [current core test log](docs/verification/T04-core-tests.log), [budget/reward JUnit results](docs/verification/T04-TEST-com.example.scrollfit.core.budget.BudgetEngineTest.xml). T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
+Evidence: [T05 Android build attempt](docs/verification/T05-build.log), [current core test log](docs/verification/T05-core-tests.log), [actual test totals](docs/verification/T05-test-summary.txt), [monitoring JUnit results](docs/verification/T05-TEST-com.example.scrollfit.core.usage.MonitoringControllerTest.xml). T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
 Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
@@ -41,7 +41,7 @@ adb devices -l
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Follow [the T02 phone test](docs/T02_PHONE_TEST.md). The full product acceptance checklist remains in the brief for T16.
+Follow [the T05 phone test](docs/T05_PHONE_TEST.md) for production integration and [the T02 phone test](docs/T02_PHONE_TEST.md) for the isolated experiment. The full product acceptance checklist remains in the brief for T16.
 
 To run real core sources/tests without configuring Android modules:
 
@@ -53,9 +53,9 @@ The isolated settings use the same `core/build.gradle.kts`, source files, tests 
 
 ## T02 implementation and limits
 
-The experiment is **off by default** and available through the dashboard's 30-second test button in debug builds. Its AccessibilityService declaration, special access permission, picker queries and Android implementation are in `app/src/debug`; release sources contain only a no-op bridge. Release manifest/build isolation is source-inspected, not yet verified in a built APK.
+The experiment is **off by default** and available through the dashboard's 30-second test button in debug builds. Its AccessibilityService declaration and experimental implementation are in `app/src/debug`; release sources contain a no-op spike bridge. T05 adds a separate main-source production service, required Usage Access permission and limited picker queries to both build types. Built manifest/release isolation remains unverified. Both services share a single ownership lease.
 
-Select one launchable non-system app, grant both required accesses, then explicitly start a new test. System and preinstalled apps, this app, launchers, settings and dialers are excluded conservatively. There is no `QUERY_ALL_PACKAGES` permission. The picker intentionally has less coverage than the future production picker.
+Select one launchable non-system app, grant both required accesses, then explicitly start a new test. System and preinstalled apps, this app, launchers, settings and dialers are excluded conservatively. There is no `QUERY_ALL_PACKAGES` permission. Both current pickers conservatively exclude system/preinstalled apps.
 
 The system-bound AccessibilityService receives only `TYPE_WINDOW_STATE_CHANGED`. Its configuration disables window-content retrieval and gestures and declares `isAccessibilityTool=false`: this is a self-control experiment. Code reads event package metadata, never event text, source nodes or another app's screen tree. Temporary usage-event reconciliation on unlock reads only foreground/background metadata; it neither logs nor stores other apps' package history. Limited package queries follow [Android package visibility guidance](https://developer.android.com/training/package-visibility/declaring).
 
@@ -88,10 +88,10 @@ expires usable credit and cancels old-day challenges; earlier daily records stay
 intact, including when the date moves backwards.
 
 A persisted cursor per device boot rejects duplicate and overlapping intervals
-across app switching, process restart and history deletion. T05 must supply the
+across app switching, process restart and history deletion. T05 supplies the
 stable boot identity, eligible chronological intervals and midnight splitting.
-Production enforcement, camera callbacks and user-facing reward disclosure remain
-T05/T11 integration work. The T02 spike still uses its experimental countdown.
+Android execution remains unverified; camera callbacks and user-facing reward
+disclosure remain T11 integration work. The T02 spike still uses its experimental countdown.
 
 The application exposes a data repository facade for settings, history and reads;
 spending/challenge creation/awards go through the budget engine. The 27 new JVM
@@ -104,13 +104,63 @@ pending the Android build environment. See [engine policy and evidence](docs/T04
 and [generated commit message](docs/T04_COMMIT_MESSAGE.txt). No git commit was created
 by this task.
 
+## T05 production monitoring candidate
+
+Open **پایش و بودجهٔ برنامه‌ها** from onboarding, dashboard or settings. Select
+safe apps, edit each allowance and the combined ceiling in seconds, save, grant
+Usage Access and the production Accessibility service, and explicitly enable
+monitoring. Zero-base is optional. Saving, removing/re-adding apps, disabling or
+restarting preserves consumption. Production controls contain no reset or credit
+bypass. The T02 experiment must be stopped before production takes ownership.
+
+The main-source service observes package transitions only and reconciles bounded
+UsageEvents metadata on connection/unlock/resume. It charges T04 wallets and
+combined/session rows through one serialized controller; screen off/locked,
+blocker, own UI/camera and unrestricted/critical-app periods are excluded by the
+observed signals. App-budget and combined-ceiling overlays have distinct Persian
+explanations, Home, quick-settings and Stop controls. Enabled keyboards, including third-party input methods, are also excluded from
+both pickers and event eligibility. Safe-surface/access-loss
+signals dismiss immediately rather than wait for storage, and stale worker
+results cannot restore the blocker. Failed removal retains its window handle,
+refuses replacement and holds ownership until removal can be confirmed.
+
+Durable DataStore enablement defaults to off. UI health distinguishes disabled,
+missing access, stopped and connected. Failed preference collection pauses the
+service until a fresh read; setup handles read failures and offers retry. A
+1-second target-only checkpoint and bounded 64-observation queue avoid continuous
+history polling. A 5-second maximum trusted gap reports longer/uncertain periods
+as unmonitored. Nominal kill loss is one checkpoint plus scheduling/storage
+latency; arbitrary OS suspension has no hard loss bound.
+
+BOOT_COUNT supplies same-boot cursor identity; failure to obtain it pauses
+monitoring. After reboot Android must bind the enabled accessibility service;
+otherwise user action is needed. No boot receiver, foreground service or
+background Activity start is added. Midnight segments update their original
+rows, including when storage crosses midnight. Large clock/time-zone changes
+report a gap, and the Android wall clock follows the live device zone.
+
+Split-screen charges only the latest observed foreground package, never both
+panes. PiP-only time is excluded when metadata identifies another foreground
+app. OEM focus, dialog/keyboard ordering, permission loss and service rebinding
+remain physical-device checks. No Xiaomi battery restriction has been observed;
+no manufacturer-specific setting is prescribed. This remains bypassable through
+permission removal, force stop, uninstall or some OEM behavior.
+
+The **71 JVM tests pass**, including the 22 new controller/failure cases. A
+separate temporary fault probe confirmed four failure regressions detect unsafe
+removal, stale enablement and deferred safe-surface dismissal; it did not alter
+workspace sources. Android debug/release compilation, lint, Room/KSP and all
+instrumentation remain blocked at offline AGP resolution. No APK or successful
+phone enforcement is claimed. [Design/evidence](docs/T05_MONITORING.md),
+[phone steps](docs/T05_PHONE_TEST.md), [commit message](docs/T05_COMMIT_MESSAGE.txt).
+
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
-| `:app` | MainActivity, Persian Compose navigation, screens and debug-only T02 service/overlay/setup UI. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity. |
-| `:platform` | Android clock adapters and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; pose implementation belongs to T06. |
+| `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup and debug-only T02 experiment. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. |
+| `:platform` | Live-zone Android clock adapters, durable monitoring preference and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; pose implementation belongs to T06. |
 
 Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 added Room v1 and KSP; T04 adds v2 with a preserving cursor migration. Actual schema exports await successful Android builds.
 
@@ -136,4 +186,4 @@ Pose provisioning choice: Lite float16 model version 1, one body and CPU delegat
 
 Per-app base allowance: 30 minutes/day. Combined usage ceiling: 60 minutes/day. Per-app daily award cap: 20 minutes awarded, including already consumed awards. Short session: 5 minutes. Zero-base mode: off. Speech: on. Suggested camera: rear. Rewards: 2 push-ups, 10 squats, 20 jumping jacks or 20 alternating knee raises, each for 2 minutes. These are editable product proposals, not exercise prescriptions or equivalence claims.
 
-T04 rules: local-midnight allowance reset/credit expiry; old-day reward challenges cancel at rollover without new-day awards. Elapsed use uses monotonic time. Deliberate device-clock abuse is not hardened in v1. Production split-screen/PiP accounting, reboot recovery and durable accounting-loss bounds await T05 evidence.
+T04 rules: local-midnight allowance reset/credit expiry; old-day reward challenges cancel at rollover without new-day awards. Elapsed use uses monotonic time. Deliberate device-clock abuse is not hardened in v1. T05 defines split-screen/PiP, reboot and accounting-loss behavior above; actual device results remain pending.
