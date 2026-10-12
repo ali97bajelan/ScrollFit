@@ -1,20 +1,26 @@
 # ScrollFit — Exercise Gate
 
-پوستهٔ اولیهٔ یک برنامهٔ بومی اندروید با Kotlin و Jetpack Compose برای مدیریت زمان استفاده از برنامه‌ها و کسب زمان با ورزش. درخواست فعلی فقط **T01** است؛ وظایف T02 تا T16 اجرا نشده‌اند. مشخصات محصول در [brief](exercise_gate_codex_brief.md)، ترتیب وظایف در [tasks](exercise_gate_tasks.md) و وضعیت واقعی در [TASK_STATUS.md](TASK_STATUS.md) ثبت شده‌اند.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01 and the T02 feasibility experiment**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-## وضعیت این نسخه
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03–T16 are not implemented.
 
-صفحهٔ آغاز، خانه، معرفی چهار ورزش، سابقهٔ خالی و نمایش پیش‌فرض‌ها به فارسی با چیدمان RTL اضافه شده‌اند. این نسخه هنوز برنامه‌ها را پایش یا مسدود نمی‌کند، دوربین را باز نمی‌کند، تکرار نمی‌شمارد و پاداش نمی‌دهد. این محدودیت در خود صفحه‌ها نیز نوشته شده است. همهٔ دکمه‌های فعال فقط جابه‌جایی واقعی بین صفحه‌ها انجام می‌دهند.
+## Current delivery status
 
-گوشی مقصد طبق پاسخ مالک: **Xiaomi Mi 11 Lite NE، Android 14 (API 34)**. حداقل نسخهٔ موجود پروژه، Android 9 (API 28)، حفظ شده است؛ compile/target SDK برابر 37 است. تست نصب، RTL و رفتار دکمهٔ بازگشت روی گوشی هنوز انجام نشده است.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. Camera, exercise counting, daily budgets and rewards are not implemented.
 
-**ساخت APK هنوز تأیید نشده است.** محیط WSL در شروع Java، Android SDK، adb و emulator نداشت. JDK موقت در `/tmp/scrollfit-toolchain` تهیه شد. در sandbox، سرورهای دانلود با خطای DNS مواجه شدند؛ خارج از sandbox، URLهای رسمی Android SDK و Google Maven پاسخ HTTP 404 دادند. دریافت مستندات رسمی با ابزار مرور وب و دریافت JDK از Adoptium امکان‌پذیر بود. دستور ساخت با exit 1 و خطای حل پلاگین AGP 9.4.0 در مرحلهٔ configuration متوقف شد؛ کامپایل، lint و تست اجرا نشدند و APK وجود ندارد. [گزارش کامل ساخت](docs/verification/T01-build.log) و [نسخهٔ ابزار اجراشده](docs/verification/T01-gradle-version.log) در پروژه نگه داشته شده‌اند. وضعیت T01 برابر blocked است. ابزارهای موقت در `/tmp` بخشی از پروژه نیستند و ممکن است حذف شوند.
+**There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Official Google Maven and Android SDK downloads returned HTTP 404 from this environment, including outside the sandbox. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-## ساخت و نصب
+The actual Kotlin/JVM core compiled and **10 countdown tests passed**, with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
 
-در Android Studio سازگار با AGP 9.4، پوشهٔ پروژه را باز کنید. JDK 21 را به‌عنوان Gradle JDK انتخاب کنید؛ از SDK Manager، Android SDK Platform 37، Build Tools 36.0.0 و Platform Tools را نصب کنید. برای ساخت اولیه، دسترسی به Google Maven، Maven Central، Gradle Plugin Portal و سرور Gradle لازم است. مسیر SDK را Android Studio در `local.properties` ثبت می‌کند؛ این فایل نباید commit شود. در WSL باید SDK و JDK لینوکس استفاده شوند، نه ابزارهای ویندوز.
+Evidence: [T02 Android build log](docs/verification/T02-build.log), [core test log](docs/verification/T02-core-tests.log), [actual JUnit results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
-روی Linux/WSL:
+Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
+
+## Build and install
+
+Use Android Studio compatible with AGP 9.4, with **JDK 21** selected as Gradle JDK. Install **Android SDK Platform 37**, **Build Tools 36.0.0** and **Platform Tools** through SDK Manager. Android Studio records the SDK location in untracked `local.properties`. Linux/WSL needs Linux tools; Windows needs Windows tools. Initial builds require access to Google Maven, Maven Central, Gradle Plugin Portal and Gradle distributions.
+
+On Linux/WSL:
 
 ```bash
 export JAVA_HOME=/path/to/jdk-21
@@ -22,59 +28,76 @@ export ANDROID_HOME=/path/to/android-sdk
 ./gradlew :app:assembleDebug :app:lintDebug :core:test --console=plain
 ```
 
-روی Windows با PowerShell و JDK/SDK ویندوز:
+On Windows PowerShell with the Windows JDK/SDK configured:
 
 ```powershell
 .\gradlew.bat :app:assembleDebug :app:lintDebug :core:test --console=plain
 ```
 
-فقط **بعد از BUILD SUCCESSFUL** خروجی مورد انتظار `app/build/outputs/apk/debug/app-debug.apk` است. تا وقتی فایل واقعاً ایجاد نشده، این مسیر تحویل APK محسوب نمی‌شود. پس از ساخت موفق، APK را به گوشی منتقل و باز کنید؛ اجازهٔ نصب از همان برنامهٔ فایل/مرورگر را بدهید. با USB debugging نیز می‌توان نصب کرد:
+The expected artifact after **BUILD SUCCESSFUL** is `app/build/outputs/apk/debug/app-debug.apk`. That file does not currently exist. After it is built, transfer the APK to your phone, open it, and allow installation from that file manager/browser. With USB debugging enabled:
 
 ```bash
 adb devices -l
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-چک کوتاه T01 روی گوشی: برنامه از launcher باز شود؛ از معرفی وارد خانه شوید؛ خانه، ورزش‌ها، سابقه و تنظیمات قابل دسترسی باشند؛ چهار ورزش دیده شوند؛ چرخش صفحه، بازگشت، حالت تاریک و اندازهٔ بزرگ متن بررسی شوند. این چک هیچ ادعایی دربارهٔ دقت دوربین یا مسدودسازی ندارد. چک کامل محصول در brief باقی است و در T16 اجرا خواهد شد.
+Follow [the T02 phone test](docs/T02_PHONE_TEST.md). The full product acceptance checklist remains in the brief for T16.
 
-## مرزهای ماژول‌ها
+To run real core sources/tests without configuring Android modules:
 
-| ماژول | مسئولیت فعلی و مسیر توسعه |
+```bash
+./gradlew -p verification/core :core:test --console=plain
+```
+
+The isolated settings use the same `core/build.gradle.kts`, source files, tests and version catalog; they do not replace Android verification. For this session the temporary paths are `/tmp/scrollfit-toolchain/jdk-21.0.12.1+1` and `/tmp/scrollfit-gradle`; they are not part of the repository and may be deleted by the host. Java and Kotlin bytecode targets are both 17.
+
+## T02 implementation and limits
+
+The experiment is **off by default** and available through the dashboard's 30-second test button in debug builds. Its AccessibilityService declaration, special access permission, picker queries and Android implementation are in `app/src/debug`; release sources contain only a no-op bridge. Release manifest/build isolation is source-inspected, not yet verified in a built APK.
+
+Select one launchable non-system app, grant both required accesses, then explicitly start a new test. System and preinstalled apps, this app, launchers, settings and dialers are excluded conservatively. There is no `QUERY_ALL_PACKAGES` permission. The picker intentionally has less coverage than the future production picker.
+
+The system-bound AccessibilityService receives only `TYPE_WINDOW_STATE_CHANGED`. Its configuration disables window-content retrieval and gestures and declares `isAccessibilityTool=false`: this is a self-control experiment. Code reads event package metadata, never event text, source nodes or another app's screen tree. Temporary usage-event reconciliation on unlock reads only foreground/background metadata; it neither logs nor stores other apps' package history. Limited package queries follow [Android package visibility guidance](https://developer.android.com/training/package-visibility/declaring).
+
+The blocking surface uses [TYPE_ACCESSIBILITY_OVERLAY](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_ACCESSIBILITY_OVERLAY), supported for a connected service. It stays within the app window area, does not request fullscreen/immersive mode, and leaves system navigation available. Home and quick-settings actions are triggered by visible buttons. The service never starts an Activity from the background, avoiding reliance on [background activity launch exceptions](https://developer.android.com/guide/components/activities/secure-bal). Special-access screens and the target app are opened only from the visible Activity.
+
+A monotonic countdown charges prior eligible intervals once. The intended signals pause it outside the selected app, while the screen is off/locked, while the blocker is shown, and when required access is missing. Small non-touchable banners update at most once per second, only while target use is observed; there is no continuous usage-statistics polling, foreground service, wake lock or boot receiver. [UsageEvents queries](https://developer.android.com/reference/android/app/usage/UsageStatsManager#queryEvents(long,%20long)) are bounded to five minutes. [Screen broadcasts](https://developer.android.com/develop/background-work/background-tasks/broadcasts) and UI lifecycle callbacks trigger pauses/reconciliation.
+
+Spike state uses private SharedPreferences for target, enabled state and consumed milliseconds, persisted on ticks/transitions. Reconnection retains consumption and pauses unknown downtime; monitoring is not assumed healthy merely because its permission is enabled. An abrupt process kill can lose approximately the last one-second persistence interval plus scheduling/storage delay; callback delays and actual OEM behavior are unverified. This store is not the production daily budget or award ledger.
+
+**Start new test resets the experimental allowance.** That control is debug-only, explicitly labeled, and grants no production credit. Stop removes the spike overlay without changing access permissions. Permission loss, service disconnect, overlay/storage failure and interruption have visible states; an unavailable blocker is not reported as successful enforcement.
+
+Only a single fullscreen target is in scope for this spike. Split-screen, PiP, window/dialog/keyboard event ordering and metadata suppression need real-device investigation; event observation can fail or pause conservatively. No reliable reboot recovery is claimed. Force stop, revocation and uninstall can bypass limits. Emergency/system navigation and unrestricted apps must remain usable. Battery restrictions have not been observed yet; record them before prescribing Xiaomi-specific changes.
+
+## Architecture
+
+| Module | Responsibility |
 | --- | --- |
-| `:app` | Activity، منابع فارسی، تم Compose، navigation و صفحه‌های معرفی؛ اتصال جریان چالش در T11 و تکمیل UI در T14 |
-| `:core` | Kotlin/JVM بدون Android؛ نوع چهار ورزش، پیشنهادهای محصول، قرارداد pose/counter، ساعت قابل تزریق و قرارداد monitoring/blocking؛ منطق مستقل بودجه در T04 و شمارنده‌های مستقل در T07–T10 |
-| `:platform` | کتابخانهٔ Android؛ پیاده‌سازی ساعت‌های wall/monotonic و وابستگی‌های CameraX/Room/DataStore/MediaPipe؛ adapterهای persistence در T03، monitoring/blocking در T02/T05 و pose در T06 |
+| `:app` | MainActivity, Persian Compose navigation, screens and debug-only T02 service/overlay/setup UI. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Production accounting belongs to T04. |
+| `:platform` | Android clock adapters and pinned CameraX/Room/DataStore/MediaPipe dependencies. Persistence and pose implementations belong to T03/T06. |
 
-جهت وابستگی: `app → platform → core` و `app → core`. قراردادهای شمارش هیچ تصویر یا کلاس Android دریافت نمی‌کنند؛ adapter تخمین pose مالک frame و منابع دوربین خواهد بود. واحدهای زمان در نام‌ها صریح‌اند: seconds برای پیش‌فرض‌ها و milliseconds برای timestamps. هیچ backend یا چارچوب DI اضافه نشده است. مدل Room و KSP عمداً همراه با schema واقعی در T03 اضافه خواهند شد؛ وجود وابستگی runtime به معنای پیاده‌سازی persistence نیست.
+Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. Room schema/KSP are deferred to the actual T03 schema.
 
-## انتخاب وابستگی‌ها و منابع رسمی
+## Dependency decisions and official sources
 
-بررسی مستندات در **2026-10-12** انجام شد. این جدول انتخاب‌های مستند را ثبت می‌کند؛ حل وابستگی‌ها و سازگاری نهایی APK به ساخت موفق وابسته است. نسخه‌ها در `gradle/libs.versions.toml` ثابت‌اند؛ از `latest.release` استفاده نمی‌کنیم.
+Documentation checked on **2026-10-12**. These are pinned documented choices; final Android artifact resolution and compatibility remain unverified because the build is blocked.
 
-| مورد | انتخاب | مبنای تصمیم |
+| Component | Selection | Source |
 | --- | --- | --- |
-| AGP / Gradle | 9.4.0 / 9.6.0 | [AGP 9.4 compatibility](https://developer.android.com/build/releases/agp-9-4-0-release-notes): SDK 37، Gradle 9.6 و حداقل JDK 17؛ 9.4.0 در مستندات تأیید شد، در حالی که artifact نسخهٔ اولیهٔ 9.4.1 قابل دریافت نبود |
-| JVM ساخت / bytecode | JDK 21 / Java 17 | JDK 21 برای daemon به‌جای الزام اولیهٔ 25؛ ابزار به پروژه یا سیستم نصب نشده است |
-| Kotlin / Compose compiler | 2.4.10 برای هر دو | [Kotlin releases](https://kotlinlang.org/docs/releases.html)، [Kotlin/AGP requirements](https://developer.android.com/build/kotlin-support)، [built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin): Kotlin داخلی AGP، بدون `kotlin-android`؛ KGP در buildscript صریحاً هم‌نسخه می‌شود |
-| Compose | stable BOM 2026.09.00، Material 3 | [BOM guide](https://developer.android.com/develop/ui/compose/bom)؛ compiler نسخهٔ مستقل و هم‌نسخه با Kotlin دارد طبق [compatibility guide](https://developer.android.com/jetpack/androidx/releases/compose-kotlin) |
-| Activity / Navigation Compose | 1.13.0 / 2.10.2 | [Activity stable releases](https://developer.android.com/jetpack/androidx/releases/activity)، [Navigation releases](https://developer.android.com/jetpack/androidx/releases/navigation)؛ برای این پوسته NavHost ساده کافی است |
-| CameraX | 1.6.2 | [CameraX stable releases](https://developer.android.com/jetpack/androidx/releases/camera)؛ camera2، lifecycle و view با نسخهٔ یکسان |
-| Room | 2.8.5 | [Room stable releases and KSP guidance](https://developer.android.com/jetpack/androidx/releases/room)؛ تراکنش‌ها و schema در T03 |
-| DataStore Preferences | 1.2.1 | [DataStore stable releases](https://developer.android.com/jetpack/androidx/releases/datastore)؛ ذخیرهٔ تنظیمات در T03 |
-| Pose engine | MediaPipe Tasks Vision 1.0.0 | نسخهٔ ثابت در [نمونهٔ رسمی Google](https://github.com/google-ai-edge/mediapipe-samples/blob/main/examples/pose_landmarker/android/app/build.gradle)؛ [Android pose guide](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/android) و [platform requirements](https://developers.google.com/edge/mediapipe/solutions/setup_android)؛ حداقل SDK آن از حداقل پروژه کمتر است |
+| AGP / Gradle / SDK | 9.4.0 / 9.6.0 / compile and target 37; existing minimum 28 retained | [AGP compatibility](https://developer.android.com/build/releases/agp-9-4-0-release-notes) |
+| Kotlin / Compose compiler | 2.4.10, with explicit KGP classpath; AGP built-in Kotlin | [Kotlin releases](https://kotlinlang.org/docs/releases.html), [built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin), [compiler compatibility](https://developer.android.com/jetpack/androidx/releases/compose-kotlin) |
+| Compose | Stable BOM 2026.09.00, Material 3 | [Compose BOM](https://developer.android.com/develop/ui/compose/bom) |
+| Activity / Navigation | 1.13.0 / 2.10.2 | [Activity](https://developer.android.com/jetpack/androidx/releases/activity), [Navigation](https://developer.android.com/jetpack/androidx/releases/navigation) |
+| CameraX | 1.6.2 for camera2/lifecycle/view | [CameraX](https://developer.android.com/jetpack/androidx/releases/camera) |
+| Room / DataStore Preferences | 2.8.5 / 1.2.1 | [Room](https://developer.android.com/jetpack/androidx/releases/room), [DataStore](https://developer.android.com/jetpack/androidx/releases/datastore) |
+| Coroutines Android | 1.10.2 | [Official release](https://github.com/Kotlin/kotlinx.coroutines/releases/tag/1.10.2) |
+| Pose engine | MediaPipe Tasks Vision 1.0.0 | [Official Google sample](https://github.com/google-ai-edge/mediapipe-samples/blob/main/examples/pose_landmarker/android/app/build.gradle), [pose guide](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/android), [Android requirements](https://developers.google.com/edge/mediapipe/solutions/setup_android) |
 
-### مدل pose و اجرای آفلاین
+Pose provisioning choice: Lite float16 model version 1, one body and CPU delegate. In T06 the [official model](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task) will be obtained at build preparation, with checksum/terms recorded, and bundled as `platform/src/main/assets/pose_landmarker_lite.task`. The model is **not yet downloaded or packaged**; only its path/URL are defined. T06 must enforce asset presence/integrity and test the first exercise launch after installation in airplane mode. There will be no first-run runtime download, recordings or frame uploads. [ML Kit pose](https://developers.google.com/ml-kit/vision/pose-detection/android) was evaluated; its beta status and the explicit MediaPipe asset workflow informed this choice.
 
-انتخاب: **Pose Landmarker Lite، float16، نسخهٔ مدل 1، CPU delegate و یک بدن**. MediaPipe بستهٔ مدل صریح، confidence و landmarkهای نرمال‌شده دارد. گزینهٔ ML Kit نیز بررسی شد، اما [Pose Detection آن beta است](https://developers.google.com/ml-kit/vision/pose-detection/android)؛ برای این پروژه بسته‌بندی صریح مدل در MediaPipe انتخاب شد.
+## Configurable product proposals
 
-در T06 فایل از [منبع رسمی مدل Lite](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task) یک‌بار هنگام آماده‌سازی build گرفته، SHA-256 و شرایط مدل ثبت و در `platform/src/main/assets/pose_landmarker_lite.task` بسته‌بندی خواهد شد. فعلاً فقط نام و URL مدل در `PoseModel.kt` تعریف شده؛ **مدل هنوز دریافت یا در APK بسته‌بندی نشده و inference فعال نیست**. T06 باید وجود و checksum مدل را پیش از build الزام کند و در حالت airplane، اولین اجرای بعد از نصب را آزمایش کند. هیچ دانلود runtime، ثبت frame یا شبکهٔ inference مجاز نیست. نبود یا خراب بودن مدل باید خطای قابل فهم بدهد. tuning دوربین روی گوشی انجام می‌شود.
+Per-app base allowance: 30 minutes/day. Combined usage ceiling: 60 minutes/day. Per-app daily award cap: 20 minutes awarded, including already consumed awards. Short session: 5 minutes. Zero-base mode: off. Speech: on. Suggested camera: rear. Rewards: 2 push-ups, 10 squats, 20 jumping jacks or 20 alternating knee raises, each for 2 minutes. These are editable product proposals, not exercise prescriptions or equivalence claims.
 
-## پیشنهادهای قابل تغییر محصول
-
-سهمیهٔ اولیهٔ هر برنامه ۳۰ دقیقه، سقف مصرف مجموع ۶۰ دقیقه، سقف زمان پاداش روزانهٔ هر برنامه ۲۰ دقیقه و نوبت کوتاه ۵ دقیقه است. حالت سهمیهٔ صفر پیش‌فرض خاموش، صدا روشن و دوربین پیشنهادی پشت است. پیشنهاد پاداش: ۲ شنا، ۱۰ اسکوات، ۲۰ پروانه یا ۲۰ بالا آوردن متناوب زانو، هرکدام ۲ دقیقه. این مقادیر نسخهٔ آینده قابل ویرایش‌اند؛ توصیهٔ تمرینی یا اندازه‌گیری تناسب اندام نیستند.
-
-## دسترسی‌ها و محدودیت‌ها
-
-پوستهٔ T01 هیچ دسترسی camera، internet، Usage Access، Accessibility یا overlay درخواست نمی‌کند. در مراحل بعد، پایش تنها با فعال‌سازی صریح مالک و دسترسی‌های لازم و دوربین تنها روی صفحهٔ ورزش اجرا خواهد شد. مکانیزم مسدودسازی باید در T02 روی Mi 11 Lite NE اثبات شود؛ به باز شدن arbitrary activity در پس‌زمینه تکیه نمی‌کنیم. Usage Access به‌تنهایی برنامه را suspend نمی‌کند. تنظیمات، launcher و مسیرهای ضروری باید در دسترس بمانند؛ غیرفعال کردن دسترسی، force stop و حذف برنامه می‌توانند محدودیت را دور بزنند.
-
-تصمیم‌های حسابداری برای مراحل بعد: rollover بر مبنای نیمه‌شب محلی، انقضای اعتبار مصرف‌نشده و لغو چالش پاداش قدیمی بدون پاداش روز جدید؛ elapsed duration با ساعت monotonic. تغییر عمدی ساعت گوشی در v1 سخت‌سازی نمی‌شود. سیاست split-screen/PiP، بازیابی پس از reboot و میزان بیشینهٔ اتلاف حسابداری هنوز به آزمایش monitoring وابسته‌اند و قطعی نشده‌اند. دادهٔ اجرای T01 وجود ندارد؛ نسخهٔ آینده فقط metadata، زمان، تکرار و ledger را ذخیره می‌کند.
+Future rules: local-midnight allowance reset/credit expiry; old-day reward challenges cancel at rollover without new-day awards. Elapsed use uses monotonic time. Deliberate device-clock abuse is not hardened in v1. Production split-screen/PiP accounting, reboot recovery and durable accounting-loss bounds await T05 evidence.

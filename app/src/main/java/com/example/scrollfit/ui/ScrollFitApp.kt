@@ -32,6 +32,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.scrollfit.R
+import com.example.scrollfit.BuildConfig
+import com.example.scrollfit.spike.SpikeEntry
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.exercise.ProductDefaults
 
@@ -87,14 +89,18 @@ fun ScrollFitApp() {
                     }
                     composable(Destination.DASHBOARD.route) {
                         Page(R.string.dashboard) {
-                            Text(stringResource(R.string.monitoring_disabled))
-                            Text(stringResource(R.string.no_targets))
                             Text(stringResource(R.string.bootstrap_notice))
+                            if (BuildConfig.DEBUG) {
+                                Button(onClick = { navController.navigate("spike") }) {
+                                    Text(stringResource(R.string.open_spike))
+                                }
+                            }
                             Button(onClick = { navController.navigate(Destination.EXERCISES.route) }) {
                                 Text(stringResource(R.string.view_exercises))
                             }
                         }
                     }
+                    composable("spike") { SpikeEntry() }
                     composable(Destination.EXERCISES.route) {
                         Page(R.string.exercises) {
                             Text(stringResource(R.string.exercise_catalog_notice))

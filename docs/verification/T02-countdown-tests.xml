@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.scrollfit.core.spike.SpikeCountdownTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-12T19:06:42.123Z" hostname="Ali" time="0.343">
+  <properties/>
+  <testcase name="staleTimestampCannotDuplicateAnIntervalOrPauseNewerState" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.25"/>
+  <testcase name="permissionLossAndDisablePauseWithoutResettingConsumption" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.0"/>
+  <testcase name="restoreKeepsConsumptionAndDoesNotChargeUnknownDowntime" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.0"/>
+  <testcase name="exactDeadlineExhaustsAndBlockedTimeIsFree" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.001"/>
+  <testcase name="restoredExhaustionCannotGrantFreshTime" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.0"/>
+  <testcase name="duplicateCallbacksAndTicksChargeEachIntervalOnce" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.0"/>
+  <testcase name="delayedTickClampsAtAllowanceInsteadOfOvercharging" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.0"/>
+  <testcase name="targetIntervalsAccumulateAcrossSwitches" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.0"/>
+  <testcase name="screenOffAndUnrestrictedIntervalsDoNotSpendAllowance" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.001"/>
+  <testcase name="invalidRestoredConsumptionIsRejected" classname="com.example.scrollfit.core.spike.SpikeCountdownTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
