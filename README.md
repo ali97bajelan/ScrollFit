@@ -1,8 +1,8 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01 and the T02 feasibility experiment**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01, the T02 feasibility experiment and T03 persistence**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04–T16 are not implemented.
 
 ## Current delivery status
 
@@ -10,7 +10,7 @@ The source includes onboarding, dashboard, four-exercise introduction, empty his
 
 **There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Official Google Maven and Android SDK downloads returned HTTP 404 from this environment, including outside the sandbox. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **10 countdown tests passed**, with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
+The actual Kotlin/JVM core compiled and **22 tests passed** (12 repository/model checks plus 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
 
 Evidence: [T02 Android build log](docs/verification/T02-build.log), [core test log](docs/verification/T02-core-tests.log), [actual JUnit results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
@@ -69,15 +69,23 @@ Spike state uses private SharedPreferences for target, enabled state and consume
 
 Only a single fullscreen target is in scope for this spike. Split-screen, PiP, window/dialog/keyboard event ordering and metadata suppression need real-device investigation; event observation can fail or pause conservatively. No reliable reboot recovery is claimed. Force stop, revocation and uninstall can bypass limits. Emergency/system navigation and unrestricted apps must remain usable. Battery restrictions have not been observed yet; record them before prescribing Xiaomi-specific changes.
 
+## T03 persistence and verification
+
+T03 adds Room records for target configuration, app/combined daily usage, immutable challenge snapshots, a unique award ledger, exercise activity and session state. DataStore stores reward rules, combined ceiling, zero-base mode, speech, camera, last exercise and session boundary. Per-app award caps live in Room configuration so award transactions read them consistently. App removal/re-addition and settings edits preserve counters. Clearing visible history preserves accounting records and award identities. The application owns the stores, and startup repository access cancels interrupted challenges.
+
+The 12 new JVM checks validate atomic repository contracts, rollback, duplicate identity, preserved current-day counters and history semantics with an in-memory test adapter. They do **not** prove Room persistence. Seven file-backed Room tests and one DataStore restart/concurrent-edit test are prepared but have not run. The actual Android build/check attempt exited 1 at offline AGP resolution, before compilation, KSP, lint or instrumentation; no APK or generated schema exists. T03 is **implemented, not verified**. T04 eligibility/spending and T11 camera-to-award integration remain separate tasks.
+
+Room starts at v1 with export enabled and no destructive migration/downgrade fallback. Future versions require data-preserving migrations and tests; retain the generated v1 schema after the first successful build. Stored durations use integer milliseconds, with the existing reward settings explicitly in seconds. Wall and monotonic clocks are injectable. Details, API boundaries, deletion semantics and commands are in [T03_PERSISTENCE.md](docs/T03_PERSISTENCE.md). Evidence: [JVM log](docs/verification/T03-core-tests.log), [repository JUnit XML](docs/verification/T03-repository-tests.xml), [Android attempt](docs/verification/T03-build.log). A generated commit message is in [T03_COMMIT_MESSAGE.txt](docs/T03_COMMIT_MESSAGE.txt); no commit was requested.
+
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
 | `:app` | MainActivity, Persian Compose navigation, screens and debug-only T02 service/overlay/setup UI. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Production accounting belongs to T04. |
-| `:platform` | Android clock adapters and pinned CameraX/Room/DataStore/MediaPipe dependencies. Persistence and pose implementations belong to T03/T06. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations with contract tests are implemented in T03; spending policy belongs to T04. |
+| `:platform` | Android clock adapters and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; pose implementation belongs to T06. |
 
-Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. Room schema/KSP are deferred to the actual T03 schema.
+Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 adds the Room v1 schema and KSP processor; actual schema export awaits a successful Android build.
 
 ## Dependency decisions and official sources
 
@@ -91,6 +99,7 @@ Documentation checked on **2026-10-12**. These are pinned documented choices; fi
 | Activity / Navigation | 1.13.0 / 2.10.2 | [Activity](https://developer.android.com/jetpack/androidx/releases/activity), [Navigation](https://developer.android.com/jetpack/androidx/releases/navigation) |
 | CameraX | 1.6.2 for camera2/lifecycle/view | [CameraX](https://developer.android.com/jetpack/androidx/releases/camera) |
 | Room / DataStore Preferences | 2.8.5 / 1.2.1 | [Room](https://developer.android.com/jetpack/androidx/releases/room), [DataStore](https://developer.android.com/jetpack/androidx/releases/datastore) |
+| KSP | 2.3.12 for Room schema processing; actual Android compatibility remains uncompiled | [Official release](https://github.com/google/ksp/releases/tag/2.3.12) |
 | Coroutines Android | 1.10.2 | [Official release](https://github.com/Kotlin/kotlinx.coroutines/releases/tag/1.10.2) |
 | Pose engine | MediaPipe Tasks Vision 1.0.0 | [Official Google sample](https://github.com/google-ai-edge/mediapipe-samples/blob/main/examples/pose_landmarker/android/app/build.gradle), [pose guide](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/android), [Android requirements](https://developers.google.com/edge/mediapipe/solutions/setup_android) |
 
