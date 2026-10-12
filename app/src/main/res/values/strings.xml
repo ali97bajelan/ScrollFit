@@ -1,3 +1,30 @@
 <resources>
     <string name="app_name">ScrollFit</string>
+    <string name="welcome">به اسکرول‌فیت خوش آمدید</string>
+    <string name="welcome_body">اسکرول‌فیت برای مدیریت زمان استفاده از برنامه‌ها و کسب زمان با ورزش طراحی شده است. پردازش دوربین روی گوشی انجام خواهد شد؛ عکس و ویدئو ذخیره یا ارسال نمی‌شوند.</string>
+    <string name="bootstrap_notice">این نسخهٔ اولیه فقط صفحه‌های معرفی را دارد. پایش، مسدودسازی و شمارش ورزش هنوز فعال نیستند.</string>
+    <string name="enter_dashboard">ورود به خانه</string>
+    <string name="dashboard">خانه</string>
+    <string name="exercises">ورزش‌ها</string>
+    <string name="history">سابقه</string>
+    <string name="settings">تنظیمات</string>
+    <string name="monitoring_disabled">پایش غیرفعال است</string>
+    <string name="no_targets">هنوز برنامه‌ای برای محدود کردن انتخاب نشده است.</string>
+    <string name="view_exercises">آشنایی با ورزش‌ها</string>
+    <string name="exercise_catalog_notice">مقادیر زیر پیشنهاد اولیه و قابل تغییر در نسخه‌های بعدی هستند. دوربین و چالش در این نسخه اجرا نمی‌شوند.</string>
+    <string name="push_up">شنا</string>
+    <string name="squat">اسکوات</string>
+    <string name="jumping_jack">پروانه</string>
+    <string name="knee_raise">بالا آوردن متناوب زانو</string>
+    <string name="reward_proposal">پیشنهاد اولیه: %1$d تکرار برای %2$d دقیقه</string>
+    <string name="push_up_guidance">نمای کنار؛ شانه، آرنج و لگن در تصویر دیده شوند.</string>
+    <string name="squat_guidance">تمام بدن از روبه‌رو یا کمی مایل در تصویر دیده شود.</string>
+    <string name="front_guidance">تمام بدن از روبه‌رو در تصویر دیده شود.</string>
+    <string name="history_empty">هنوز سابقه‌ای ثبت نشده است. ثبت استفاده و فعالیت در نسخه‌های بعدی اضافه می‌شود.</string>
+    <string name="defaults_notice">پیش‌فرض‌های پیشنهادی؛ ویرایش و ذخیرهٔ تنظیمات هنوز اضافه نشده است.</string>
+    <string name="default_allowance">سهمیهٔ روزانهٔ هر برنامه: %1$d دقیقه</string>
+    <string name="default_ceiling">سقف مصرف روزانهٔ مجموع برنامه‌ها: %1$d دقیقه</string>
+    <string name="default_award_cap">سقف پاداش روزانهٔ هر برنامه: %1$d دقیقه</string>
+    <string name="default_session">مدت هر نوبت استفاده: %1$d دقیقه</string>
+    <string name="other_defaults">حالت بدون سهمیهٔ رایگان: خاموش\nشمارش صوتی: روشن\nدوربین پیشنهادی: پشت</string>
 </resources>

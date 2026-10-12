@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "ScrollFit"
 include(":app")
- 
+include(":core")
+include(":platform")

@@ -1,0 +1,2 @@
+# The Unix Gradle launcher must remain executable by bash after Windows checkout.
+gradlew text eol=lf

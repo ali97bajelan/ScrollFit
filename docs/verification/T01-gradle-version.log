@@ -1,0 +1,15 @@
+
+------------------------------------------------------------
+Gradle 9.6.0
+------------------------------------------------------------
+
+Build time:    2026-06-18 23:19:03 UTC
+Revision:      3f750f03d77e42327c5f9fcb9992110088330a32
+
+Kotlin:        2.3.21
+Groovy:        4.0.32
+Ant:           Apache Ant(TM) version 1.10.17 compiled on April 6 2026
+Launcher JVM:  21.0.12.1 (Eclipse Adoptium 21.0.12.1+1-LTS)
+Daemon JVM:    Compatible with Java 21, any vendor, nativeImageCapable=false (from gradle/gradle-daemon-jvm.properties)
+OS:            Linux 6.18.33.2-microsoft-standard-WSL2 amd64
+
