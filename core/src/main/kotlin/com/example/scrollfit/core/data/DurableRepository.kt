@@ -2,23 +2,27 @@ package com.example.scrollfit.core.data
 
 import com.example.scrollfit.core.time.WallClock
 
-/** Storage operations only. T04 owns spending policy, interval identity and challenge eligibility. */
-class DurableRepository(private val store: DurableStore, private val wallClock: WallClock) {
-    suspend fun saveTarget(config: TargetConfig) = store.transaction { putTarget(config) }
-    suspend fun targets(): List<TargetConfig> = store.transaction { targets() }
-    suspend fun removeTarget(packageName: String) = store.transaction {
+/** Storage primitives for adapters/contract fixtures. Application callers receive only DataRepository. */
+class DurableRepository(private val store: DurableStore, private val wallClock: WallClock) : DataRepository {
+    override suspend fun saveTarget(config: TargetConfig) = store.transaction { putTarget(config) }
+    override suspend fun targets(): List<TargetConfig> = store.transaction { targets() }
+    override suspend fun removeTarget(packageName: String) = store.transaction {
         target(packageName)?.let { putTarget(it.copy(selected = false)) }
+        Unit
     }
-    suspend fun dailyUsage(packageName: String, day: String = today()): DailyUsage = store.transaction {
-        usage(packageName, day) ?: DailyUsage(packageName, day)
+    override suspend fun dailyUsage(packageName: String, day: String?): DailyUsage = store.transaction {
+        val date = day ?: today()
+        usage(packageName, date) ?: DailyUsage(packageName, date)
     }
-    suspend fun combinedUsage(day: String = today()): CombinedUsage = store.transaction {
-        combined(day) ?: CombinedUsage(day)
+    override suspend fun combinedUsage(day: String?): CombinedUsage = store.transaction {
+        val date = day ?: today()
+        combined(date) ?: CombinedUsage(date)
     }
-    suspend fun session(packageName: String, day: String = today()): SessionState = store.transaction {
-        session(packageName, day) ?: SessionState(packageName, day)
+    override suspend fun session(packageName: String, day: String?): SessionState = store.transaction {
+        val date = day ?: today()
+        session(packageName, date) ?: SessionState(packageName, date)
     }
-    suspend fun saveSession(value: SessionState) = store.transaction { putSession(value) }
+    override suspend fun saveSession(value: SessionState) = store.transaction { putSession(value) }
 
     /** Caller supplies a policy-approved interval once; updates all three records atomically. */
     suspend fun recordUsage(packageName: String, day: String, baseMs: Long, earnedMs: Long) = store.transaction {
@@ -41,7 +45,7 @@ class DurableRepository(private val store: DurableStore, private val wallClock: 
         if (value.packageName != null) require(target(value.packageName)?.selected == true)
         insertChallenge(value)
     }
-    suspend fun challenge(id: String): Challenge? = store.transaction { challenge(id) }
+    override suspend fun challenge(id: String): Challenge? = store.transaction { challenge(id) }
 
     /** Completion callback must come from verified repetition progress, never from a UI timer. */
     suspend fun awardCompletedChallenge(id: String, repetitions: Int): Award? = store.transaction {
@@ -66,21 +70,22 @@ class DurableRepository(private val store: DurableStore, private val wallClock: 
         result
     }
 
-    suspend fun cancelChallenge(id: String) = store.transaction {
+    override suspend fun cancelChallenge(id: String) = store.transaction {
         challenge(id)?.takeIf { it.status == ChallengeStatus.ACTIVE }?.let {
             putChallenge(it.copy(status = ChallengeStatus.CANCELLED))
         }
+        Unit
     }
     /** Run once at process startup, before accepting challenge callbacks. Awards remain intact. */
     suspend fun cancelInterruptedChallenges() = store.transaction { cancelActiveChallenges() }
-    suspend fun recordActivity(value: ExerciseActivity) = store.transaction {
+    override suspend fun recordActivity(value: ExerciseActivity) = store.transaction {
         value.challengeId?.let { id ->
             val origin = requireNotNull(challenge(id))
             require(origin.day == value.day && origin.exercise == value.exercise)
         }
         insertActivity(value)
     }
-    suspend fun activities(): List<ExerciseActivity> = store.transaction { activities() }
-    suspend fun clearHistory() = store.transaction { clearVisibleHistory() }
+    override suspend fun activities(): List<ExerciseActivity> = store.transaction { activities() }
+    override suspend fun clearHistory() = store.transaction { clearVisibleHistory() }
     private fun today(): String = wallClock.localDate().toString()
 }

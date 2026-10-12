@@ -126,7 +126,7 @@ class PersistenceTest {
     @Test fun unsupportedDatabaseVersionFailsWithoutDeletingBudget() = runBlocking {
         prepare()
         repo.recordUsage("app", day, 1000, 0)
-        database.openHelper.writableDatabase.execSQL("PRAGMA user_version = 2")
+        database.openHelper.writableDatabase.execSQL("PRAGMA user_version = 3")
         database.close(); database = ExerciseGateDatabase.open(context, name); repo = repository()
         try {
             repo.dailyUsage("app")

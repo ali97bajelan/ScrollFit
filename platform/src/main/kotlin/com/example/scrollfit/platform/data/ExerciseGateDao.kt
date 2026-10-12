@@ -26,6 +26,11 @@ interface ExerciseGateDao {
     @Update suspend fun putChallenge(value: ChallengeRow)
     @Query("UPDATE challenges SET status = 'CANCELLED' WHERE status = 'ACTIVE'")
     suspend fun cancelActiveChallenges()
+    @Query("UPDATE challenges SET status = 'CANCELLED' WHERE status = 'ACTIVE' AND day != :day")
+    suspend fun cancelChallengesOutsideDay(day: String)
+    @Query("SELECT * FROM usage_cursors WHERE timelineId = :timelineId")
+    suspend fun cursor(timelineId: String): CursorRow?
+    @Upsert suspend fun putCursor(value: CursorRow)
     @Query("SELECT * FROM award_ledger WHERE challengeId = :challengeId")
     suspend fun award(challengeId: String): AwardRow?
     @Insert suspend fun insertAward(value: AwardRow)

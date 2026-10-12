@@ -1,18 +1,18 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01, the T02 feasibility experiment and T03 persistence**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01, the T02 feasibility experiment, T03 persistence and the T04 budget/reward engine**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy is implemented; T05–T16 are not implemented.
 
 ## Current delivery status
 
-The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. Camera, exercise counting, daily budgets and rewards are not implemented.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. Camera and exercise counting are not implemented. T04 budgets/rewards are domain APIs; the debug spike and product screens are not yet connected to them.
 
 **There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Official Google Maven and Android SDK downloads returned HTTP 404 from this environment, including outside the sandbox. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **22 tests passed** (12 repository/model checks plus 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
+The actual Kotlin/JVM core compiled and **49 tests passed** (27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
 
-Evidence: [T02 Android build log](docs/verification/T02-build.log), [core test log](docs/verification/T02-core-tests.log), [actual JUnit results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
+Evidence: [T04 Android build attempt](docs/verification/T04-build.log), [current core test log](docs/verification/T04-core-tests.log), [budget/reward JUnit results](docs/verification/T04-TEST-com.example.scrollfit.core.budget.BudgetEngineTest.xml). T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
 Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
@@ -73,19 +73,46 @@ Only a single fullscreen target is in scope for this spike. Split-screen, PiP, w
 
 T03 adds Room records for target configuration, app/combined daily usage, immutable challenge snapshots, a unique award ledger, exercise activity and session state. DataStore stores reward rules, combined ceiling, zero-base mode, speech, camera, last exercise and session boundary. Per-app award caps live in Room configuration so award transactions read them consistently. App removal/re-addition and settings edits preserve counters. Clearing visible history preserves accounting records and award identities. The application owns the stores, and startup repository access cancels interrupted challenges.
 
-The 12 new JVM checks validate atomic repository contracts, rollback, duplicate identity, preserved current-day counters and history semantics with an in-memory test adapter. They do **not** prove Room persistence. Seven file-backed Room tests and one DataStore restart/concurrent-edit test are prepared but have not run. The actual Android build/check attempt exited 1 at offline AGP resolution, before compilation, KSP, lint or instrumentation; no APK or generated schema exists. T03 is **implemented, not verified**. T04 eligibility/spending and T11 camera-to-award integration remain separate tasks.
+The 12 new JVM checks validate atomic repository contracts, rollback, duplicate identity, preserved current-day counters and history semantics with an in-memory test adapter. They do **not** prove Room persistence. Seven file-backed Room tests and one DataStore restart/concurrent-edit test are prepared but have not run. The actual Android build/check attempt exited 1 at offline AGP resolution, before compilation, KSP, lint or instrumentation; no APK or generated schema exists. T03 is **implemented, not verified**. T04 eligibility/spending is described below; T11 camera-to-award integration remains pending.
 
-Room starts at v1 with export enabled and no destructive migration/downgrade fallback. Future versions require data-preserving migrations and tests; retain the generated v1 schema after the first successful build. Stored durations use integer milliseconds, with the existing reward settings explicitly in seconds. Wall and monotonic clocks are injectable. Details, API boundaries, deletion semantics and commands are in [T03_PERSISTENCE.md](docs/T03_PERSISTENCE.md). Evidence: [JVM log](docs/verification/T03-core-tests.log), [repository JUnit XML](docs/verification/T03-repository-tests.xml), [Android attempt](docs/verification/T03-build.log). A generated commit message is in [T03_COMMIT_MESSAGE.txt](docs/T03_COMMIT_MESSAGE.txt); no commit was requested.
+T03 introduced Room v1 with export enabled and no destructive migration/downgrade fallback; T04 extends it to v2. Both authentic schema exports must be retained once Android builds work. Future versions require data-preserving migrations and tests. Stored durations use integer milliseconds, with the existing reward settings explicitly in seconds. Wall and monotonic clocks are injectable. Details, API boundaries, deletion semantics and commands are in [T03_PERSISTENCE.md](docs/T03_PERSISTENCE.md). Evidence: [JVM log](docs/verification/T03-core-tests.log), [repository JUnit XML](docs/verification/T03-repository-tests.xml), [Android attempt](docs/verification/T03-build.log). A generated commit message is in [T03_COMMIT_MESSAGE.txt](docs/T03_COMMIT_MESSAGE.txt); no commit was requested.
+
+## T04 budget and reward engine
+
+The Android-free engine spends base time before app-specific earned credit,
+clips spending to the combined ceiling, and updates app/combined/session counters
+in one transaction. Reward offers disclose reduced per-app award capacity before
+start. Both earning modes share policy, immutable rule snapshots and exactly-once
+completion. Exercise-only remains available at caps and grants no time. Midnight
+expires usable credit and cancels old-day challenges; earlier daily records stay
+intact, including when the date moves backwards.
+
+A persisted cursor per device boot rejects duplicate and overlapping intervals
+across app switching, process restart and history deletion. T05 must supply the
+stable boot identity, eligible chronological intervals and midnight splitting.
+Production enforcement, camera callbacks and user-facing reward disclosure remain
+T05/T11 integration work. The T02 spike still uses its experimental countdown.
+
+The application exposes a data repository facade for settings, history and reads;
+spending/challenge creation/awards go through the budget engine. The 27 new JVM
+cases cover policy, rollover reads, concurrent callbacks and full rollback in a
+serialized in-memory store; they do not prove SQLite/Room behavior.
+
+Room v2 adds only `usage_cursors` with an explicit preserving 1→2 migration. Actual
+Room/KSP compilation, schema exports and migration/restart/concurrency tests remain
+pending the Android build environment. See [engine policy and evidence](docs/T04_BUDGET_ENGINE.md)
+and [generated commit message](docs/T04_COMMIT_MESSAGE.txt). No git commit was created
+by this task.
 
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
 | `:app` | MainActivity, Persian Compose navigation, screens and debug-only T02 service/overlay/setup UI. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations with contract tests are implemented in T03; spending policy belongs to T04. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity. |
 | `:platform` | Android clock adapters and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; pose implementation belongs to T06. |
 
-Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 adds the Room v1 schema and KSP processor; actual schema export awaits a successful Android build.
+Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 added Room v1 and KSP; T04 adds v2 with a preserving cursor migration. Actual schema exports await successful Android builds.
 
 ## Dependency decisions and official sources
 
@@ -109,4 +136,4 @@ Pose provisioning choice: Lite float16 model version 1, one body and CPU delegat
 
 Per-app base allowance: 30 minutes/day. Combined usage ceiling: 60 minutes/day. Per-app daily award cap: 20 minutes awarded, including already consumed awards. Short session: 5 minutes. Zero-base mode: off. Speech: on. Suggested camera: rear. Rewards: 2 push-ups, 10 squats, 20 jumping jacks or 20 alternating knee raises, each for 2 minutes. These are editable product proposals, not exercise prescriptions or equivalence claims.
 
-Future rules: local-midnight allowance reset/credit expiry; old-day reward challenges cancel at rollover without new-day awards. Elapsed use uses monotonic time. Deliberate device-clock abuse is not hardened in v1. Production split-screen/PiP accounting, reboot recovery and durable accounting-loss bounds await T05 evidence.
+T04 rules: local-midnight allowance reset/credit expiry; old-day reward challenges cancel at rollover without new-day awards. Elapsed use uses monotonic time. Deliberate device-clock abuse is not hardened in v1. Production split-screen/PiP accounting, reboot recovery and durable accounting-loss bounds await T05 evidence.

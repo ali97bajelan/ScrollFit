@@ -33,5 +33,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
 }
 
-// Keep generated schemas for future migration tests; the first real KSP build must export v1.
+// Retain real v1 (T03) and v2 (T04) exports when Android builds become available.
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }

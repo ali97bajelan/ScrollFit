@@ -37,3 +37,6 @@ data class ActivityRow(@Embedded val value: ExerciseActivity)
     ForeignKey(entity = TargetRow::class, parentColumns = ["packageName"], childColumns = ["packageName"]),
 ])
 data class SessionRow(@Embedded val value: SessionState)
+
+@Entity(tableName = "usage_cursors", primaryKeys = ["timelineId"])
+data class CursorRow(@Embedded val value: UsageCursor)

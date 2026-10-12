@@ -64,6 +64,11 @@ data class SessionState(val packageName: String, val day: String, val consumedMs
     init { require(packageName.isNotBlank()); LocalDate.parse(day); require(consumedMs >= 0) }
 }
 
+/** One global high-water mark per device boot, retained through history deletion. */
+data class UsageCursor(val timelineId: String, val throughElapsedMs: Long) {
+    init { require(timelineId.isNotBlank() && throughElapsedMs >= 0) }
+}
+
 enum class CameraChoice { REAR, FRONT }
 
 data class AppPreferences(

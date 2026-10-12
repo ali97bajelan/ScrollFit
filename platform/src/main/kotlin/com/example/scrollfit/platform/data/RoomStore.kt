@@ -21,6 +21,9 @@ private class RoomTransaction(private val dao: ExerciseGateDao) : DataTransactio
     override suspend fun insertChallenge(value: Challenge) = dao.insertChallenge(ChallengeRow(value))
     override suspend fun putChallenge(value: Challenge) = dao.putChallenge(ChallengeRow(value))
     override suspend fun cancelActiveChallenges() = dao.cancelActiveChallenges()
+    override suspend fun cancelChallengesOutsideDay(day: String) = dao.cancelChallengesOutsideDay(day)
+    override suspend fun cursor(timelineId: String) = dao.cursor(timelineId)?.value
+    override suspend fun putCursor(value: UsageCursor) = dao.putCursor(CursorRow(value))
     override suspend fun award(challengeId: String) = dao.award(challengeId)?.value
     override suspend fun insertAward(value: Award) = dao.insertAward(AwardRow(value))
     override suspend fun insertActivity(value: ExerciseActivity) = dao.insertActivity(ActivityRow(value))

@@ -17,6 +17,9 @@ interface DataTransaction {
     suspend fun insertChallenge(value: Challenge)
     suspend fun putChallenge(value: Challenge)
     suspend fun cancelActiveChallenges()
+    suspend fun cancelChallengesOutsideDay(day: String)
+    suspend fun cursor(timelineId: String): UsageCursor?
+    suspend fun putCursor(value: UsageCursor)
     suspend fun award(challengeId: String): Award?
     suspend fun insertAward(value: Award)
     suspend fun insertActivity(value: ExerciseActivity)
