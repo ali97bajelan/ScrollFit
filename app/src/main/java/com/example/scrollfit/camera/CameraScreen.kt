@@ -31,6 +31,7 @@ import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.core.exercise.AlternatingKneeRaiseCounter
 import com.example.scrollfit.core.exercise.JumpingJackCounter
 import com.example.scrollfit.core.exercise.PushUpCounter
 import com.example.scrollfit.core.exercise.SquatCounter
@@ -99,7 +100,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
                     Exercise.PUSH_UP -> PushUpCounter()
                     Exercise.SQUAT -> SquatCounter()
                     Exercise.JUMPING_JACK -> JumpingJackCounter()
-                    else -> null
+                    Exercise.ALTERNATING_KNEE_RAISE -> AlternatingKneeRaiseCounter()
                 }) {
                 state = it
                 if (it.status == CameraPoseStatus.PAUSED || it.status == CameraPoseStatus.INITIALIZING) {
@@ -137,24 +138,22 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
             Exercise.PUSH_UP -> R.string.push_up_counter_guidance
             Exercise.SQUAT -> R.string.squat_counter_guidance
             Exercise.JUMPING_JACK -> R.string.jumping_jack_counter_guidance
-            else -> R.string.front_guidance
+            Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise_counter_guidance
         }))
         Text(stringResource(when (exercise) {
             Exercise.PUSH_UP -> R.string.push_up_trial_notice
             Exercise.SQUAT -> R.string.squat_trial_notice
             Exercise.JUMPING_JACK -> R.string.jumping_jack_trial_notice
-            else -> R.string.camera_candidate_notice
+            Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise_trial_notice
         }))
         val countLabel = when (exercise) {
             Exercise.PUSH_UP -> R.string.push_up_repetitions
             Exercise.SQUAT -> R.string.squat_repetitions
             Exercise.JUMPING_JACK -> R.string.jumping_jack_repetitions
-            else -> null
+            Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise_repetitions
         }
-        if (countLabel != null) {
-            Text(stringResource(countLabel, repetitions),
-                style = MaterialTheme.typography.headlineSmall)
-        }
+        Text(stringResource(countLabel, repetitions),
+            style = MaterialTheme.typography.headlineSmall)
         if (preferenceError) {
             Text(stringResource(R.string.camera_preference_error))
             Button(onClick = { if (loaded) selectCamera(camera) else loadAttempt++ }, enabled = !saving) {

@@ -1,18 +1,18 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T09: bootstrap, feasibility experiment, persistence, budgets, production monitoring, offline camera/pose sources and independent push-up/squat/jumping-jack counters**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T10: bootstrap, feasibility experiment, persistence, budgets, production monitoring, offline camera/pose sources and independent push-up/squat/jumping-jack/knee-raise counters**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07 adds the independently tested push-up detector and a camera trial count; Android/device verification is pending. T08 adds the independent squat detector and front/slight-angle camera trial; Android/device verification is pending. T09 adds the independent jumping-jack detector and full-body front-view camera trial; Android/device verification is pending. T10–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07 adds the independently tested push-up detector and a camera trial count; Android/device verification is pending. T08 adds the independent squat detector and front/slight-angle camera trial; Android/device verification is pending. T09 adds the independent jumping-jack detector and full-body front-view camera trial; Android/device verification is pending. T10 adds the independent alternating knee-raise detector and full-body front-view camera trial; Android/device verification is pending. T11–T16 are not implemented.
 
 ## Current delivery status
 
-The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; T07 adds a visible push-up trial count with side-view guidance. T08 adds a visible squat trial count with front/slight-angle full-body guidance. T09 adds a visible jumping-jack trial count with full-body front guidance. The knee-raise counter remains pending. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; T07 adds a visible push-up trial count with side-view guidance. T08 adds a visible squat trial count with front/slight-angle full-body guidance. T09 adds a visible jumping-jack trial count with full-body front guidance. T10 adds a visible alternating knee-raise trial count with full-body front guidance. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
 
 **There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Earlier T01/T02 Google Maven and Android SDK download attempts returned HTTP 404, including outside the sandbox; T06 rechecked official Google Maven (AGP POM HTTP 404) and attempted both online and offline builds after restoring the temporary toolchain. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **171 tests passed** (30 jumping-jack sequence checks, 31 squat sequence checks, 21 push-up sequence checks, 18 pose-processing checks, 22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement or camera accuracy.
+The actual Kotlin/JVM core compiled and **203 tests passed** (32 knee-raise sequence checks, 30 jumping-jack sequence checks, 31 squat sequence checks, 21 push-up sequence checks, 18 pose-processing checks, 22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement or camera accuracy.
 
-Evidence: [T09 Android build attempt](docs/verification/T09-build.log), [current core test log](docs/verification/T09-core-tests.log), [actual test totals](docs/verification/T09-test-summary.txt), [jumping-jack JUnit results](docs/verification/T09-jumping-jack-tests.xml). Earlier task evidence remains in `docs/verification` locally; this directory is git-ignored. T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
+Evidence: [T10 Android build attempt](docs/verification/T10-build.log), [current core test log](docs/verification/T10-core-tests.log), [actual test totals](docs/verification/T10-test-summary.txt), [knee-raise JUnit results](docs/verification/T10-knee-raise-tests.xml). Earlier task evidence remains in `docs/verification` locally; this directory is git-ignored. T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
 Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
@@ -160,8 +160,8 @@ From an exercise card, open **باز کردن دوربین** to request camera a
 select rear/front and see positioning/tracking feedback. Camera and last
 exercise selections persist. Permission denial, camera/model failure and
 storage errors offer recovery. A debug-only point overlay stays in memory.
-T07–T09 now add temporary push-up, squat and jumping-jack trial counts;
-the knee-raise counter and awards are pending.
+T07–T10 now add temporary trial counts for all four exercises;
+challenge lifecycle and awards remain T11.
 
 CameraX preview and latest-frame analysis share an owned lifecycle and
 viewport. One background worker runs the bundled MediaPipe Lite model with
@@ -254,12 +254,36 @@ trial exists. Thresholds are provisional. [Detector policy/evidence](docs/T09_JU
 [pending phone checks](docs/T09_PHONE_TEST.md),
 [generated commit message](docs/T09_COMMIT_MESSAGE.txt).
 
+## T10 alternating knee-raise counter and trial
+
+`AlternatingKneeRaiseCounter` counts stable standing → left or right knee
+lift → standing cycles with confident bilateral shoulders, hips, knees and
+ankles. Knee height relative to torso length identifies the lifted side;
+standing knee angles and knee heights confirm the supporting leg and the
+both-leg return. Aspect correction, independent EMA, raw/smoothed endpoint
+agreement, hysteresis, dwell and timing reject partial motion, jitter and
+isolated spikes. Alternating raises and complete same-side cycles count;
+switching sides without standing, bilateral lifts and expired holds discard
+incomplete movement. Tracking loss retains completed trial counts and
+requires a fresh cycle after stable standing.
+
+The existing camera screen routes serial raw poses into this detector and
+shows Persian full-body front guidance, confidence feedback, completed count
+and a temporary/no-award notice. Camera restart resets the trial. All 203
+JVM checks pass, including 32 knee-raise tests covering both sides, sustained
+holds, partial returns, jitter, confidence loss, timing and transformations.
+Android compilation/lint/instrumentation remain blocked at offline AGP
+9.4.0 resolution. No APK or recorded phone trial exists; thresholds remain
+provisional. [Detector policy/evidence](docs/T10_KNEE_RAISE_COUNTER.md),
+[pending phone checks](docs/T10_PHONE_TEST.md),
+[generated commit message](docs/T10_COMMIT_MESSAGE.txt).
+
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
 | `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup, T06 camera screen and debug-only T02 experiment. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers; T07–T09 add independent push-up, squat and jumping-jack detectors. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers; T07–T10 add independent push-up, squat, jumping-jack and alternating knee-raise detectors. |
 | `:platform` | Live-zone Android clock adapters, durable monitoring preference and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; T06 adds the bundled offline model, CameraX lifecycle/session and MediaPipe pose adapter; hardware verification is pending. |
 
 Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 added Room v1 and KSP; T04 adds v2 with a preserving cursor migration. Actual schema exports await successful Android builds.
