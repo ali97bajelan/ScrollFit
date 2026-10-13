@@ -10,7 +10,12 @@ data class Landmark(
 )
 
 /** Landmark list uses MediaPipe's 33-landmark order. No image is retained. */
-data class PoseSample(val timestampMonotonicMs: Long, val landmarks: List<Landmark>)
+data class PoseSample(
+    val timestampMonotonicMs: Long,
+    val landmarks: List<Landmark>,
+    /** Upright image width / height; needed for angles in normalized image coordinates. */
+    val imageAspectRatio: Float = 1f,
+)
 
 /** Platform adapter owns frame conversion, rotation and resource cleanup (T06). */
 interface PoseEstimator<Frame> : AutoCloseable {

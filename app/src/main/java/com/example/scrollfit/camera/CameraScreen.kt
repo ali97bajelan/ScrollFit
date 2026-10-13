@@ -31,6 +31,7 @@ import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.core.exercise.PushUpCounter
 import com.example.scrollfit.core.pose.PreviewProjection
 import com.example.scrollfit.platform.pose.CameraPoseSession
 import com.example.scrollfit.platform.pose.CameraPoseState
@@ -55,6 +56,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
     var resumed by remember { mutableStateOf(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
     var state by remember { mutableStateOf(CameraPoseState(CameraPoseStatus.PAUSED)) }
     var overlay by remember { mutableStateOf(false) }
+    var repetitions by remember(exercise) { mutableIntStateOf(0) }
     val preview = remember(context) { PreviewView(context).apply { layoutDirection = View.LAYOUT_DIRECTION_LTR } }
     val requestPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         permission = it
@@ -85,12 +87,18 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
         onDispose { owner.lifecycle.removeObserver(observer) }
     }
 
-    DisposableEffect(owner, preview, camera, permission, loaded, resumed, retry) {
+    DisposableEffect(owner, preview, exercise, camera, permission, loaded, resumed, retry) {
+        repetitions = 0 // Preview trial only; persisted challenges belong to T11.
         state = CameraPoseState(if (!permission) CameraPoseStatus.PERMISSION_REQUIRED else CameraPoseStatus.PAUSED)
         val session = if (permission && loaded && resumed) {
             CameraPoseSession(context, owner, preview, camera, requiredFor(exercise),
-                alternativeRequiredLandmarks = if (exercise == Exercise.PUSH_UP) setOf(12, 14, 24) else emptySet()) {
+                alternativeRequiredLandmarks = if (exercise == Exercise.PUSH_UP) setOf(12, 14, 16, 24) else emptySet(),
+                counter = if (exercise == Exercise.PUSH_UP) PushUpCounter() else null) {
                 state = it
+                if (it.status == CameraPoseStatus.PAUSED || it.status == CameraPoseStatus.INITIALIZING) {
+                    repetitions = 0
+                }
+                it.progress?.let { progress -> repetitions = progress.repetitions }
                 if (it.status == CameraPoseStatus.PERMISSION_REQUIRED) permission = false
             }
         } else null
@@ -119,11 +127,16 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
         Text(stringResource(R.string.camera_title), style = MaterialTheme.typography.headlineMedium)
         Text(stringResource(R.string.camera_privacy))
         Text(stringResource(when (exercise) {
-            Exercise.PUSH_UP -> R.string.push_up_guidance
+            Exercise.PUSH_UP -> R.string.push_up_counter_guidance
             Exercise.SQUAT -> R.string.squat_guidance
             else -> R.string.front_guidance
         }))
-        Text(stringResource(R.string.camera_candidate_notice))
+        Text(stringResource(if (exercise == Exercise.PUSH_UP) R.string.push_up_trial_notice
+            else R.string.camera_candidate_notice))
+        if (exercise == Exercise.PUSH_UP) {
+            Text(stringResource(R.string.push_up_repetitions, repetitions),
+                style = MaterialTheme.typography.headlineSmall)
+        }
         if (preferenceError) {
             Text(stringResource(R.string.camera_preference_error))
             Button(onClick = { if (loaded) selectCamera(camera) else loadAttempt++ }, enabled = !saving) {
@@ -188,7 +201,7 @@ private fun hasCameraPermission(context: android.content.Context) =
     ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
 private fun requiredFor(exercise: Exercise): Set<Int> = when (exercise) {
-    Exercise.PUSH_UP -> setOf(11, 13, 23)
+    Exercise.PUSH_UP -> setOf(11, 13, 15, 23)
     Exercise.SQUAT -> setOf(11, 12, 23, 24, 25, 26, 27, 28)
     Exercise.JUMPING_JACK -> setOf(11, 12, 15, 16, 23, 24, 27, 28)
     Exercise.ALTERNATING_KNEE_RAISE -> setOf(11, 12, 23, 24, 25, 26, 27, 28)

@@ -26,6 +26,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.example.scrollfit.core.data.CameraChoice
+import com.example.scrollfit.core.pose.CountingProgress
+import com.example.scrollfit.core.pose.ExerciseCounter
 import com.example.scrollfit.core.pose.PoseFilter
 import com.example.scrollfit.core.pose.PoseSample
 import com.example.scrollfit.core.pose.PoseSessionGate
@@ -45,6 +47,7 @@ data class CameraPoseState(
     val imageWidth: Int = 0,
     val imageHeight: Int = 0,
     val mirrored: Boolean = false,
+    val progress: CountingProgress? = null,
 )
 
 /** Main-thread owner. Each instance is confined to one visible screen/lens choice. */
@@ -55,6 +58,8 @@ class CameraPoseSession(
     private val choice: CameraChoice,
     requiredLandmarks: Set<Int>,
     alternativeRequiredLandmarks: Set<Int> = emptySet(),
+    /** Optional preview-trial counter: stopping/restarting the camera resets this trial. */
+    private val counter: ExerciseCounter? = null,
     private val onState: (CameraPoseState) -> Unit,
 ) : DefaultLifecycleObserver, AutoCloseable {
     private val context = context.applicationContext
@@ -101,7 +106,8 @@ class CameraPoseSession(
             if (update != null && gate.isCurrent(update.token)) {
                 lastDeliveryMs = SystemClock.elapsedRealtime()
                 val state = if (gate.isFresh(update.token, update.timestampMs, lastDeliveryMs)) update.state
-                    else CameraPoseState(CameraPoseStatus.TRACKING_LOST)
+                    else update.state.copy(status = CameraPoseStatus.TRACKING_LOST, sample = null,
+                        progress = update.state.progress?.copy(trackingAvailable = false))
                 emit(state)
             }
             if (pending.get() != null && deliveryPosted.compareAndSet(false, true)) main.post(this)
@@ -248,16 +254,24 @@ class CameraPoseSession(
             val filtered = filter.accept(sample, timestamp)
             if (SystemClock.elapsedRealtime() - timestamp > 250) {
                 filter.reset()
-                publish(current, timestamp, CameraPoseState(CameraPoseStatus.TRACKING_LOST))
+                val progress = counter?.accept(null, timestamp)
+                publish(current, timestamp, CameraPoseState(CameraPoseStatus.TRACKING_LOST, progress = progress))
                 return
             }
-            val status = when (filtered.tracking) {
+            if (!gate.isCurrent(current)) return
+            // Each fresh raw inference reaches the detector on this serial worker.
+            // UI delivery below may coalesce; do not run counting from that stream.
+            val progress = counter?.accept(sample, timestamp)
+            val status = if (progress != null && !progress.trackingAvailable) {
+                if (filtered.tracking == TrackingState.SEARCHING) CameraPoseStatus.SEARCHING
+                else CameraPoseStatus.TRACKING_LOST
+            } else when (filtered.tracking) {
                 TrackingState.TRACKING -> CameraPoseStatus.TRACKING
                 TrackingState.LOST -> CameraPoseStatus.TRACKING_LOST
                 TrackingState.SEARCHING -> CameraPoseStatus.SEARCHING
             }
             publish(current, timestamp, CameraPoseState(status, filtered.sample, upright.width, upright.height,
-                choice == CameraChoice.FRONT))
+                choice == CameraChoice.FRONT, progress))
         } catch (_: Exception) {
             main.post { fail(current, CameraPoseStatus.INFERENCE_ERROR) }
         } finally {
@@ -305,7 +319,11 @@ class CameraPoseSession(
         preview = null
         analysis = null
         worker.execute {
-            try { model?.close() } finally { model = null; filter.reset() }
+            try { model?.close() } finally {
+                model = null
+                filter.reset()
+                counter?.reset()
+            }
         }
         emit(CameraPoseState(CameraPoseStatus.PAUSED))
     }

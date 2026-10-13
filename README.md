@@ -1,18 +1,18 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T06: bootstrap, feasibility experiment, persistence, budgets, production monitoring and offline camera/pose sources**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T07: bootstrap, feasibility experiment, persistence, budgets, production monitoring, offline camera/pose sources and the push-up counter**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07 adds the independently tested push-up detector and a camera trial count; Android/device verification is pending. T08–T16 are not implemented.
 
 ## Current delivery status
 
-The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; exercise counters are not implemented. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; T07 adds a visible push-up trial count with side-view guidance. The other three counters remain pending. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
 
 **There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Earlier T01/T02 Google Maven and Android SDK download attempts returned HTTP 404, including outside the sandbox; T06 rechecked official Google Maven (AGP POM HTTP 404) and attempted both online and offline builds after restoring the temporary toolchain. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **89 tests passed** (18 pose-processing checks, 22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
+The actual Kotlin/JVM core compiled and **110 tests passed** (21 push-up sequence checks, 18 pose-processing checks, 22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement or camera accuracy.
 
-Evidence: [T05 Android build attempt](docs/verification/T05-build.log), [current core test log](docs/verification/T06-core-tests.log), [actual test totals](docs/verification/T06-test-summary.txt), [monitoring JUnit results](docs/verification/T05-TEST-com.example.scrollfit.core.usage.MonitoringControllerTest.xml). T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
+Evidence: [T07 Android build attempt](docs/verification/T07-build.log), [current core test log](docs/verification/T07-core-tests.log), [actual test totals](docs/verification/T07-test-summary.txt), [push-up JUnit results](docs/verification/T07-push-up-tests.xml). Earlier task evidence remains in `docs/verification` locally; this directory is git-ignored. T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
 Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
@@ -160,7 +160,8 @@ From an exercise card, open **باز کردن دوربین** to request camera a
 select rear/front and see positioning/tracking feedback. Camera and last
 exercise selections persist. Permission denial, camera/model failure and
 storage errors offer recovery. A debug-only point overlay stays in memory.
-The screen provides no repetition counts or awards yet.
+T07 now adds a temporary push-up trial count; the other counters and awards
+remain pending.
 
 CameraX preview and latest-frame analysis share an owned lifecycle and
 viewport. One background worker runs the bundled MediaPipe Lite model with
@@ -179,12 +180,37 @@ instrumentation remain blocked at AGP resolution; no APK or airplane-mode
 first-launch pass is claimed. [Implementation/evidence](docs/T06_CAMERA_POSE.md),
 [phone steps](docs/T06_PHONE_TEST.md), [commit message](docs/T06_COMMIT_MESSAGE.txt).
 
+## T07 push-up counter and trial
+
+The independent `PushUpCounter` detects a stable up → down → up cycle from
+one confident shoulder/elbow/wrist/hip side. It corrects projected elbow
+angles for the upright image aspect ratio, smooths angles and uses distinct
+up/down thresholds, stable endpoint dwell and minimum transition times.
+Partial cycles, jitter, too-fast movement, expired cycles, missing required
+joints and frame gaps cannot finish an old movement. Completed counts
+survive tracking loss during the running trial.
+
+Open the push-up camera screen for fixed side-view guidance and visible
+completed repetitions. Counting consumes raw fresh inference on the serial
+worker before UI coalescing; delayed tracking-loss feedback preserves
+cumulative counts while hiding stale geometry. Camera restart, background,
+lens change, retry, exit or display rotation resets this temporary trial.
+It grants no time and writes no challenge/activity history; T11 owns that
+integration.
+
+All **21 new push-up tests and 89 existing JVM tests pass**. Android build,
+lint and instrumentation still stop at offline AGP 9.4.0 resolution. No APK,
+phone trial or measured accuracy is claimed; thresholds require device
+tuning. [Detector defaults and evidence](docs/T07_PUSH_UP_COUNTER.md),
+[pending phone checks](docs/T07_PHONE_TEST.md),
+[generated commit message](docs/T07_COMMIT_MESSAGE.txt).
+
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
 | `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup, T06 camera screen and debug-only T02 experiment. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers; T07 adds the independent push-up detector. |
 | `:platform` | Live-zone Android clock adapters, durable monitoring preference and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; T06 adds the bundled offline model, CameraX lifecycle/session and MediaPipe pose adapter; hardware verification is pending. |
 
 Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 added Room v1 and KSP; T04 adds v2 with a preserving cursor migration. Actual schema exports await successful Android builds.

@@ -45,7 +45,7 @@ class MediaPipePoseEstimator(context: Context) : PoseEstimator<Bitmap> {
                 .landmarks().firstOrNull() ?: return null
             return PoseSample(timestampMonotonicMs, body.map {
                 Landmark(it.x(), it.y(), it.z(), it.visibility().orElse(0f), it.presence().orElse(0f))
-            })
+            }, frame.width.toFloat() / frame.height)
         } finally {
             image.close()
         }
