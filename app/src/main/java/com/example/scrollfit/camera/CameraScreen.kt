@@ -32,6 +32,7 @@ import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.exercise.PushUpCounter
+import com.example.scrollfit.core.exercise.SquatCounter
 import com.example.scrollfit.core.pose.PreviewProjection
 import com.example.scrollfit.platform.pose.CameraPoseSession
 import com.example.scrollfit.platform.pose.CameraPoseState
@@ -93,7 +94,11 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
         val session = if (permission && loaded && resumed) {
             CameraPoseSession(context, owner, preview, camera, requiredFor(exercise),
                 alternativeRequiredLandmarks = if (exercise == Exercise.PUSH_UP) setOf(12, 14, 16, 24) else emptySet(),
-                counter = if (exercise == Exercise.PUSH_UP) PushUpCounter() else null) {
+                counter = when (exercise) {
+                    Exercise.PUSH_UP -> PushUpCounter()
+                    Exercise.SQUAT -> SquatCounter()
+                    else -> null
+                }) {
                 state = it
                 if (it.status == CameraPoseStatus.PAUSED || it.status == CameraPoseStatus.INITIALIZING) {
                     repetitions = 0
@@ -128,13 +133,21 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
         Text(stringResource(R.string.camera_privacy))
         Text(stringResource(when (exercise) {
             Exercise.PUSH_UP -> R.string.push_up_counter_guidance
-            Exercise.SQUAT -> R.string.squat_guidance
+            Exercise.SQUAT -> R.string.squat_counter_guidance
             else -> R.string.front_guidance
         }))
-        Text(stringResource(if (exercise == Exercise.PUSH_UP) R.string.push_up_trial_notice
-            else R.string.camera_candidate_notice))
-        if (exercise == Exercise.PUSH_UP) {
-            Text(stringResource(R.string.push_up_repetitions, repetitions),
+        Text(stringResource(when (exercise) {
+            Exercise.PUSH_UP -> R.string.push_up_trial_notice
+            Exercise.SQUAT -> R.string.squat_trial_notice
+            else -> R.string.camera_candidate_notice
+        }))
+        val countLabel = when (exercise) {
+            Exercise.PUSH_UP -> R.string.push_up_repetitions
+            Exercise.SQUAT -> R.string.squat_repetitions
+            else -> null
+        }
+        if (countLabel != null) {
+            Text(stringResource(countLabel, repetitions),
                 style = MaterialTheme.typography.headlineSmall)
         }
         if (preferenceError) {
