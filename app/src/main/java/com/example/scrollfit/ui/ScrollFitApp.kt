@@ -35,6 +35,7 @@ import com.example.scrollfit.R
 import com.example.scrollfit.BuildConfig
 import com.example.scrollfit.spike.SpikeEntry
 import com.example.scrollfit.monitoring.MonitoringSetup
+import com.example.scrollfit.camera.CameraScreen
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.exercise.ProductDefaults
 
@@ -54,7 +55,7 @@ fun ScrollFitApp() {
         MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
             Scaffold(
                 bottomBar = {
-                    if (route != null && route != "welcome") {
+                    if (route != null && route != "welcome" && !route.startsWith("camera/")) {
                         NavigationBar {
                             Destination.entries.forEach { destination ->
                                 NavigationBarItem(
@@ -109,6 +110,11 @@ fun ScrollFitApp() {
                     }
                     composable("spike") { SpikeEntry() }
                     composable("monitoring") { MonitoringSetup() }
+                    composable("camera/{exercise}") { entry ->
+                        val exercise = Exercise.entries.firstOrNull { it.name == entry.arguments?.getString("exercise") }
+                            ?: Exercise.PUSH_UP
+                        CameraScreen(exercise, onCancel = { navController.popBackStack() })
+                    }
                     composable(Destination.EXERCISES.route) {
                         Page(R.string.exercises) {
                             Text(stringResource(R.string.exercise_catalog_notice))
@@ -119,6 +125,9 @@ fun ScrollFitApp() {
                                         Text(stringResource(exercise.nameResource()), style = MaterialTheme.typography.titleMedium)
                                         Text(stringResource(R.string.reward_proposal, rule.repetitions, rule.rewardSeconds / 60))
                                         Text(stringResource(exercise.guidanceResource()))
+                                        Button(onClick = { navController.navigate("camera/${exercise.name}") }) {
+                                            Text(stringResource(R.string.camera_open))
+                                        }
                                     }
                                 }
                             }

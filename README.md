@@ -1,18 +1,18 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T05: bootstrap, feasibility experiment, persistence, budgets and production monitoring integration**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T06: bootstrap, feasibility experiment, persistence, budgets, production monitoring and offline camera/pose sources**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07–T16 are not implemented.
 
 ## Current delivery status
 
-The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. Camera and exercise counting are not implemented. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; exercise counters are not implemented. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
 
-**There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Earlier T01/T02 Google Maven and Android SDK download attempts returned HTTP 404, including outside the sandbox; T05 rechecked the offline build only. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
+**There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Earlier T01/T02 Google Maven and Android SDK download attempts returned HTTP 404, including outside the sandbox; T06 rechecked official Google Maven (AGP POM HTTP 404) and attempted both online and offline builds after restoring the temporary toolchain. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **71 tests passed** (22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
+The actual Kotlin/JVM core compiled and **89 tests passed** (18 pose-processing checks, 22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement.
 
-Evidence: [T05 Android build attempt](docs/verification/T05-build.log), [current core test log](docs/verification/T05-core-tests.log), [actual test totals](docs/verification/T05-test-summary.txt), [monitoring JUnit results](docs/verification/T05-TEST-com.example.scrollfit.core.usage.MonitoringControllerTest.xml). T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
+Evidence: [T05 Android build attempt](docs/verification/T05-build.log), [current core test log](docs/verification/T06-core-tests.log), [actual test totals](docs/verification/T06-test-summary.txt), [monitoring JUnit results](docs/verification/T05-TEST-com.example.scrollfit.core.usage.MonitoringControllerTest.xml). T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
 
 Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
@@ -154,13 +154,38 @@ instrumentation remain blocked at offline AGP resolution. No APK or successful
 phone enforcement is claimed. [Design/evidence](docs/T05_MONITORING.md),
 [phone steps](docs/T05_PHONE_TEST.md), [commit message](docs/T05_COMMIT_MESSAGE.txt).
 
+## T06 offline camera and pose candidate
+
+From an exercise card, open **باز کردن دوربین** to request camera access,
+select rear/front and see positioning/tracking feedback. Camera and last
+exercise selections persist. Permission denial, camera/model failure and
+storage errors offer recovery. A debug-only point overlay stays in memory.
+The screen provides no repetition counts or awards yet.
+
+CameraX preview and latest-frame analysis share an owned lifecycle and
+viewport. One background worker runs the bundled MediaPipe Lite model with
+CPU VIDEO inference; frames are upright and unmirrored, and only the front
+preview/overlay mirrors. Generation checks reject stopped callbacks.
+Camera use cases unbind on pause/exit/switch, model close follows current
+inference, and display rotation refreshes the session. Confidence checks,
+optional smoothing, tracking-loss feedback and stale-result rejection have
+18 JVM checks. Actual preview alignment, native inference, performance and
+background release remain phone tests.
+
+The checksum-verified 5.8 MB Lite float16 version 1 asset is now bundled.
+Build preparation and initialization require its pinned hash. There is no
+runtime download, recording or frame upload. Android build/lint/native
+instrumentation remain blocked at AGP resolution; no APK or airplane-mode
+first-launch pass is claimed. [Implementation/evidence](docs/T06_CAMERA_POSE.md),
+[phone steps](docs/T06_PHONE_TEST.md), [commit message](docs/T06_COMMIT_MESSAGE.txt).
+
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
-| `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup and debug-only T02 experiment. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. |
-| `:platform` | Live-zone Android clock adapters, durable monitoring preference and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; pose implementation belongs to T06. |
+| `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup, T06 camera screen and debug-only T02 experiment. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers. |
+| `:platform` | Live-zone Android clock adapters, durable monitoring preference and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; T06 adds the bundled offline model, CameraX lifecycle/session and MediaPipe pose adapter; hardware verification is pending. |
 
 Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 added Room v1 and KSP; T04 adds v2 with a preserving cursor migration. Actual schema exports await successful Android builds.
 
@@ -180,7 +205,7 @@ Documentation checked on **2026-10-12**. These are pinned documented choices; fi
 | Coroutines Android | 1.10.2 | [Official release](https://github.com/Kotlin/kotlinx.coroutines/releases/tag/1.10.2) |
 | Pose engine | MediaPipe Tasks Vision 1.0.0 | [Official Google sample](https://github.com/google-ai-edge/mediapipe-samples/blob/main/examples/pose_landmarker/android/app/build.gradle), [pose guide](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/android), [Android requirements](https://developers.google.com/edge/mediapipe/solutions/setup_android) |
 
-Pose provisioning choice: Lite float16 model version 1, one body and CPU delegate. In T06 the [official model](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task) will be obtained at build preparation, with checksum/terms recorded, and bundled as `platform/src/main/assets/pose_landmarker_lite.task`. The model is **not yet downloaded or packaged**; only its path/URL are defined. T06 must enforce asset presence/integrity and test the first exercise launch after installation in airplane mode. There will be no first-run runtime download, recordings or frame uploads. [ML Kit pose](https://developers.google.com/ml-kit/vision/pose-detection/android) was evaluated; its beta status and the explicit MediaPipe asset workflow informed this choice.
+Pose provisioning choice: Lite float16 model version 1, one body and CPU delegate. T06 obtained the [official model](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task) with checksum/provenance and upstream Apache 2.0 attribution recorded, bundled as `platform/src/main/assets/pose_landmarker_lite.task`. The model is **downloaded and bundled in source**, with build and initialization integrity gates. APK packaging and first camera launch after installation in airplane mode remain unverified. There will be no first-run runtime download, recordings or frame uploads. [ML Kit pose](https://developers.google.com/ml-kit/vision/pose-detection/android) was evaluated; its beta status and the explicit MediaPipe asset workflow informed this choice.
 
 ## Configurable product proposals
 

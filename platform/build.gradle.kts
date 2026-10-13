@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.ksp)
@@ -35,3 +37,19 @@ dependencies {
 
 // Retain real v1 (T03) and v2 (T04) exports when Android builds become available.
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
+
+// Never produce an APK whose first exercise launch requires a model download.
+val verifyPoseModel by tasks.registering {
+    val asset = layout.projectDirectory.file("src/main/assets/pose_landmarker_lite.task")
+    inputs.file(asset)
+    doLast {
+        val file = asset.asFile
+        check(file.isFile && file.length() == 5_777_746L) { "Missing or truncated offline pose model" }
+        val digest = MessageDigest.getInstance("SHA-256").digest(file.readBytes())
+            .joinToString("") { "%02x".format(it.toInt() and 255) }
+        check(digest == "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a") {
+            "Offline pose model checksum mismatch"
+        }
+    }
+}
+tasks.named("preBuild") { dependsOn(verifyPoseModel) }

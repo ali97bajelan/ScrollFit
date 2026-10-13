@@ -39,6 +39,8 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":platform"))
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
