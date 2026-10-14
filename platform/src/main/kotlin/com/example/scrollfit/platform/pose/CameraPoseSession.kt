@@ -21,8 +21,8 @@ import androidx.camera.core.UseCaseGroup
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.example.scrollfit.core.data.CameraChoice
@@ -61,7 +61,7 @@ class CameraPoseSession(
     /** Optional preview-trial counter: stopping/restarting the camera resets this trial. */
     private val counter: ExerciseCounter? = null,
     private val onState: (CameraPoseState) -> Unit,
-) : DefaultLifecycleObserver, AutoCloseable {
+) : LifecycleEventObserver, AutoCloseable {
     private val context = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
     private val worker = Executors.newSingleThreadExecutor()
@@ -141,9 +141,14 @@ class CameraPoseSession(
         if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) start()
     }
 
-    override fun onResume(owner: LifecycleOwner) = start()
-    override fun onPause(owner: LifecycleOwner) = stop()
-    override fun onDestroy(owner: LifecycleOwner) = close()
+    override fun onStateChanged(owner: LifecycleOwner, event: Lifecycle.Event) {
+        when (event) {
+            Lifecycle.Event.ON_RESUME -> start()
+            Lifecycle.Event.ON_PAUSE -> stop()
+            Lifecycle.Event.ON_DESTROY -> close()
+            else -> Unit
+        }
+    }
 
     private fun start() {
         if (closed || running) return

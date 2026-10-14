@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">ScrollFit</string>
+    <string name="welcome">Bienvenue dans ScrollFit</string>
+    <string name="welcome_body">ScrollFit vous aide à gérer le temps passé dans vos applications et à gagner du temps grâce à l’exercice. Les images de la caméra sont traitées sur votre téléphone ; aucune photo ni vidéo n’est enregistrée ou envoyée.</string>
+    <string name="bootstrap_notice">Le budget d’utilisation quotidien est prêt à être testé ; son fonctionnement sur téléphone n’a pas encore été vérifié. L’aperçu de la caméra est prêt à être testé ; le comptage des exercices n’est pas encore relié.</string>
+    <string name="open_spike">Test de suivi de 30 secondes</string>
+    <string name="enter_dashboard">Ouvrir l’accueil</string>
+    <string name="dashboard">Accueil</string>
+    <string name="exercises">Exercices</string>
+    <string name="history">Historique</string>
+    <string name="settings">Paramètres</string>
+    <string name="monitoring_disabled">Le suivi est désactivé</string>
+    <string name="no_targets">Aucune application n’a encore été sélectionnée pour recevoir une limite.</string>
+    <string name="view_exercises">Parcourir les exercices</string>
+    <string name="exercise_catalog_notice">Les valeurs ci-dessous sont des suggestions initiales susceptibles d’évoluer. L’aperçu de la caméra est disponible pour les tests ; le comptage des exercices et les défis ne sont pas encore reliés.</string>
+    <string name="push_up">Pompes</string>
+    <string name="squat">Squats</string>
+    <string name="jumping_jack">Jumping jacks</string>
+    <string name="knee_raise">Montées de genoux alternées</string>
+    <string name="reward_proposal">Proposition initiale : %1$d répétitions pour %2$d minutes</string>
+    <string name="push_up_guidance">Vue de côté ; gardez l’épaule, le coude et la hanche visibles.</string>
+    <string name="squat_guidance">Gardez tout le corps visible de face ou légèrement de biais.</string>
+    <string name="front_guidance">Gardez tout le corps visible de face.</string>
+    <string name="history_empty">L’historique quotidien et le détail de l’activité seront ajoutés ultérieurement. Votre consommation du jour est visible dans l’écran de suivi.</string>
+    <string name="defaults_notice">Valeurs suggérées. Les quotas quotidiens et le plafond d’utilisation peuvent être modifiés dans l’écran de suivi. Les réglages détaillés des exercices seront ajoutés ultérieurement.</string>
+    <string name="default_allowance">Quota quotidien par application : %1$d minutes</string>
+    <string name="default_ceiling">Plafond quotidien combiné d’utilisation : %1$d minutes</string>
+    <string name="default_award_cap">Plafond quotidien de récompense par application : %1$d minutes</string>
+    <string name="default_session">Durée de chaque session d’utilisation : %1$d minutes</string>
+    <string name="other_defaults">Utilisation sans quota gratuit : désactivée\nComptage vocal : activé\nCaméra suggérée : arrière</string>
+</resources>

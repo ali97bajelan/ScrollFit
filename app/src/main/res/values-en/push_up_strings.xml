@@ -1,0 +1,5 @@
+<resources>
+    <string name="push_up_counter_guidance">Place the phone securely beside you, with the shoulder, elbow, wrist, and hip on one side visible. Start at the top, lower yourself, then push back up. If counting stops, check the lighting and camera position.</string>
+    <string name="push_up_trial_notice">Push-up counting is a trial; no reward is recorded. The count resets whenever the camera stops or restarts, including when you close the screen, send the app to the background, rotate the phone, change cameras, or retry.</string>
+    <string name="push_up_repetitions">Completed push-ups: %1$d</string>
+</resources>

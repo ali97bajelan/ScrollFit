@@ -1,0 +1,5 @@
+<resources>
+    <string name="squat_counter_guidance">Placez le téléphone de façon stable devant vous ou légèrement de biais. Gardez tout le corps dans le cadre, en particulier les épaules, les hanches, les genoux et les chevilles. Tenez-vous droit et marquez une courte pause, accroupissez-vous, puis relevez-vous. Si le comptage s’arrête, vérifiez l’éclairage et la position de la caméra, puis recommencez debout.</string>
+    <string name="squat_trial_notice">Le comptage des squats est en phase de test ; aucune récompense n’est enregistrée. Le compteur revient à zéro à chaque arrêt ou redémarrage de la caméra, notamment si vous fermez l’écran, placez l’application en arrière-plan, faites pivoter le téléphone, changez de caméra ou réessayez.</string>
+    <string name="squat_repetitions">Squats terminés : %1$d</string>
+</resources>

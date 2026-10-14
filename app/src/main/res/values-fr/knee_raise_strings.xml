@@ -1,0 +1,5 @@
+<resources>
+    <string name="knee_raise_counter_guidance">Placez le téléphone de façon stable devant vous ; les épaules, les hanches, les deux genoux et les chevilles doivent être visibles. Commencez debout, les deux pieds au sol. Levez un genou, reposez le pied et marquez une courte pause debout avant de lever l’autre genou. Chaque montée suivie d’un retour complet compte comme une répétition. Ce compteur n’évalue pas la qualité de votre mouvement.</string>
+    <string name="knee_raise_trial_notice">Le comptage des montées de genoux alternées est en phase de test : seule une montée suivie d’un retour complet est comptée ; garder le genou levé ne compte pas une nouvelle fois. Si le suivi est interrompu, le mouvement inachevé est ignoré et les répétitions terminées sont conservées. Le compteur revient à zéro au redémarrage de la caméra. Aucun temps d’utilisation ni aucune récompense ne sont ajoutés pour le moment.</string>
+    <string name="knee_raise_repetitions">Montées de genoux terminées : %1$d</string>
+</resources>

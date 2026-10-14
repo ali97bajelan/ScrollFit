@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">ScrollFit</string>
+    <string name="welcome">Welcome to ScrollFit</string>
+    <string name="welcome_body">ScrollFit helps you manage app usage time and earn time through exercise. Camera processing happens on your phone; photos and videos are not saved or sent.</string>
+    <string name="bootstrap_notice">Daily usage budgeting is ready for testing; on-device behavior has not yet been verified. Camera preview is ready for testing; exercise counting is not connected yet.</string>
+    <string name="open_spike">30-second monitoring test</string>
+    <string name="enter_dashboard">Open dashboard</string>
+    <string name="dashboard">Home</string>
+    <string name="exercises">Exercises</string>
+    <string name="history">History</string>
+    <string name="settings">Settings</string>
+    <string name="monitoring_disabled">Monitoring is disabled</string>
+    <string name="no_targets">No apps have been selected for limits yet.</string>
+    <string name="view_exercises">Browse exercises</string>
+    <string name="exercise_catalog_notice">The values below are initial suggestions and may change in future versions. Camera preview is available for testing; exercise counting and challenges are not connected yet.</string>
+    <string name="push_up">Push-ups</string>
+    <string name="squat">Squats</string>
+    <string name="jumping_jack">Jumping jacks</string>
+    <string name="knee_raise">Alternating knee raises</string>
+    <string name="reward_proposal">Initial proposal: %1$d reps for %2$d minutes</string>
+    <string name="push_up_guidance">Side view; keep your shoulder, elbow, and hip visible.</string>
+    <string name="squat_guidance">Keep your whole body visible from the front or at a slight angle.</string>
+    <string name="front_guidance">Keep your whole body visible from the front.</string>
+    <string name="history_empty">Daily history and activity details will be added in a later step. Today’s usage is available on the monitoring screen.</string>
+    <string name="defaults_notice">Suggested defaults. Daily allowances and the usage cap can be edited on the monitoring screen. Full exercise settings will be added later.</string>
+    <string name="default_allowance">Daily allowance per app: %1$d minutes</string>
+    <string name="default_ceiling">Combined daily usage cap: %1$d minutes</string>
+    <string name="default_award_cap">Daily reward cap per app: %1$d minutes</string>
+    <string name="default_session">Length of each usage session: %1$d minutes</string>
+    <string name="other_defaults">Usage without a free allowance: off\nVoice counting: on\nSuggested camera: rear</string>
+</resources>

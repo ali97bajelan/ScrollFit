@@ -1,0 +1,26 @@
+<resources>
+    <string name="camera_title">Aperçu du mouvement</string>
+    <string name="camera_open">Ouvrir la caméra</string>
+    <string name="camera_privacy">Les images sont traitées uniquement sur ce téléphone. Aucune photo ni vidéo n’est enregistrée ou envoyée. La caméra s’arrête lorsque vous quittez l’écran ou placez l’application en arrière-plan.</string>
+    <string name="camera_candidate_notice">Cette étape sert à tester l’aperçu de la caméra et la détection du corps. Le comptage des exercices et les récompenses ne sont pas encore reliés.</string>
+    <string name="camera_grant">Autoriser l’accès à la caméra</string>
+    <string name="camera_settings">Paramètres d’autorisation de la caméra</string>
+    <string name="camera_permission_required">Autorisez l’accès à la caméra pour suivre vos mouvements. Si aucune demande d’autorisation ne s’affiche, ouvrez les paramètres de l’application.</string>
+    <string name="camera_initializing">Démarrage de la caméra…</string>
+    <string name="camera_searching">Placez votre corps dans le cadre et améliorez l’éclairage.</string>
+    <string name="camera_tracking">Votre corps est visible.</string>
+    <string name="camera_tracking_lost">Le mouvement ne peut pas être détecté pour le moment. Revenez dans le cadre et vérifiez la position de la caméra.</string>
+    <string name="camera_paused">La caméra est en pause.</string>
+    <string name="camera_unavailable">Cette caméra n’est pas disponible. Sélectionnez l’autre caméra.</string>
+    <string name="camera_error">Impossible d’ouvrir la caméra. Fermez les autres applications qui l’utilisent, vérifiez les autorisations et réessayez.</string>
+    <string name="camera_model_error">Le traitement des images n’a pas pu démarrer. Réessayez ; si le problème persiste, réinstallez l’application.</string>
+    <string name="camera_inference_error">Le traitement des mouvements s’est arrêté. Réessayez ou sélectionnez l’autre caméra.</string>
+    <string name="camera_rear">Caméra arrière</string>
+    <string name="camera_front">Caméra avant</string>
+    <string name="camera_selected_rear">Caméra sélectionnée : arrière</string>
+    <string name="camera_selected_front">Caméra sélectionnée : avant ; l’aperçu est en miroir.</string>
+    <string name="camera_retry">Réessayer</string>
+    <string name="camera_cancel">Fermer la caméra</string>
+    <string name="camera_debug_overlay">Afficher les repères du corps ; aucune image n’est enregistrée</string>
+    <string name="camera_preference_error">Impossible de lire ou d’enregistrer le choix de caméra. Réessayez ; votre budget et vos récompenses restent inchangés.</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="push_up_counter_guidance">Placez le téléphone de façon stable à côté de vous ; l’épaule, le coude, le poignet et la hanche d’un même côté doivent être visibles. Commencez en position haute, descendez, puis remontez. Si le comptage s’arrête, vérifiez l’éclairage et la position de la caméra.</string>
+    <string name="push_up_trial_notice">Le comptage des pompes est en phase de test ; aucune récompense n’est enregistrée. Le compteur revient à zéro à chaque arrêt ou redémarrage de la caméra, notamment si vous fermez l’écran, placez l’application en arrière-plan, faites pivoter le téléphone, changez de caméra ou réessayez.</string>
+    <string name="push_up_repetitions">Pompes terminées : %1$d</string>
+</resources>

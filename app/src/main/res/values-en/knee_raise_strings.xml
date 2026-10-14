@@ -1,0 +1,5 @@
+<resources>
+    <string name="knee_raise_counter_guidance">Place the phone securely in front of you with your shoulders, hips, both knees, and ankles visible. Start standing with both feet on the ground. Raise one knee, lower your foot, and pause briefly while standing before raising the other knee. Each complete lift and return counts as one repetition. This counter does not assess exercise form professionally.</string>
+    <string name="knee_raise_trial_notice">Alternating knee raise counting is a trial: only a knee lift followed by a full return is counted; holding your knee up does not count again. If tracking is interrupted, an unfinished movement is discarded and completed repetitions are kept. The count resets when the camera restarts. No usage time or reward is added yet.</string>
+    <string name="knee_raise_repetitions">Completed knee raises: %1$d</string>
+</resources>

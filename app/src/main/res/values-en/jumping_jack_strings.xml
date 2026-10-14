@@ -1,0 +1,5 @@
+<resources>
+    <string name="jumping_jack_counter_guidance">Place the phone securely in front of you with your whole body in frame, from your hands above your head to your ankles. Start with your feet together and arms down, then pause briefly. Raise both arms and spread both legs. One complete jumping jack is counted when your arms return to your sides and your feet come together. If counting stops, check the lighting and camera position, then start again from the closed position.</string>
+    <string name="jumping_jack_trial_notice">Jumping jack counting is a trial; no reward is recorded. The count resets whenever the camera stops or restarts, including when you close the screen, send the app to the background, rotate the phone, change cameras, or retry.</string>
+    <string name="jumping_jack_repetitions">Completed jumping jacks: %1$d</string>
+</resources>

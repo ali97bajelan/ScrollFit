@@ -1,0 +1,5 @@
+<resources>
+    <string name="jumping_jack_counter_guidance">Placez le téléphone de façon stable devant vous et gardez tout votre corps dans le cadre, des mains au-dessus de la tête jusqu’aux chevilles. Commencez pieds joints et bras le long du corps, puis marquez une courte pause. Levez les deux bras et écartez les jambes. Un jumping jack complet est compté lorsque les bras reviennent le long du corps et que les pieds se rejoignent. Si le comptage s’arrête, vérifiez l’éclairage et la position de la caméra, puis recommencez en position fermée.</string>
+    <string name="jumping_jack_trial_notice">Le comptage des jumping jacks est en phase de test ; aucune récompense n’est enregistrée. Le compteur revient à zéro à chaque arrêt ou redémarrage de la caméra, notamment si vous fermez l’écran, placez l’application en arrière-plan, faites pivoter le téléphone, changez de caméra ou réessayez.</string>
+    <string name="jumping_jack_repetitions">Jumping jacks terminés : %1$d</string>
+</resources>

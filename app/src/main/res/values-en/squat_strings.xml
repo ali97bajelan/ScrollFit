@@ -1,0 +1,5 @@
+<resources>
+    <string name="squat_counter_guidance">Place the phone securely in front of you or at a slight angle. Keep your whole body, especially your shoulders, hips, knees, and ankles, in frame. Stand upright and pause briefly, squat down, then stand again. If counting stops, check the lighting and camera position, then start again from standing.</string>
+    <string name="squat_trial_notice">Squat counting is a trial; no reward is recorded. The count resets whenever the camera stops or restarts, including when you close the screen, send the app to the background, rotate the phone, change cameras, or retry.</string>
+    <string name="squat_repetitions">Completed squats: %1$d</string>
+</resources>
