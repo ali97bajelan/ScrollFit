@@ -142,6 +142,41 @@ class DurableRepositoryTest {
         try { AppPreferences(rewardRules = AppPreferences().rewardRules + (Exercise.SQUAT to RewardRule(1, Long.MAX_VALUE))); fail() } catch (_: ArithmeticException) { }
     }
 
+    @Test fun visibleHistoryIncludesRemovedAppsAndOrdersRecords() = runSuspend {
+        repo.saveTarget(TargetConfig("app")); repo.saveTarget(TargetConfig("other"))
+        repo.recordUsage("other", day, 20, 0)
+        repo.recordUsage("app", day, 10, 0)
+        repo.removeTarget("other")
+        repo.recordActivity(ExerciseActivity("later", null, day, Exercise.SQUAT, 10, 2000, 200))
+        repo.recordActivity(ExerciseActivity("earlier", null, day, Exercise.PUSH_UP, 2, 1000, 100))
+        val history = repo.visibleHistory()
+        assertEquals(listOf("app", "other"), history.usage.map { it.packageName })
+        assertEquals(30L, history.combined.single().consumedMs)
+        assertEquals(listOf("earlier", "later"), history.activities.map { it.id })
+    }
+
+    @Test fun deletedHistoryStaysHiddenAfterFurtherAccountingAndReopen() = runSuspend {
+        prepare()
+        val award = repo.awardCompletedChallenge("one", 2)
+        repo.recordUsage("app", day, 1000, 0)
+        repo.saveSession(repo.session("app").copy(promptPending = true))
+        repo.clearHistory()
+        repo.recordUsage("app", day, 1000, 0)
+        val reopened = DurableRepository(store, clock)
+        assertTrue(reopened.visibleHistory().usage.isEmpty())
+        assertTrue(reopened.visibleHistory().combined.isEmpty())
+        assertTrue(reopened.visibleHistory().activities.isEmpty())
+        assertEquals(2000L, reopened.dailyUsage("app").baseConsumedMs)
+        assertTrue(reopened.session("app").promptPending)
+        assertEquals(award, reopened.awardCompletedChallenge("one", 2))
+    }
+
+    @Test fun emptyHistoryReadDoesNotCreateAccountingRows() = runSuspend {
+        assertTrue(repo.visibleHistory().usage.isEmpty())
+        assertTrue(repo.visibleHistory().combined.isEmpty())
+        assertTrue(repo.visibleHistory().activities.isEmpty())
+    }
+
     private fun runSuspend(block: suspend () -> Unit) {
         var completion: Result<Unit>? = null
         block.startCoroutine(object : Continuation<Unit> {

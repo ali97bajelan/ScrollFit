@@ -2,7 +2,12 @@ package com.example.scrollfit.monitoring
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import com.example.scrollfit.ui.NumberSetting
+import com.example.scrollfit.core.settings.SettingNumbers
+import com.example.scrollfit.core.settings.TargetSettings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,7 +26,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collect
 
-/** Minimal production controls needed for T05 phone testing; full product settings remain T14. */
+/** Editable production setup; counters and sessions stay in the transactional repository. */
 @Composable
 fun MonitoringSetup() {
     val context = LocalContext.current
@@ -35,6 +40,19 @@ fun MonitoringSetup() {
     var configs by remember { mutableStateOf(emptyList<TargetConfig>()) }
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var allowances by remember { mutableStateOf(emptyMap<String, String>()) }
+    var caps by remember { mutableStateOf(emptyMap<String, String>()) }
+    var query by remember { mutableStateOf("") }
+    var loadRetry by remember { mutableStateOf(0) }
+    var loadFailed by remember { mutableStateOf(false) }
+    var accessRevision by remember { mutableStateOf(0) }
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(owner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) accessRevision++
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
     var ceiling by remember { mutableStateOf("3600") }
     var sessionBoundary by remember { mutableStateOf("300") }
     var zeroBase by remember { mutableStateOf(false) }
@@ -55,31 +73,48 @@ fun MonitoringSetup() {
         val engine = persistence.budgetEngine(MonitorAccess.bootIdentity(context))
         budgets = configs.filter { it.selected }.associate { it.packageName to engine.budget(it.packageName) }
     }
-    LaunchedEffect(persistence) {
+    LaunchedEffect(persistence, loadRetry) {
+        loading = true; loadFailed = false
         try {
             val current = persistence.preferences.values.first()
             apps = withContext(Dispatchers.IO) { TargetApps.list(context) }
             configs = persistence.repository().targets()
-            selected = configs.filter { it.selected }.map { it.packageName }.toSet().intersect(apps.map { it.packageName }.toSet())
+            selected = configs.filter { it.selected }.map { it.packageName }.toSet()
             allowances = apps.associate { app -> app.packageName to
                 ((configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) / 1000).toString() }
+            caps = apps.associate { app -> app.packageName to
+                ((configs.find { it.packageName == app.packageName }?.dailyAwardCapMs ?: 1_200_000L) / 1000).toString() }
             ceiling = (current.combinedCeilingMs / 1000).toString(); zeroBase = current.zeroBaseEnabled
             sessionBoundary = (current.sessionBoundaryMs / 1000).toString()
             refreshBudgets()
         } catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: Exception) { error = R.string.monitor_action_failed }
+        catch (_: Exception) { loadFailed = true; error = R.string.monitor_action_failed }
         finally { loading = false }
     }
     // Service status changes/resume trigger updates; no UI polling of usage events.
-    LaunchedEffect(status, prefs?.monitoringEnabled) {
+    LaunchedEffect(status, prefs?.monitoringEnabled, accessRevision) {
         if (!loading) try { refreshBudgets() }
         catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { error = R.string.monitor_action_failed }
     }
 
+    LaunchedEffect(accessRevision, loading) {
+        if (!loading) try {
+            val refreshed = withContext(Dispatchers.IO) { TargetApps.list(context) }
+            // Keep drafts; seed only fields for newly available apps.
+            allowances = refreshed.associate { app -> app.packageName to
+                ((configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) / 1000).toString() } + allowances
+            caps = refreshed.associate { app -> app.packageName to
+                ((configs.find { it.packageName == app.packageName }?.dailyAwardCapMs ?: 1_200_000L) / 1000).toString() } + caps
+            apps = refreshed
+        } catch (cancelled: CancellationException) { throw cancelled }
+        catch (_: Exception) { error = R.string.monitor_action_failed }
+    }
+
     fun perform(action: suspend () -> Unit) {
+        if (busy) return
+        busy = true; error = null; saved = false
         scope.launch {
-            busy = true; error = null; saved = false
             try { action() }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { error = R.string.monitor_action_failed }
@@ -90,20 +125,28 @@ fun MonitoringSetup() {
         val ceilingMs = secondsToMs(ceiling, positive = true)
         val sessionBoundaryMs = secondsToMs(sessionBoundary, positive = true)
         val available = withContext(Dispatchers.IO) { TargetApps.list(context).map { it.packageName }.toSet() }
-        require(selected.all { it in available })
-        val values = selected.associateWith { secondsToMs(allowances.getValue(it), positive = false) }
         val repository = persistence.repository()
-        val latest = repository.targets()
-        for (old in latest) if (old.selected && old.packageName !in selected) repository.removeTarget(old.packageName)
-        for ((name, duration) in values) {
-            val old = latest.find { it.packageName == name } ?: TargetConfig(name)
-            repository.saveTarget(old.copy(selected = true, baseAllowanceMs = duration))
+        val edits = TargetSettings.edits(repository.targets(), selected, available, allowances, caps)
+        try {
+            for (name in edits.removed) repository.removeTarget(name)
+            for (config in edits.saved) repository.saveTarget(config)
+            persistence.preferences.update { it.copy(combinedCeilingMs = ceilingMs, zeroBaseEnabled = zeroBase,
+                sessionBoundaryMs = sessionBoundaryMs) }
+            configs = repository.targets(); refreshBudgets(); saved = true
+        } finally {
+            // Room and DataStore are separate stores: reconcile even after a partially saved edit.
+            MonitorRuntime.configurationChanged()
         }
-        persistence.preferences.update { it.copy(combinedCeilingMs = ceilingMs, zeroBaseEnabled = zeroBase,
-            sessionBoundaryMs = sessionBoundaryMs) }
-        configs = repository.targets(); refreshBudgets(); saved = true
-        MonitorRuntime.configurationChanged()
     }
+    val fieldsValid = SettingNumbers.milliseconds(ceiling, true) != null &&
+        SettingNumbers.milliseconds(sessionBoundary, true) != null &&
+        selected.all { name -> apps.any { it.packageName == name } || configs.any { it.packageName == name && it.selected } } && selected.filter { name -> apps.any { it.packageName == name } }.all {
+            SettingNumbers.milliseconds(allowances[it] ?: "", false) != null &&
+                SettingNumbers.milliseconds(caps[it] ?: "", false) != null
+        }
+    // Resume changes are observed so returning from Android permission settings updates this state.
+    val accessReady = accessRevision.let { MonitorAccess.usage(context) && MonitorAccess.accessibility(context) && MonitorRuntime.service != null }
+    val editable = !busy && !loading && !loadFailed && prefs != null && !preferenceError
     val currentHealth = when {
         prefs?.monitoringEnabled != true -> MonitoringHealth.DISABLED
         !MonitorAccess.usage(context) || !MonitorAccess.accessibility(context) -> MonitoringHealth.PERMISSION_MISSING
@@ -135,30 +178,55 @@ fun MonitoringSetup() {
         }) { Text(stringResource(R.string.monitor_retry)) }
         if (saved) Text(stringResource(R.string.monitor_saved))
         if (loading) CircularProgressIndicator()
-        OutlinedTextField(value = ceiling, onValueChange = { ceiling = it; saved = false },
-            label = { Text(stringResource(R.string.monitor_ceiling_seconds)) }, enabled = !busy && !loading, singleLine = true)
-        OutlinedTextField(value = sessionBoundary, onValueChange = { sessionBoundary = it; saved = false },
-            label = { Text(stringResource(R.string.session_boundary_seconds)) }, enabled = !busy && !loading, singleLine = true)
+        if (loadFailed) Button(onClick = { loadRetry++; preferenceRetry++ }) { Text(stringResource(R.string.camera_retry)) }
+        NumberSetting(ceiling, { ceiling = it; saved = false }, R.string.monitor_ceiling_seconds,
+            SettingNumbers.milliseconds(ceiling, true) != null, editable)
+        NumberSetting(sessionBoundary, { sessionBoundary = it; saved = false }, R.string.session_boundary_seconds,
+            SettingNumbers.milliseconds(sessionBoundary, true) != null, editable)
         Text(stringResource(R.string.session_settings_explanation))
-        Row { Checkbox(checked = zeroBase, onCheckedChange = { zeroBase = it }, enabled = !busy && !loading)
-            Text(stringResource(R.string.monitor_zero_base), Modifier.padding(top = 12.dp)) }
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(zeroBase, enabled = editable, role = Role.Checkbox,
+            onValueChange = { zeroBase = it; saved = false }), verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = zeroBase, onCheckedChange = null, enabled = editable)
+            Text(stringResource(R.string.monitor_zero_base))
+        }
         Text(stringResource(R.string.monitor_select_apps))
         if (!loading && apps.isEmpty()) Text(stringResource(R.string.monitor_no_apps))
-        apps.forEach { app ->
+        OutlinedButton(onClick = { accessRevision++ }, enabled = !busy && !loading) { Text(stringResource(R.string.product_refresh)) }
+        OutlinedTextField(query, { query = it }, label = { Text(stringResource(R.string.product_search)) },
+            modifier = Modifier.fillMaxWidth(), singleLine = true)
+        val matches = apps.filter { it.label.contains(query, ignoreCase = true) || it.packageName.contains(query, ignoreCase = true) }
+        if (!loading && apps.isNotEmpty() && matches.isEmpty()) Text(stringResource(R.string.product_no_matches))
+        selected.filter { name -> apps.none { it.packageName == name } }.forEach { unavailable ->
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
-                    Row(Modifier.clickable(enabled = !busy) {
-                        selected = if (app.packageName in selected) selected - app.packageName else selected + app.packageName
-                    }) {
-                        Checkbox(checked = app.packageName in selected, onCheckedChange = {
-                            selected = if (it) selected + app.packageName else selected - app.packageName
-                        }, enabled = !busy)
-                        Text(app.label, Modifier.padding(top = 12.dp))
+                    Text(unavailable)
+                    Text(stringResource(R.string.product_unavailable_target))
+                    OutlinedButton(enabled = editable, onClick = {
+                        selected = selected - unavailable; saved = false
+                    }) { Text(stringResource(R.string.product_remove_target)) }
+                }
+            }
+        }
+        matches.forEach { app ->
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp)) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(app.packageName in selected, enabled = editable,
+                        role = Role.Checkbox, onValueChange = {
+                            selected = if (it) selected + app.packageName else selected - app.packageName; saved = false
+                        }), verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = app.packageName in selected, onCheckedChange = null, enabled = editable)
+                        Text(app.label)
                     }
-                    if (app.packageName in selected) OutlinedTextField(
-                        value = allowances[app.packageName] ?: "1800",
-                        onValueChange = { allowances = allowances + (app.packageName to it); saved = false },
-                        label = { Text(stringResource(R.string.monitor_allowance_seconds)) }, singleLine = true, enabled = !busy)
+                    if (app.packageName in selected) {
+                        NumberSetting(allowances[app.packageName] ?: "1800",
+                            { allowances = allowances + (app.packageName to it); saved = false },
+                            R.string.monitor_allowance_seconds, SettingNumbers.milliseconds(allowances[app.packageName] ?: "", false) != null,
+                            editable, positive = false)
+                        NumberSetting(caps[app.packageName] ?: "1200",
+                            { caps = caps + (app.packageName to it); saved = false },
+                            R.string.product_cap_seconds, SettingNumbers.milliseconds(caps[app.packageName] ?: "", false) != null,
+                            editable, positive = false)
+                    }
                     budgets[app.packageName]?.let { budget -> Text(stringResource(R.string.monitor_budget,
                         budget.baseRemainingMs / 1000, budget.earnedRemainingMs / 1000, budget.combinedRemainingMs / 1000)) }
                     TextButton(onClick = { perform {
@@ -168,13 +236,17 @@ fun MonitoringSetup() {
                 }
             }
         }
-        Button(enabled = !busy && !loading, onClick = { perform { save() } }) {
+        Text(stringResource(R.string.product_cap_notice))
+        if (!fieldsValid) Text(stringResource(R.string.product_correct_fields), color = MaterialTheme.colorScheme.error)
+        Button(enabled = editable && fieldsValid, onClick = { perform { save() } }) {
             Text(stringResource(R.string.monitor_save))
         }
-        Button(enabled = !busy && !loading && prefs?.monitoringEnabled == false && selected.isNotEmpty(), onClick = { perform {
+        Button(enabled = editable && fieldsValid && accessReady && prefs?.monitoringEnabled == false && selected.any { name -> apps.any { it.packageName == name } }, onClick = { perform {
             require(MonitorAccess.usage(context) && MonitorAccess.accessibility(context) && MonitorRuntime.service != null)
             save(); persistence.preferences.update { it.copy(monitoringEnabled = true) }
         } }) { Text(stringResource(R.string.monitor_enable)) }
+        if (selected.none { name -> apps.any { it.packageName == name } }) Text(stringResource(R.string.no_targets))
+        if (!accessReady) Text(stringResource(R.string.product_enable_access))
         Button(enabled = !busy && prefs?.monitoringEnabled == true, onClick = { perform {
             MonitorRuntime.service?.pauseForDisable()
             persistence.preferences.update { it.copy(monitoringEnabled = false) }
@@ -184,14 +256,10 @@ fun MonitoringSetup() {
     }
 }
 
-private fun secondsToMs(text: String, positive: Boolean): Long {
-    // Accept Persian/Arabic digits from the Persian keyboard as well as ASCII.
-    val normalized = text.trim().map { char -> if (char.isDigit()) Character.getNumericValue(char).digitToChar() else char }.joinToString("")
-    val seconds = normalized.toLong()
-    require(if (positive) seconds > 0 else seconds >= 0)
-    return Math.multiplyExact(seconds, 1000)
-}
-private fun MonitorFailure.message(): Int = when (this) {
+private fun secondsToMs(text: String, positive: Boolean): Long =
+    requireNotNull(SettingNumbers.milliseconds(text, positive))
+
+internal fun MonitorFailure.message(): Int = when (this) {
     MonitorFailure.NONE, MonitorFailure.STARTING -> R.string.monitor_starting
     MonitorFailure.OWNER_BUSY -> R.string.monitor_owner_busy
     MonitorFailure.BOOT_ID -> R.string.monitor_boot_failed

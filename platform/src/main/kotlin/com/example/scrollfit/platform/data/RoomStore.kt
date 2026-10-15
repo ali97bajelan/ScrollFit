@@ -30,6 +30,8 @@ private class RoomTransaction(private val dao: ExerciseGateDao) : DataTransactio
     override suspend fun activities() = dao.activities().map { it.value }
     override suspend fun session(packageName: String, day: String) = dao.session(packageName, day)?.value
     override suspend fun putSession(value: SessionState) = dao.putSession(SessionRow(value))
+    override suspend fun visibleUsages() = dao.visibleUsages().map { it.value }
+    override suspend fun visibleCombined() = dao.visibleCombined().map { it.value }
     override suspend fun clearVisibleHistory() {
         dao.deleteActivityHistory()
         dao.hideUsageHistory()

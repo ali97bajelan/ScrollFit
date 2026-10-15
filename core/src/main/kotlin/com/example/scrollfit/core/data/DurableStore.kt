@@ -26,6 +26,8 @@ interface DataTransaction {
     suspend fun activities(): List<ExerciseActivity>
     suspend fun session(packageName: String, day: String): SessionState?
     suspend fun putSession(value: SessionState)
+    suspend fun visibleUsages(): List<DailyUsage>
+    suspend fun visibleCombined(): List<CombinedUsage>
     /** Hide accounting history, delete activity; retain enforcement counters and award identities. */
     suspend fun clearVisibleHistory()
 }

@@ -55,7 +55,7 @@ class BudgetOverlay(private val service: AccessibilityService,
             addView(text(label, 20f))
             addView(text(service.getString(when (reason) {
                 BlockReason.COMBINED_CEILING -> R.string.monitor_combined_exhausted
-                BlockReason.APP_BUDGET -> R.string.monitor_app_exhausted
+                BlockReason.APP_BUDGET -> R.string.product_app_exhausted
                 BlockReason.SESSION_BOUNDARY -> R.string.session_explanation
             }), 18f))
             addView(button(R.string.monitor_home, home))

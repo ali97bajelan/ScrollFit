@@ -13,5 +13,6 @@ interface DataRepository {
     suspend fun cancelChallenge(id: String)
     suspend fun recordActivity(value: ExerciseActivity)
     suspend fun activities(): List<ExerciseActivity>
+    suspend fun visibleHistory(): VisibleHistory
     suspend fun clearHistory()
 }

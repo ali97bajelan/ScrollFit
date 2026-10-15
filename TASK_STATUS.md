@@ -1,6 +1,6 @@
 # Exercise Gate task status
 
-Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T13**, per the owner's explicit requests; T14–T16 are outside the current scope. The owner requested English communication; the product UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
+Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T14**, per the owner's explicit requests; T15–T16 are outside the current scope. The owner requested English communication; the product UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
 
 | ID | Status | Verification evidence | Blocker | Next action |
 | --- | --- | --- | --- | --- |
@@ -17,7 +17,7 @@ Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T13**, per the
 | T11 | implemented | Both earning paths, all four counters, captured offers, cancellation, persisted success and exercise-only activity connected. 221 JVM tests pass (17 lifecycle + 1 atomic regression + 203 existing); old engine fails the activity regression. Independent source review and structural checks passed. [Evidence](docs/T11_CHALLENGES.md). | Android build/lint/instrumentation exit 1 at AGP 9.4.0 resolution before compilation. Room/device execution pending; no APK. | Restore Android artifacts/SDK, run prepared Room checks and [T11 phone checklist](docs/T11_PHONE_TEST.md). |
 | T12 | implemented | Offline voice selection, coalesced counts, sustained-loss prompts, saved-result speech, persistent mute and tone/visual fallback connected. 244 JVM tests pass (23 new); refusal and warning timing regressions failed before their fixes. [Evidence](docs/T12_FEEDBACK.md). | Android build/lint/instrumentation assembly exits 1 at offline AGP 9.4.0 resolution before compilation. TTS/device output unverified; no APK. | Restore Android artifacts/SDK, run prepared DataStore tests and [T12 phone checklist](docs/T12_PHONE_TEST.md). |
 | T13 | implemented | Persistent per-app windows, atomic boundary clipping, Continue/Finish and editable localized settings connected. 267 JVM tests pass (23 new); initial seven regressions failed before implementation. Independent source review and structural checks passed. [Evidence](docs/T13_SESSIONS.md). | Android build/lint/instrumentation assembly exits 1 at offline AGP 9.4.0 resolution before compilation. Room/device behavior unverified; no APK. | Restore Android artifacts/SDK, run prepared Room/DataStore checks and [T13 phone checklist](docs/T13_PHONE_TEST.md). |
-| T14 | todo | Navigation shell only; no product functionality claimed. | Depends on T05/T11–T13; outside current request. | Complete accessible Persian UI and actual settings/actions. |
+| T14 | implemented | Persisted onboarding, live budget/health dashboard, searchable setup and award caps, editable exercise/preferences and protected daily history connected in Persian/English/French. 279 JVM tests pass (12 new); independent review corrections and 47-string locale checks recorded. [Evidence](docs/T14_PRODUCT_UI.md). | Android compilation/lint/Room/UI and intended-device checks remain unverified; no APK. | Restore Android artifacts/SDK, build candidate and run enhanced Room/DataStore tests and [T14 phone checks](docs/T14_PHONE_TEST.md). |
 | T15 | todo | Not run. | Depends on T03/T11/T14; outside current request. | Implement separate usage/activity outcomes with monitoring coverage. |
 | T16 | todo | Not run. | Depends on earlier implementation; outside current request. | Run automated and intended-device acceptance and deliver actual APK. |
 
@@ -249,3 +249,42 @@ Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T13**, per the
   0 failures, 0 errors, 0 skipped** (23 session + 244 existing).
   [Gradle log](docs/verification/T13-gradle-core-tests.log),
   [totals](docs/verification/T13-test-summary.txt), [session XML](docs/verification/T13-session-tests.xml).
+
+
+## T14 implementation and verification
+
+- Authorization: “do next task” after T13, followed by “continue,” authorizes T14.
+  T15/T16 remain outside this request. Existing index, owner changes and previous
+  commit-message files are preserved; no git commit was created.
+- Replaced shell screens with persisted onboarding, durable budget/health Home,
+  saved-rule exercise catalog, daily visible history and editable preferences.
+  Setup supports app search, per-app award caps and full validation. Permissions,
+  caps, unavailable targets and read/write failures have recovery/explanations;
+  exercise-only stays reachable. Persian RTL, English and French controls include
+  labeled selection semantics, minimum row targets and number direction.
+- Added read-only visible-history repository/Room queries and backward-compatible
+  onboarding DataStore key. Confirmed history deletion retains budgets, sessions,
+  challenge/award identities and cursors. No Room schema/dependency change.
+- All actual core source/tests compiled using Kotlin 2.4.10, Java 21/JVM target 17
+  and JUnit 4.13.2: **279 tests, zero failures**; 12 new checks cover localized
+  input/overflow, unavailable selection preservation and visible-history safety.
+  [Actual log](docs/verification/T14-core-tests.log),
+  [summary](docs/verification/T14-test-summary.txt).
+- An isolated deliberate regression that silently removes unavailable apps fails
+  the new preservation test (4 run, 1 expected failure); source checkout remains
+  fixed. [Probe log](docs/verification/T14-selection-regression-probe.log).
+- Independent read-only review identified unavailable-target deselection and stale
+  resume metadata. Both were corrected; metadata refresh retains draft fields.
+  [Review record](docs/verification/T14-source-review.txt). Android test fixtures
+  extend Room history visibility/deletion and DataStore onboarding reopen/default
+  checks; these remain prepared, unrun.
+- Source/resource checks verify XML/TOML, all main/debug/release string references,
+  private challenge Activity, narrow accessibility capabilities, whitespace and
+  all 47 new strings/format placeholders across the three locales.
+  [Actual log](docs/verification/T14-source-checks.log).
+- The environment restart cleared `/tmp` tools/logs while keeping source edits.
+  Restored official pinned Java/Kotlin tools and reran final JVM checks, retaining
+  evidence in the repository. Reusable check scripts now live in `verification/`.
+  Android build evidence and exact remaining limitations are in
+  [T14 details](docs/T14_PRODUCT_UI.md), with all [phone checks](docs/T14_PHONE_TEST.md)
+  pending and [generated commit text](docs/T14_COMMIT_MESSAGE.txt) ready.

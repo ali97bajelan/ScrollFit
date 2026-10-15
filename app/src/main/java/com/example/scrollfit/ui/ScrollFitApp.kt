@@ -1,202 +1,123 @@
 package com.example.scrollfit.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.navigation.compose.*
 import com.example.scrollfit.R
 import com.example.scrollfit.BuildConfig
+import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.spike.SpikeEntry
 import com.example.scrollfit.monitoring.MonitoringSetup
-import com.example.scrollfit.camera.CameraScreen
 import com.example.scrollfit.challenge.ChallengeScreen
+import com.example.scrollfit.core.data.AppPreferences
 import com.example.scrollfit.core.data.ChallengeMode
 import com.example.scrollfit.core.exercise.Exercise
-import com.example.scrollfit.core.exercise.ProductDefaults
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
 
-private enum class Destination(val route: String, @param:StringRes val label: Int) {
-    DASHBOARD("dashboard", R.string.dashboard),
-    EXERCISES("exercises", R.string.exercises),
-    HISTORY("history", R.string.history),
-    SETTINGS("settings", R.string.settings),
+private enum class Destination(val route: String, @param:StringRes val label: Int, val symbol: String) {
+    DASHBOARD("dashboard", R.string.dashboard, "⌂"),
+    EXERCISES("exercises", R.string.exercises, "↟"),
+    HISTORY("history", R.string.history, "◷"),
+    SETTINGS("settings", R.string.settings, "⚙"),
 }
 
 @Composable
 fun ScrollFitApp() {
+    val context = LocalContext.current
+    val persistence = (context.applicationContext as ScrollFitApplication).persistence
+    var initial by remember { mutableStateOf<AppPreferences?>(null) }
+    var failed by remember { mutableStateOf(false) }
+    var retry by remember { mutableStateOf(0) }
+    LaunchedEffect(persistence, retry) {
+        failed = false
+        try { initial = persistence.preferences.values.first() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (_: Exception) { failed = true }
+    }
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
-    val layoutDirection = if (LocalConfiguration.current.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL) {
-        LayoutDirection.Rtl
-    } else {
-        LayoutDirection.Ltr
-    }
+    val layoutDirection = if (LocalConfiguration.current.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL) LayoutDirection.Rtl else LayoutDirection.Ltr
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
-            Scaffold(
-                bottomBar = {
-                    if (route != null && route != "welcome" && !route.startsWith("camera/") && !route.startsWith("challenge/")) {
-                        NavigationBar {
-                            Destination.entries.forEach { destination ->
-                                NavigationBarItem(
-                                    selected = route == destination.route,
-                                    onClick = {
-                                        navController.navigate(destination.route) {
-                                            popUpTo(Destination.DASHBOARD.route) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    },
-                                    icon = { Text(stringResource(destination.label)) },
-                                    alwaysShowLabel = false,
-                                )
-                            }
-                        }
+            if (initial == null) {
+                ProductPage(R.string.app_name) {
+                    if (failed) {
+                        Text(stringResource(R.string.product_read_error))
+                        Button(onClick = { retry++ }) { Text(stringResource(R.string.camera_retry)) }
+                    } else CircularProgressIndicator()
+                }
+                return@MaterialTheme
+            }
+            Scaffold(bottomBar = {
+                if (Destination.entries.any { it.route == route }) NavigationBar {
+                    Destination.entries.forEach { destination ->
+                        NavigationBarItem(selected = route == destination.route,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    popUpTo(Destination.DASHBOARD.route) { saveState = true }
+                                    launchSingleTop = true; restoreState = true
+                                }
+                            }, icon = { Text(destination.symbol, modifier = Modifier.clearAndSetSemantics { }) }, label = { Text(stringResource(destination.label)) })
                     }
-                },
-            ) { insets ->
-                NavHost(navController, startDestination = "welcome", modifier = Modifier.padding(insets)) {
+                }
+            }) { insets ->
+                NavHost(navController, startDestination = if (initial!!.onboardingCompleted) "dashboard" else "welcome",
+                    modifier = Modifier.padding(insets)) {
                     composable("welcome") {
-                        Page(R.string.welcome) {
-                            Text(stringResource(R.string.welcome_body))
-                            Text(stringResource(R.string.bootstrap_notice))
-                            Button(onClick = { navController.navigate("monitoring") }) {
-                                Text(stringResource(R.string.monitor_title))
-                            }
-                            Button(onClick = {
-                                navController.navigate(Destination.DASHBOARD.route) {
-                                    popUpTo("welcome") { inclusive = true }
-                                }
-                            }) { Text(stringResource(R.string.enter_dashboard)) }
+                        WelcomeScreen(onSetup = { navController.navigate("monitoring") }, onEnter = {
+                            navController.navigate("dashboard") { popUpTo("welcome") { inclusive = true }; launchSingleTop = true }
+                        })
+                    }
+                    composable("dashboard") {
+                        Column {
+                            if (BuildConfig.DEBUG) TextButton(onClick = { navController.navigate("spike") }) { Text(stringResource(R.string.open_spike)) }
+                            DashboardScreen(onSetup = { navController.navigate("monitoring") }, onEarn = { target ->
+                                navController.navigate(if (target == null) "challenge/advance" else "challenge/advance/${android.net.Uri.encode(target)}")
+                            }, onOnly = { navController.navigate("challenge/only") })
                         }
                     }
-                    composable(Destination.DASHBOARD.route) {
-                        Page(R.string.dashboard) {
-                            Text(stringResource(R.string.bootstrap_notice))
-                            Button(onClick = { navController.navigate("challenge/advance") }) {
-                                Text(stringResource(R.string.challenge_advance))
-                            }
-                            Button(onClick = { navController.navigate("challenge/only") }) {
-                                Text(stringResource(R.string.challenge_only))
-                            }
-                            Button(onClick = { navController.navigate("monitoring") }) {
-                                Text(stringResource(R.string.monitor_title))
-                            }
-                            if (BuildConfig.DEBUG) {
-                                Button(onClick = { navController.navigate("spike") }) {
-                                    Text(stringResource(R.string.open_spike))
-                                }
-                            }
-                            Button(onClick = { navController.navigate(Destination.EXERCISES.route) }) {
-                                Text(stringResource(R.string.view_exercises))
-                            }
+                    composable("monitoring") {
+                        Column(Modifier.fillMaxSize()) {
+                            TextButton(onClick = { navController.popBackStack() }) { Text(stringResource(R.string.product_back)) }
+                            Box(Modifier.weight(1f)) { MonitoringSetup() }
                         }
                     }
-                    composable("spike") { SpikeEntry() }
-                    composable("monitoring") { MonitoringSetup() }
-                    composable("challenge/advance") {
-                        ChallengeScreen(ChallengeMode.ADVANCE, onClose = { navController.popBackStack() })
-                    }
-                    composable("challenge/only") {
-                        ChallengeScreen(ChallengeMode.EXERCISE_ONLY, onClose = { navController.popBackStack() })
-                    }
-                    composable("camera/{exercise}") { entry ->
-                        val exercise = Exercise.entries.firstOrNull { it.name == entry.arguments?.getString("exercise") }
-                            ?: Exercise.PUSH_UP
-                        CameraScreen(exercise, onCancel = { navController.popBackStack() })
-                    }
-                    composable(Destination.EXERCISES.route) {
-                        Page(R.string.exercises) {
-                            Text(stringResource(R.string.exercise_catalog_notice))
-                            Exercise.entries.forEach { exercise ->
-                                val rule = ProductDefaults.rewardRules.getValue(exercise)
-                                Card(modifier = Modifier.fillMaxWidth()) {
-                                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(stringResource(exercise.nameResource()), style = MaterialTheme.typography.titleMedium)
-                                        Text(stringResource(R.string.reward_proposal, rule.repetitions, rule.rewardSeconds / 60))
-                                        Text(stringResource(exercise.guidanceResource()))
-                                        Button(onClick = { navController.navigate("camera/${exercise.name}") }) {
-                                            Text(stringResource(R.string.camera_open))
-                                        }
-                                    }
-                                }
-                            }
+                    composable("spike") {
+                        Column(Modifier.fillMaxSize()) {
+                            TextButton(onClick = { navController.popBackStack() }) { Text(stringResource(R.string.product_back)) }
+                            SpikeEntry()
                         }
                     }
-                    composable(Destination.HISTORY.route) {
-                        Page(R.string.history) { Text(stringResource(R.string.history_empty)) }
+                    composable("challenge/advance") { ChallengeScreen(ChallengeMode.ADVANCE, onClose = { navController.popBackStack() }) }
+                    composable("challenge/advance/{target}") { entry ->
+                        ChallengeScreen(ChallengeMode.ADVANCE, target = entry.arguments?.getString("target"), onClose = { navController.popBackStack() })
                     }
-                    composable(Destination.SETTINGS.route) {
-                        Page(R.string.settings) {
-                            Button(onClick = { navController.navigate("monitoring") }) {
-                                Text(stringResource(R.string.monitor_title))
-                            }
-                            Text(stringResource(R.string.defaults_notice))
-                            Text(stringResource(R.string.default_allowance, ProductDefaults.BASE_ALLOWANCE_SECONDS / 60))
-                            Text(stringResource(R.string.default_ceiling, ProductDefaults.COMBINED_CEILING_SECONDS / 60))
-                            Text(stringResource(R.string.default_award_cap, ProductDefaults.DAILY_AWARD_CAP_SECONDS / 60))
-                            Text(stringResource(R.string.default_session, ProductDefaults.SESSION_SECONDS / 60))
-                            Text(stringResource(R.string.other_defaults))
-                        }
+                    composable("challenge/only") { ChallengeScreen(ChallengeMode.EXERCISE_ONLY, onClose = { navController.popBackStack() }) }
+                    composable("challenge/only/{exercise}") { entry ->
+                        ChallengeScreen(ChallengeMode.EXERCISE_ONLY, initialExercise = Exercise.entries.firstOrNull {
+                            it.name == entry.arguments?.getString("exercise")
+                        }, onClose = { navController.popBackStack() })
                     }
+                    composable("exercises") {
+                        ExerciseCatalog(onExercise = { navController.navigate("challenge/only/${it.name}") },
+                            onEarn = { navController.navigate("challenge/advance") })
+                    }
+                    composable("history") { HistoryScreen() }
+                    composable("settings") { SettingsScreen(onSetup = { navController.navigate("monitoring") }, onWelcome = { navController.navigate("welcome") }) }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun Page(@StringRes title: Int, content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(PaddingValues(20.dp)),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(stringResource(title), style = MaterialTheme.typography.headlineMedium)
-        content()
-    }
-}
-
-@StringRes
-private fun Exercise.nameResource(): Int = when (this) {
-    Exercise.PUSH_UP -> R.string.push_up
-    Exercise.SQUAT -> R.string.squat
-    Exercise.JUMPING_JACK -> R.string.jumping_jack
-    Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise
-}
-
-@StringRes
-private fun Exercise.guidanceResource(): Int = when (this) {
-    Exercise.PUSH_UP -> R.string.push_up_guidance
-    Exercise.SQUAT -> R.string.squat_guidance
-    Exercise.JUMPING_JACK, Exercise.ALTERNATING_KNEE_RAISE -> R.string.front_guidance
 }

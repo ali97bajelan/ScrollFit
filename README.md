@@ -370,3 +370,31 @@ one-second checkpoint plus scheduler/storage delay. Unknown downtime is never
 backfilled. Overlay/navigation timing, OEM behavior, file-backed persistence and
 Android compilation still require verification. See [T13 behavior/evidence](docs/T13_SESSIONS.md),
 [pending phone checks](docs/T13_PHONE_TEST.md), and [commit text](docs/T13_COMMIT_MESSAGE.txt).
+
+## T14 product screens and settings
+
+Home now shows durable per-app usage, remaining free/earned/usable time, today's
+awards and capacity, combined ceiling and monitoring health. Earn preselects its
+app; Exercises opens saved exercise-only challenges for all four exercises using
+the current configured rules. Daily history shows visible recorded usage and
+exercise activity separately, including removed-app records. Missing monitoring
+data is not treated as zero usage. Weekly outcomes and persisted coverage remain
+T15.
+
+Setup adds search and editable per-app award caps. Unavailable configured apps
+remain selected until explicitly removed, and app metadata refreshes on resume.
+Allowances/caps accept zero; ceilings, sessions, rewards and repetition targets
+require positive whole numbers with overflow validation and Persian/Arabic digit
+support. Settings saves all four reward rules, camera/speech/exercise choices and
+offers monitoring disablement and confirmed history deletion that preserves
+current enforcement and award identities. Welcome completion persists. Product
+controls and explanations are localized in Persian, English and French.
+
+Run `python3 verification/check_source.py` for structural checks. Prefer
+`./gradlew -p verification/core :core:test` for JVM tests; the repository also
+includes `verification/run_core.py` for a separately provisioned compiler/JUnit
+toolchain when Android configuration is unavailable. These checks do not verify
+Android UI, Room persistence, accessibility or enforcement on a phone. See
+[T14 behavior/evidence](docs/T14_PRODUCT_UI.md),
+[pending phone checks](docs/T14_PHONE_TEST.md), and
+[commit text](docs/T14_COMMIT_MESSAGE.txt).

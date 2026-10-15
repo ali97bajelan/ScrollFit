@@ -86,6 +86,13 @@ class DurableRepository(private val store: DurableStore, private val wallClock: 
         insertActivity(value)
     }
     override suspend fun activities(): List<ExerciseActivity> = store.transaction { activities() }
+    override suspend fun visibleHistory(): VisibleHistory = store.transaction {
+        VisibleHistory(
+            visibleUsages().sortedWith(compareByDescending<DailyUsage> { it.day }.thenBy { it.packageName }),
+            visibleCombined().sortedByDescending { it.day },
+            activities().sortedWith(compareBy<ExerciseActivity> { it.recordedAtEpochMs }.thenBy { it.id }),
+        )
+    }
     override suspend fun clearHistory() = store.transaction { clearVisibleHistory() }
     private fun today(): String = wallClock.localDate().toString()
 }

@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import com.example.scrollfit.ui.SelectionRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -111,20 +112,16 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
                 Text(stringResource(R.string.challenge_target))
                 if (!flow.busy && flow.targets.isEmpty()) Text(stringResource(R.string.challenge_no_targets))
                 flow.targets.forEach { app ->
-                    Row {
-                        RadioButton(selected = flow.target == app.packageName, enabled = !flow.busy,
-                            onClick = { flow.chooseTarget(app.packageName) })
-                        Text(app.label)
+                    SelectionRow(flow.target == app.packageName, !flow.busy, app.label) {
+                        flow.chooseTarget(app.packageName)
                     }
                 }
             }
             if (mode == ChallengeMode.EXERCISE_ONLY || flow.target != null) {
                 Text(stringResource(R.string.challenge_exercise))
                 Exercise.entries.forEach { exercise ->
-                    Row {
-                        RadioButton(selected = flow.exercise == exercise, enabled = !flow.busy,
-                            onClick = { flow.chooseExercise(exercise) })
-                        Text(stringResource(exercise.label()))
+                    SelectionRow(flow.exercise == exercise, !flow.busy, stringResource(exercise.label())) {
+                        flow.chooseExercise(exercise)
                     }
                 }
                 when (val quote = flow.offer) {

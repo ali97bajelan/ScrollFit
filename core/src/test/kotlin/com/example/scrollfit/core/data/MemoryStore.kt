@@ -75,6 +75,8 @@ class MemoryStore : DurableStore, DataTransaction {
         if (failNextSession) { failNextSession = false; error("injected session failure") }
         sessions[value.packageName to value.day] = value
     }
+    override suspend fun visibleUsages() = usages.values.filter { it.historyVisible }
+    override suspend fun visibleCombined() = combined.values.filter { it.historyVisible }
     override suspend fun clearVisibleHistory() {
         activities.clear()
         usages.replaceAll { _, value -> value.copy(historyVisible = false) }

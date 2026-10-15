@@ -40,6 +40,10 @@ interface ExerciseGateDao {
     @Query("SELECT * FROM sessions WHERE packageName = :packageName AND day = :day")
     suspend fun session(packageName: String, day: String): SessionRow?
     @Upsert suspend fun putSession(value: SessionRow)
+    @Query("SELECT * FROM daily_usage WHERE historyVisible = 1 ORDER BY day DESC, packageName")
+    suspend fun visibleUsages(): List<UsageRow>
+    @Query("SELECT * FROM combined_usage WHERE historyVisible = 1 ORDER BY day DESC")
+    suspend fun visibleCombined(): List<CombinedRow>
     @Query("DELETE FROM exercise_activity") suspend fun deleteActivityHistory()
     @Query("UPDATE daily_usage SET historyVisible = 0") suspend fun hideUsageHistory()
     @Query("UPDATE combined_usage SET historyVisible = 0") suspend fun hideCombinedHistory()

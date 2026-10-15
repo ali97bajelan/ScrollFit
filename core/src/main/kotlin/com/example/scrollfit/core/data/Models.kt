@@ -71,7 +71,12 @@ data class UsageCursor(val timelineId: String, val throughElapsedMs: Long) {
 
 enum class CameraChoice { REAR, FRONT }
 
+data class VisibleHistory(
+    val usage: List<DailyUsage>, val combined: List<CombinedUsage>, val activities: List<ExerciseActivity>,
+)
+
 data class AppPreferences(
+    val onboardingCompleted: Boolean = false,
     val monitoringEnabled: Boolean = false,
     val combinedCeilingMs: Long = ProductDefaults.COMBINED_CEILING_SECONDS * 1000,
     val zeroBaseEnabled: Boolean = ProductDefaults.ZERO_BASE_ENABLED,
