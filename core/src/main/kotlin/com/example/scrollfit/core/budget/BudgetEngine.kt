@@ -18,7 +18,8 @@ class BudgetEngine(
 ) {
     init { require(timelineId.isNotBlank()) }
 
-    private suspend fun <T> policy(block: suspend DataTransaction.(String, AppPreferences) -> T): T = store.transaction {
+    private suspend fun <T> policy(beforeCommit: () -> Unit = {},
+        block: suspend DataTransaction.(String, AppPreferences) -> T): T = store.transaction {
         // Read one preference snapshot and then date, after any suspended I/O.
         val prefs = preferences().let { it.copy(rewardRules = it.rewardRules.toMap()) }
         val day = wallClock.localDate().toString()
@@ -26,6 +27,7 @@ class BudgetEngine(
         val result = block(day, prefs)
         // Also reconcile read-only/early-return operations whose I/O crossed a date boundary.
         cancelChallengesOutsideDay(wallClock.localDate().toString())
+        beforeCommit()
         result
     }
 
@@ -95,34 +97,60 @@ class BudgetEngine(
         StartResult.Started(challenge)
     }
 
-    /** Only verified detector progress should call this; no partial reward or credit transfer. */
-    suspend fun complete(id: String, repetitions: Int): CompletionResult = policy { day, prefs ->
-        award(id)?.let { return@policy CompletionResult.Awarded(it) }
-        val challenge = challenge(id) ?: return@policy CompletionResult.Refused(RewardBlock.MISSING)
-        if (!stillToday(day)) return@policy CompletionResult.Refused(RewardBlock.INACTIVE)
-        if (challenge.mode == ChallengeMode.EXERCISE_ONLY && challenge.status == ChallengeStatus.COMPLETED) {
-            return@policy CompletionResult.ExerciseOnlyCompleted
-        }
-        if (challenge.status != ChallengeStatus.ACTIVE || challenge.day != day) {
-            return@policy CompletionResult.Refused(RewardBlock.INACTIVE)
-        }
-        if (repetitions < challenge.repetitionsRequired) return@policy CompletionResult.Refused(RewardBlock.INCOMPLETE)
-        if (challenge.mode == ChallengeMode.EXERCISE_ONLY) {
+    /** Only detector progress completes. Activity, ledger, wallet and status commit together. */
+    suspend fun complete(id: String, repetitions: Int, activeDurationMs: Long = 0,
+        eligible: () -> Boolean = { true }): CompletionResult {
+        require(repetitions >= 0 && activeDurationMs >= 0)
+        var completedDay: String? = null
+        return try { policy(beforeCommit = {
+            completedDay?.let { ensureCompletionEligible(it, eligible) }
+        }) { day, prefs ->
+            award(id)?.let { return@policy CompletionResult.Awarded(it) }
+            val challenge = challenge(id) ?: return@policy CompletionResult.Refused(RewardBlock.MISSING)
+            if (!stillToday(day)) return@policy CompletionResult.Refused(RewardBlock.INACTIVE)
+            if (challenge.mode == ChallengeMode.EXERCISE_ONLY && challenge.status == ChallengeStatus.COMPLETED) {
+                return@policy CompletionResult.ExerciseOnlyCompleted
+            }
+            if (challenge.status != ChallengeStatus.ACTIVE || challenge.day != day) {
+                return@policy CompletionResult.Refused(RewardBlock.INACTIVE)
+            }
+            if (repetitions < challenge.repetitionsRequired) return@policy CompletionResult.Refused(RewardBlock.INCOMPLETE)
+            if (challenge.mode == ChallengeMode.EXERCISE_ONLY) {
+                completedDay = day
+                ensureCompletionEligible(day, eligible)
+                putChallenge(challenge.copy(status = ChallengeStatus.COMPLETED))
+                recordCompletionActivity(challenge, repetitions, activeDurationMs)
+                ensureCompletionEligible(day, eligible)
+                return@policy CompletionResult.ExerciseOnlyCompleted
+            }
+            val packageName = requireNotNull(challenge.packageName)
+            val budget = budgetFor(packageName, day, prefs)
+            val usage = usage(packageName, day) ?: DailyUsage(packageName, day)
+            if (!stillToday(day)) return@policy CompletionResult.Refused(RewardBlock.INACTIVE)
+            if (budget.blockedBy == BudgetBlock.TARGET_UNAVAILABLE) return@policy CompletionResult.Refused(RewardBlock.TARGET_UNAVAILABLE)
+            if (budget.combinedRemainingMs == 0L) return@policy CompletionResult.Refused(RewardBlock.COMBINED_CEILING)
+            if (challenge.rewardMs > budget.awardCapacityMs) return@policy CompletionResult.Refused(RewardBlock.AWARD_CAP)
+            ensureCompletionEligible(day, eligible)
+            completedDay = day
+            val result = Award(id, packageName, day, challenge.rewardMs, wallClock.epochMillis())
+            insertAward(result)
+            putUsage(usage.copy(awardedMs = Math.addExact(usage.awardedMs, challenge.rewardMs)))
             putChallenge(challenge.copy(status = ChallengeStatus.COMPLETED))
-            return@policy CompletionResult.ExerciseOnlyCompleted
+            recordCompletionActivity(challenge, repetitions, activeDurationMs)
+            ensureCompletionEligible(day, eligible)
+            CompletionResult.Awarded(result)
+        } } catch (_: CompletionInvalidated) {
+            CompletionResult.Refused(RewardBlock.INACTIVE)
         }
-        val packageName = requireNotNull(challenge.packageName)
-        val budget = budgetFor(packageName, day, prefs)
-        val usage = usage(packageName, day) ?: DailyUsage(packageName, day)
-        if (!stillToday(day)) return@policy CompletionResult.Refused(RewardBlock.INACTIVE)
-        if (budget.blockedBy == BudgetBlock.TARGET_UNAVAILABLE) return@policy CompletionResult.Refused(RewardBlock.TARGET_UNAVAILABLE)
-        if (budget.combinedRemainingMs == 0L) return@policy CompletionResult.Refused(RewardBlock.COMBINED_CEILING)
-        if (challenge.rewardMs > budget.awardCapacityMs) return@policy CompletionResult.Refused(RewardBlock.AWARD_CAP)
-        val result = Award(id, packageName, day, challenge.rewardMs, wallClock.epochMillis())
-        insertAward(result)
-        putUsage(usage.copy(awardedMs = Math.addExact(usage.awardedMs, challenge.rewardMs)))
-        putChallenge(challenge.copy(status = ChallengeStatus.COMPLETED))
-        CompletionResult.Awarded(result)
+    }
+
+    private class CompletionInvalidated : RuntimeException()
+    private fun ensureCompletionEligible(day: String, eligible: () -> Boolean) {
+        if (!eligible() || wallClock.localDate().toString() != day) throw CompletionInvalidated()
+    }
+    private suspend fun DataTransaction.recordCompletionActivity(challenge: Challenge, repetitions: Int, durationMs: Long) {
+        insertActivity(ExerciseActivity("challenge:${challenge.id}", challenge.id, challenge.day,
+            challenge.exercise, repetitions, durationMs, wallClock.epochMillis()))
     }
 
     private suspend fun DataTransaction.budgetFor(packageName: String, day: String, prefs: AppPreferences): Budget {

@@ -15,6 +15,9 @@ class MemoryStore : DurableStore, DataTransaction {
     private var cursors = mutableMapOf<String, UsageCursor>()
     var failNextUsage = false
     var onUsageRead: (() -> Unit)? = null
+    var failNextActivity = false
+    var onActivityWrite: (() -> Unit)? = null
+    var onDayReconciliation: (() -> Unit)? = null
     override suspend fun <T> transaction(block: suspend DataTransaction.() -> T): T {
         transactions.acquire()
         val savedTargets = targets.toMutableMap(); val savedUsages = usages.toMutableMap()
@@ -51,6 +54,7 @@ class MemoryStore : DurableStore, DataTransaction {
         challenges.replaceAll { _, value -> if (value.status == ChallengeStatus.ACTIVE) value.copy(status = ChallengeStatus.CANCELLED) else value }
     }
     override suspend fun cancelChallengesOutsideDay(day: String) {
+        onDayReconciliation?.invoke()
         challenges.replaceAll { _, value ->
             if (value.status == ChallengeStatus.ACTIVE && value.day != day) value.copy(status = ChallengeStatus.CANCELLED) else value
         }
@@ -59,7 +63,11 @@ class MemoryStore : DurableStore, DataTransaction {
     override suspend fun putCursor(value: UsageCursor) { cursors[value.timelineId] = value }
     override suspend fun award(challengeId: String) = awards[challengeId]
     override suspend fun insertAward(value: Award) { require(value.challengeId !in awards); awards[value.challengeId] = value }
-    override suspend fun insertActivity(value: ExerciseActivity) { require(value.id !in activities); activities[value.id] = value }
+    override suspend fun insertActivity(value: ExerciseActivity) {
+        if (failNextActivity) { failNextActivity = false; error("injected activity failure") }
+        require(value.id !in activities); activities[value.id] = value
+        onActivityWrite?.let { hook -> onActivityWrite = null; hook() }
+    }
     override suspend fun activities() = activities.values.toList()
     override suspend fun session(packageName: String, day: String) = sessions[packageName to day]
     override suspend fun putSession(value: SessionState) { sessions[value.packageName to value.day] = value }

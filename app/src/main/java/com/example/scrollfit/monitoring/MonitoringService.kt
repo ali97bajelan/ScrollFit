@@ -3,6 +3,8 @@ package com.example.scrollfit.monitoring
 import android.accessibilityservice.AccessibilityService
 import android.app.AppOpsManager
 import android.app.KeyguardManager
+import android.app.ActivityOptions
+import android.app.PendingIntent
 import android.content.*
 import android.os.Build
 import android.os.PowerManager
@@ -11,6 +13,8 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
+import com.example.scrollfit.challenge.ChallengeActivity
+import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.data.AppPreferences
 import com.example.scrollfit.core.usage.*
 import kotlinx.coroutines.*
@@ -70,7 +74,8 @@ class MonitoringService : AccessibilityService() {
         ready = false; readiness.failed(); foreground = null; foregroundKnown = false
         safePackages = emptySet(); overflow = false; lastFailure = MonitorFailure.NONE
         overlay = BudgetOverlay(this, { navigate(GLOBAL_ACTION_HOME) },
-            { navigate(GLOBAL_ACTION_QUICK_SETTINGS) }, { disableMonitoring() }, { fail(MonitorFailure.OVERLAY) })
+            { navigate(GLOBAL_ACTION_QUICK_SETTINGS) }, { disableMonitoring() }, { fail(MonitorFailure.OVERLAY) },
+            ::openChallenge)
         presentation = MonitorPresentation(overlay::show, overlay::dismiss)
         MonitorRuntime.connected(this)
         MonitorRuntime.publish(MonitorStatus(failure = MonitorFailure.STARTING))
@@ -130,6 +135,28 @@ class MonitoringService : AccessibilityService() {
         if (!connected) return
         foreground = packageName; foregroundKnown = true; reconciliation?.cancel()
         presentation.pause(); startPreferenceCollection(); enqueue()
+    }
+
+    /** Only called by a user tap while our accessibility overlay is visible. */
+    private fun openChallenge(target: String, exercise: Exercise?) {
+        if (!connected || !overlay.visible) return
+        try {
+            val creator = ActivityOptions.makeBasic()
+            if (Build.VERSION.SDK_INT >= 35) creator.setPendingIntentCreatorBackgroundActivityStartMode(
+                if (Build.VERSION.SDK_INT >= 36) ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
+                else ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+            val pending = PendingIntent.getActivity(this, 0, ChallengeActivity.intent(this, target, exercise),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_ONE_SHOT,
+                creator.toBundle())
+            val sender = ActivityOptions.makeBasic()
+            if (Build.VERSION.SDK_INT >= 34) sender.setPendingIntentBackgroundActivityStartMode(
+                if (Build.VERSION.SDK_INT >= 36) ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
+                else ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+            pending.send(this, 0, null, null, null, null, sender.toBundle())
+            // Keep the blocker until the Activity actually resumes: Android may silently reject BAL.
+        } catch (_: Exception) {
+            Toast.makeText(this, R.string.challenge_launch_error, Toast.LENGTH_LONG).show()
+        }
     }
 
     /** Stop the live monitor immediately while the durable disable write completes. */

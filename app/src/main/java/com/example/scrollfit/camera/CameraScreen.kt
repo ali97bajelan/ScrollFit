@@ -35,6 +35,7 @@ import com.example.scrollfit.core.exercise.AlternatingKneeRaiseCounter
 import com.example.scrollfit.core.exercise.JumpingJackCounter
 import com.example.scrollfit.core.exercise.PushUpCounter
 import com.example.scrollfit.core.exercise.SquatCounter
+import com.example.scrollfit.core.challenge.ChallengeSession
 import com.example.scrollfit.core.pose.PreviewProjection
 import com.example.scrollfit.platform.pose.CameraPoseSession
 import com.example.scrollfit.platform.pose.CameraPoseState
@@ -44,7 +45,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
-fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
+fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeSession? = null,
+    onProgress: () -> Unit = {}, onInterrupted: () -> Unit = {}) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val preferences = remember(context) { (context.applicationContext as ScrollFitApplication).persistence.preferences }
@@ -91,8 +93,10 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
     }
 
     DisposableEffect(owner, preview, exercise, camera, permission, loaded, resumed, retry) {
-        repetitions = 0 // Preview trial only; persisted challenges belong to T11.
+        repetitions = challenge?.repetitions ?: 0
         state = CameraPoseState(if (!permission) CameraPoseStatus.PERMISSION_REQUIRED else CameraPoseStatus.PAUSED)
+        var closing = false
+        if (challenge != null && !permission) onInterrupted()
         val session = if (permission && loaded && resumed) {
             CameraPoseSession(context, owner, preview, camera, requiredFor(exercise),
                 alternativeRequiredLandmarks = if (exercise == Exercise.PUSH_UP) setOf(12, 14, 16, 24) else emptySet(),
@@ -103,17 +107,30 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
                     Exercise.ALTERNATING_KNEE_RAISE -> AlternatingKneeRaiseCounter()
                 }) {
                 state = it
-                if (it.status == CameraPoseStatus.PAUSED || it.status == CameraPoseStatus.INITIALIZING) {
+                if (challenge == null && (it.status == CameraPoseStatus.PAUSED || it.status == CameraPoseStatus.INITIALIZING)) {
                     repetitions = 0
                 }
-                it.progress?.let { progress -> repetitions = progress.repetitions }
+                it.progress?.let { progress ->
+                    if (challenge == null) repetitions = progress.repetitions
+                    else if (!closing) {
+                        it.timestampMs?.let { timestamp -> challenge.accept(progress, timestamp) }
+                        repetitions = challenge.repetitions
+                        onProgress()
+                    }
+                }
+                if (challenge != null && !closing && it.status in setOf(CameraPoseStatus.PAUSED,
+                        CameraPoseStatus.PERMISSION_REQUIRED, CameraPoseStatus.CAMERA_UNAVAILABLE,
+                        CameraPoseStatus.CAMERA_ERROR, CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {
+                    onInterrupted()
+                }
                 if (it.status == CameraPoseStatus.PERMISSION_REQUIRED) permission = false
             }
         } else null
-        onDispose { session?.close() }
+        onDispose { closing = true; session?.close() }
     }
 
     fun selectCamera(choice: CameraChoice) {
+        if (challenge != null) onInterrupted()
         camera = choice
         saving = true
         scope.launch {
@@ -140,7 +157,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
             Exercise.JUMPING_JACK -> R.string.jumping_jack_counter_guidance
             Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise_counter_guidance
         }))
-        Text(stringResource(when (exercise) {
+        Text(stringResource(if (challenge != null) R.string.challenge_active_notice else when (exercise) {
             Exercise.PUSH_UP -> R.string.push_up_trial_notice
             Exercise.SQUAT -> R.string.squat_trial_notice
             Exercise.JUMPING_JACK -> R.string.jumping_jack_trial_notice
@@ -188,7 +205,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit) {
             Text(stringResource(if (camera == CameraChoice.FRONT) R.string.camera_selected_front else R.string.camera_selected_rear))
             if (state.status in setOf(CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.CAMERA_UNAVAILABLE,
                     CameraPoseStatus.CAMERA_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {
-                Button(onClick = { retry++ }) { Text(stringResource(R.string.camera_retry)) }
+                Button(onClick = { if (challenge != null) onInterrupted(); retry++ }) { Text(stringResource(R.string.camera_retry)) }
             }
             if (BuildConfig.DEBUG) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

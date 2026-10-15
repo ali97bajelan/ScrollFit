@@ -37,6 +37,8 @@ import com.example.scrollfit.BuildConfig
 import com.example.scrollfit.spike.SpikeEntry
 import com.example.scrollfit.monitoring.MonitoringSetup
 import com.example.scrollfit.camera.CameraScreen
+import com.example.scrollfit.challenge.ChallengeScreen
+import com.example.scrollfit.core.data.ChallengeMode
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.exercise.ProductDefaults
 
@@ -61,7 +63,7 @@ fun ScrollFitApp() {
         MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
             Scaffold(
                 bottomBar = {
-                    if (route != null && route != "welcome" && !route.startsWith("camera/")) {
+                    if (route != null && route != "welcome" && !route.startsWith("camera/") && !route.startsWith("challenge/")) {
                         NavigationBar {
                             Destination.entries.forEach { destination ->
                                 NavigationBarItem(
@@ -101,6 +103,12 @@ fun ScrollFitApp() {
                     composable(Destination.DASHBOARD.route) {
                         Page(R.string.dashboard) {
                             Text(stringResource(R.string.bootstrap_notice))
+                            Button(onClick = { navController.navigate("challenge/advance") }) {
+                                Text(stringResource(R.string.challenge_advance))
+                            }
+                            Button(onClick = { navController.navigate("challenge/only") }) {
+                                Text(stringResource(R.string.challenge_only))
+                            }
                             Button(onClick = { navController.navigate("monitoring") }) {
                                 Text(stringResource(R.string.monitor_title))
                             }
@@ -116,6 +124,12 @@ fun ScrollFitApp() {
                     }
                     composable("spike") { SpikeEntry() }
                     composable("monitoring") { MonitoringSetup() }
+                    composable("challenge/advance") {
+                        ChallengeScreen(ChallengeMode.ADVANCE, onClose = { navController.popBackStack() })
+                    }
+                    composable("challenge/only") {
+                        ChallengeScreen(ChallengeMode.EXERCISE_ONLY, onClose = { navController.popBackStack() })
+                    }
                     composable("camera/{exercise}") { entry ->
                         val exercise = Exercise.entries.firstOrNull { it.name == entry.arguments?.getString("exercise") }
                             ?: Exercise.PUSH_UP

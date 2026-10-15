@@ -66,6 +66,30 @@ class BudgetPersistenceTest {
         assertEquals(1, results.toSet().size)
         assertTrue(results.first() is CompletionResult.Awarded)
         assertEquals(120_000L, repo().dailyUsage("app").awardedMs)
+        assertEquals(1, repo().activities().size)
+    }
+
+    @Test fun completedActivityAndAwardSurviveReopenWithoutDuplication() = runBlocking {
+        prepare(); start("t11")
+        val result = engine().complete("t11", 2, 1700)
+        db.close(); db = ExerciseGateDatabase.open(context, name)
+        assertEquals(result, engine().complete("t11", 2, 9999))
+        val activity = repo().activities().single()
+        assertEquals("t11", activity.challengeId)
+        assertEquals(2, activity.repetitions)
+        assertEquals(1700L, activity.activeDurationMs)
+        assertEquals(120_000L, repo().dailyUsage("app").awardedMs)
+    }
+
+    @Test fun activityInsertFailureRollsBackWalletAndCompletedStatus() = runBlocking {
+        prepare(); start("rollback")
+        db.openHelper.writableDatabase.execSQL("CREATE TRIGGER t11_activity_failure BEFORE INSERT ON exercise_activity BEGIN SELECT RAISE(ABORT, 't11 injected'); END")
+        try { engine().complete("rollback", 2, 1700); fail() } catch (_: android.database.sqlite.SQLiteException) { }
+        assertEquals(0L, repo().dailyUsage("app").awardedMs)
+        assertEquals(ChallengeStatus.ACTIVE, repo().challenge("rollback")!!.status)
+        assertTrue(repo().activities().isEmpty())
+        db.openHelper.writableDatabase.execSQL("DROP TRIGGER t11_activity_failure")
+        assertTrue(engine().complete("rollback", 2, 1700) is CompletionResult.Awarded)
     }
 
     @Test fun competingChallengesCannotExceedAppAwardCap() = runBlocking {

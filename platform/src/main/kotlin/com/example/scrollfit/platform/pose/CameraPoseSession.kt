@@ -48,6 +48,7 @@ data class CameraPoseState(
     val imageHeight: Int = 0,
     val mirrored: Boolean = false,
     val progress: CountingProgress? = null,
+    val timestampMs: Long? = null,
 )
 
 /** Main-thread owner. Each instance is confined to one visible screen/lens choice. */
@@ -58,7 +59,7 @@ class CameraPoseSession(
     private val choice: CameraChoice,
     requiredLandmarks: Set<Int>,
     alternativeRequiredLandmarks: Set<Int> = emptySet(),
-    /** Optional preview-trial counter: stopping/restarting the camera resets this trial. */
+    /** Each owned camera run has a fresh counter; the challenge owner invalidates on restart. */
     private val counter: ExerciseCounter? = null,
     private val onState: (CameraPoseState) -> Unit,
 ) : LifecycleEventObserver, AutoCloseable {
@@ -108,7 +109,7 @@ class CameraPoseSession(
                 val state = if (gate.isFresh(update.token, update.timestampMs, lastDeliveryMs)) update.state
                     else update.state.copy(status = CameraPoseStatus.TRACKING_LOST, sample = null,
                         progress = update.state.progress?.copy(trackingAvailable = false))
-                emit(state)
+                emit(state.copy(timestampMs = update.timestampMs))
             }
             if (pending.get() != null && deliveryPosted.compareAndSet(false, true)) main.post(this)
         }

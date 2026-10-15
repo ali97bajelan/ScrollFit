@@ -206,6 +206,17 @@ class BudgetEngineTest {
         assertEquals(1, store.awards.size)
     }
 
+    @Test fun completedAwardIncludesActivityInTheSameTransaction() = run {
+        setup(); start(); store.failNextActivity = true
+        try { engine.complete("one", 2); fail("Activity failure must roll back the award") }
+        catch (_: IllegalStateException) { }
+        assertTrue(store.awards.isEmpty())
+        assertEquals(ChallengeStatus.ACTIVE, repo.challenge("one")!!.status)
+        assertTrue(engine.complete("one", 2) is CompletionResult.Awarded)
+        assertEquals(2, repo.activities().single().repetitions)
+        assertEquals(1, store.awards.size)
+    }
+
     @Test fun unknownUnselectedTargetsAndZeroCapacityRefuseBothModes() = run {
         setup(cap = 0); repo.removeTarget("b")
         for (mode in listOf(ChallengeMode.ADVANCE, ChallengeMode.JUST_IN_TIME)) {

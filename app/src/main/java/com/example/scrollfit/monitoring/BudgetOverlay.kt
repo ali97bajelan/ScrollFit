@@ -7,12 +7,22 @@ import android.view.*
 import android.widget.*
 import com.example.scrollfit.R
 import com.example.scrollfit.core.budget.BudgetBlock
+import com.example.scrollfit.core.budget.OfferResult
+import com.example.scrollfit.core.data.ChallengeMode
+import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.usage.OverlayState
+import com.example.scrollfit.ScrollFitApplication
+import com.example.scrollfit.challenge.label
+import com.example.scrollfit.challenge.message
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /** Touch-blocking app-area overlay with system navigation left accessible. */
 class BudgetOverlay(private val service: AccessibilityService,
     private val home: () -> Unit, private val panel: () -> Unit, private val stop: () -> Unit,
-    private val failed: () -> Unit) {
+    private val failed: () -> Unit,
+    private val earn: (String, Exercise?) -> Unit) {
     private val manager = requireNotNull(service.getSystemService(WindowManager::class.java))
     private var showing: Pair<String, BudgetBlock>? = null
     private val windows = OverlayState<View>({ view ->
@@ -47,7 +57,38 @@ class BudgetOverlay(private val service: AccessibilityService,
             setBackgroundColor(Color.rgb(25, 32, 45)); layoutDirection = View.LAYOUT_DIRECTION_RTL; addView(content)
         }
         val attached = windows.replace(scroll)
-        if (attached) showing = packageName to reason
+        if (attached) {
+            showing = packageName to reason
+            val app = service.application as ScrollFitApplication
+            app.challengeScope.launch {
+                try {
+                    val engine = app.persistence.budgetEngine("blocker-offers")
+                    val prefs = app.persistence.preferences.values.first()
+                    val offers = Exercise.entries.sortedBy { it != prefs.lastExercise }.map {
+                        it to engine.offer(packageName, it, ChallengeMode.JUST_IN_TIME)
+                    }
+                    // Ignore lookups completed after dismissal, replacement or target switching.
+                    if (windows.current !== scroll) return@launch
+                    offers.forEach { (exercise, result) ->
+                        content.addView(text(service.getString(exercise.label()), 18f))
+                        when (result) {
+                            is OfferResult.Available -> {
+                                content.addView(text(service.getString(R.string.challenge_terms,
+                                    result.offer.repetitionsRequired, result.offer.rewardMs / 1000), 16f))
+                                content.addView(text(service.getString(R.string.challenge_capacity, result.offer.awardCapacityMs / 1000), 16f))
+                                if (result.offer.reduced) content.addView(text(service.getString(R.string.challenge_reduced), 16f))
+                                content.addView(button(exercise.label()) { if (windows.current === scroll) earn(packageName, exercise) })
+                            }
+                            is OfferResult.Refused -> content.addView(text(service.getString(result.reason.message()), 16f))
+                        }
+                    }
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) {
+                    if (windows.current === scroll) content.addView(text(service.getString(R.string.challenge_storage_error), 16f))
+                }
+            }
+            content.addView(button(R.string.challenge_only) { if (windows.current === scroll) earn(packageName, null) })
+        }
         return attached
     }
     fun dismiss(): Boolean {
