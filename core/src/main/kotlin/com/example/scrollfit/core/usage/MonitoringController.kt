@@ -18,8 +18,13 @@ data class MonitorDecision(
     val health: MonitoringHealth, val foreground: String? = null, val budget: Budget? = null,
     val issue: MonitorIssue = MonitorIssue.NONE, val unmonitoredMs: Long = 0,
     val shouldTick: Boolean = false, val tickDelayMs: Long = 1000,
+    val sessionAccess: SessionAccess? = null,
 ) {
-    val blockedBy get() = budget?.blockedBy?.takeUnless { it == BudgetBlock.TARGET_UNAVAILABLE }
+    val blockedBy get() = sessionAccess?.blockedBy ?: when (budget?.blockedBy) {
+        BudgetBlock.APP_BUDGET -> BlockReason.APP_BUDGET
+        BudgetBlock.COMBINED_CEILING -> BlockReason.COMBINED_CEILING
+        else -> null
+    }
 }
 
 /** One serialized caller owns observations. Unknown process downtime is never backfilled. */
@@ -58,13 +63,16 @@ class MonitoringController(private val engine: BudgetEngine, private val protect
         val candidate = signal.foreground?.takeIf {
             health == MonitoringHealth.HEALTHY && signal.interactive && !signal.ownUiVisible && it !in protectedPackages
         }
-        val budget = candidate?.let { engine.budget(it) }?.takeUnless { it.blockedBy == BudgetBlock.TARGET_UNAVAILABLE }
+        val access = candidate?.let { engine.sessionAccess(it) }
+            ?.takeUnless { it.budget.blockedBy == BudgetBlock.TARGET_UNAVAILABLE }
+        val budget = access?.budget
         // A blocked surface is never chargeable; re-read its budget on slow ticks for rollover/edits.
-        chargeable = candidate?.takeIf { budget != null && budget.usableMs > 0 }
+        chargeable = candidate?.takeIf { access != null && access.usableMs > 0 }
         previous = signal.sample
         decision = MonitorDecision(health, candidate?.takeIf { budget != null }, budget, issue, gap,
             shouldTick = budget != null,
-            tickDelayMs = if (budget != null && budget.usableMs > 0) minOf(1000L, budget.usableMs) else 1000)
+            tickDelayMs = if (access != null && access.usableMs > 0) minOf(1000L, access.usableMs) else 1000,
+            sessionAccess = access)
         return decision
     }
 

@@ -36,6 +36,7 @@ fun MonitoringSetup() {
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var allowances by remember { mutableStateOf(emptyMap<String, String>()) }
     var ceiling by remember { mutableStateOf("3600") }
+    var sessionBoundary by remember { mutableStateOf("300") }
     var zeroBase by remember { mutableStateOf(false) }
     var budgets by remember { mutableStateOf(emptyMap<String, Budget>()) }
     var loading by remember { mutableStateOf(true) }
@@ -63,6 +64,7 @@ fun MonitoringSetup() {
             allowances = apps.associate { app -> app.packageName to
                 ((configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) / 1000).toString() }
             ceiling = (current.combinedCeilingMs / 1000).toString(); zeroBase = current.zeroBaseEnabled
+            sessionBoundary = (current.sessionBoundaryMs / 1000).toString()
             refreshBudgets()
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { error = R.string.monitor_action_failed }
@@ -86,6 +88,7 @@ fun MonitoringSetup() {
     }
     suspend fun save() {
         val ceilingMs = secondsToMs(ceiling, positive = true)
+        val sessionBoundaryMs = secondsToMs(sessionBoundary, positive = true)
         val available = withContext(Dispatchers.IO) { TargetApps.list(context).map { it.packageName }.toSet() }
         require(selected.all { it in available })
         val values = selected.associateWith { secondsToMs(allowances.getValue(it), positive = false) }
@@ -96,7 +99,8 @@ fun MonitoringSetup() {
             val old = latest.find { it.packageName == name } ?: TargetConfig(name)
             repository.saveTarget(old.copy(selected = true, baseAllowanceMs = duration))
         }
-        persistence.preferences.update { it.copy(combinedCeilingMs = ceilingMs, zeroBaseEnabled = zeroBase) }
+        persistence.preferences.update { it.copy(combinedCeilingMs = ceilingMs, zeroBaseEnabled = zeroBase,
+            sessionBoundaryMs = sessionBoundaryMs) }
         configs = repository.targets(); refreshBudgets(); saved = true
         MonitorRuntime.configurationChanged()
     }
@@ -133,6 +137,9 @@ fun MonitoringSetup() {
         if (loading) CircularProgressIndicator()
         OutlinedTextField(value = ceiling, onValueChange = { ceiling = it; saved = false },
             label = { Text(stringResource(R.string.monitor_ceiling_seconds)) }, enabled = !busy && !loading, singleLine = true)
+        OutlinedTextField(value = sessionBoundary, onValueChange = { sessionBoundary = it; saved = false },
+            label = { Text(stringResource(R.string.session_boundary_seconds)) }, enabled = !busy && !loading, singleLine = true)
+        Text(stringResource(R.string.session_settings_explanation))
         Row { Checkbox(checked = zeroBase, onCheckedChange = { zeroBase = it }, enabled = !busy && !loading)
             Text(stringResource(R.string.monitor_zero_base), Modifier.padding(top = 12.dp)) }
         Text(stringResource(R.string.monitor_select_apps))

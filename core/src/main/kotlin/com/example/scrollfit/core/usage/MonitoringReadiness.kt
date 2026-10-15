@@ -5,6 +5,7 @@ class MonitoringReadiness {
     var available = false
         private set
     private var enabled = false
+    val monitoringEnabled get() = available && enabled
     fun updated(value: Boolean) { enabled = value; available = true }
     fun failed() { available = false }
     fun guard(signal: MonitorSignal) = signal.copy(enabled = enabled, connected = signal.connected && available)

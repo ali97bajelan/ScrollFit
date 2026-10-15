@@ -30,7 +30,7 @@ class MonitorFailureTest {
 
     @Test fun safeTransitionDismissesImmediatelyAndStaleStorageDecisionCannotRestoreBlocker() {
         var visible: String? = null
-        val presentation = MonitorPresentation({ app, _ -> visible = app; true }, { visible = null; true })
+        val presentation = MonitorPresentation({ app, _, _ -> visible = app; true }, { visible = null; true })
         val targetTicket = presentation.transition("A", pause = false)
         val blocked = MonitorDecision(MonitoringHealth.HEALTHY, "A",
             Budget("A", "2026-10-13", 0, 0, 0, 0, 1000, 0, BudgetBlock.APP_BUDGET))
@@ -44,7 +44,7 @@ class MonitorFailureTest {
 
     @Test fun permissionLossAndExplicitPauseInvalidatePendingPresentation() {
         var visible = false
-        val presentation = MonitorPresentation({ _, _ -> visible = true; true }, { visible = false; true })
+        val presentation = MonitorPresentation({ _, _, _ -> visible = true; true }, { visible = false; true })
         val ticket = presentation.transition("A", pause = false)
         val blocked = MonitorDecision(MonitoringHealth.HEALTHY, "A",
             Budget("A", "2026-10-13", 0, 0, 0, 0, 1000, 0, BudgetBlock.COMBINED_CEILING))

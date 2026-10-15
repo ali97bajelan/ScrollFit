@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="session_title">Time for a short pause</string>
+    <string name="session_explanation">This usage session has ended. Continue uses your remaining time and requires no new exercise. No time is charged while this prompt is visible. Finish returns to your home screen and preserves unused time.</string>
+    <string name="session_continue">Continue</string>
+    <string name="session_finish">Finish and go home</string>
+    <string name="session_boundary_seconds">Session length per app (seconds, greater than zero)</string>
+    <string name="session_settings_explanation">The default is 300 seconds (5 minutes). Each app has its own session. App switching and restarting preserve accumulated time. Changing this value keeps any pending pause prompt.</string>
+</resources>

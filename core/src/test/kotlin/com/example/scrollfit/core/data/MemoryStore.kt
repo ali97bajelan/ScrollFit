@@ -13,6 +13,7 @@ class MemoryStore : DurableStore, DataTransaction {
     private var activities = mutableMapOf<String, ExerciseActivity>()
     private var sessions = mutableMapOf<Pair<String, String>, SessionState>()
     private var cursors = mutableMapOf<String, UsageCursor>()
+    var failNextSession = false
     var failNextUsage = false
     var onUsageRead: (() -> Unit)? = null
     var failNextActivity = false
@@ -70,7 +71,10 @@ class MemoryStore : DurableStore, DataTransaction {
     }
     override suspend fun activities() = activities.values.toList()
     override suspend fun session(packageName: String, day: String) = sessions[packageName to day]
-    override suspend fun putSession(value: SessionState) { sessions[value.packageName to value.day] = value }
+    override suspend fun putSession(value: SessionState) {
+        if (failNextSession) { failNextSession = false; error("injected session failure") }
+        sessions[value.packageName to value.day] = value
+    }
     override suspend fun clearVisibleHistory() {
         activities.clear()
         usages.replaceAll { _, value -> value.copy(historyVisible = false) }

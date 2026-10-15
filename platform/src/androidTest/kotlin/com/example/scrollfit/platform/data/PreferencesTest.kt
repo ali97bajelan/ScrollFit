@@ -49,6 +49,8 @@ class PreferencesTest {
             assertEquals(expected, repo.values.first())
             try { repo.update { it.copy(combinedCeilingMs = 0) }; fail("invalid edit") } catch (_: IllegalArgumentException) { }
             assertEquals(expected, repo.values.first())
+            try { repo.update { it.copy(sessionBoundaryMs = 0) }; fail("invalid session") } catch (_: IllegalArgumentException) { }
+            assertEquals(expected, repo.values.first())
         } finally {
             job.cancelAndJoin(); file.delete()
         }

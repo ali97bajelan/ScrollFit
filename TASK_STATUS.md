@@ -1,6 +1,6 @@
 # Exercise Gate task status
 
-Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T12**, per the owner's explicit requests; later tasks are outside the current scope. The owner requested English communication; the product UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
+Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T13**, per the owner's explicit requests; T14–T16 are outside the current scope. The owner requested English communication; the product UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
 
 | ID | Status | Verification evidence | Blocker | Next action |
 | --- | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T12**, per the
 | T10 | implemented | Independent left/right knee-raise detector and Persian full-body front-view camera trial prepared. 32 new sequence tests plus 171 existing JVM checks pass (203 total). [Evidence](docs/T10_KNEE_RAISE_COUNTER.md). | Android build/lint/instrumentation exit 1 at offline AGP 9.4.0 resolution before compilation. No APK or recorded physical-device trial; threshold tuning pending. | Restore Android environment, build APK and record [T10 phone trial](docs/T10_PHONE_TEST.md) with observed counts before marking verified. |
 | T11 | implemented | Both earning paths, all four counters, captured offers, cancellation, persisted success and exercise-only activity connected. 221 JVM tests pass (17 lifecycle + 1 atomic regression + 203 existing); old engine fails the activity regression. Independent source review and structural checks passed. [Evidence](docs/T11_CHALLENGES.md). | Android build/lint/instrumentation exit 1 at AGP 9.4.0 resolution before compilation. Room/device execution pending; no APK. | Restore Android artifacts/SDK, run prepared Room checks and [T11 phone checklist](docs/T11_PHONE_TEST.md). |
 | T12 | implemented | Offline voice selection, coalesced counts, sustained-loss prompts, saved-result speech, persistent mute and tone/visual fallback connected. 244 JVM tests pass (23 new); refusal and warning timing regressions failed before their fixes. [Evidence](docs/T12_FEEDBACK.md). | Android build/lint/instrumentation assembly exits 1 at offline AGP 9.4.0 resolution before compilation. TTS/device output unverified; no APK. | Restore Android artifacts/SDK, run prepared DataStore tests and [T12 phone checklist](docs/T12_PHONE_TEST.md). |
-| T13 | todo | Not run. | Depends on T04/T05; outside current request. | Implement persistent session windows and Continue/Finish. |
+| T13 | implemented | Persistent per-app windows, atomic boundary clipping, Continue/Finish and editable localized settings connected. 267 JVM tests pass (23 new); initial seven regressions failed before implementation. Independent source review and structural checks passed. [Evidence](docs/T13_SESSIONS.md). | Android build/lint/instrumentation assembly exits 1 at offline AGP 9.4.0 resolution before compilation. Room/device behavior unverified; no APK. | Restore Android artifacts/SDK, run prepared Room/DataStore checks and [T13 phone checklist](docs/T13_PHONE_TEST.md). |
 | T14 | todo | Navigation shell only; no product functionality claimed. | Depends on T05/T11–T13; outside current request. | Complete accessible Persian UI and actual settings/actions. |
 | T15 | todo | Not run. | Depends on T03/T11/T14; outside current request. | Implement separate usage/activity outcomes with monitoring coverage. |
 | T16 | todo | Not run. | Depends on earlier implementation; outside current request. | Run automated and intended-device acceptance and deliver actual APK. |
@@ -208,3 +208,44 @@ Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T12**, per the
 - XML/TOML, string references, translation/placeholder parity, locale markers, narrow TTS service query, absence of app INTERNET permission and whitespace checks passed. These are structural checks, not Android compilation.
 - Actual Android debug/release/lint/instrumentation-assembly command exited 1, BUILD FAILED in 2s: offline AGP 9.4.0 resolution failed before compilation. No APK or physical-device result. This does not recheck current Maven reachability. [Build log](docs/verification/T12-build.log).
 - The existing DataStore instrumentation test covers muted preference persistence/reopening but remains unrun. All T12 device checks are pending, including engine behavior, airplane mode, speech/tones, mute persistence, rapid counts and lifecycle interruption. [Details](docs/T12_FEEDBACK.md), [phone checklist](docs/T12_PHONE_TEST.md), [commit text](docs/T12_COMMIT_MESSAGE.txt).
+
+
+## T13 implementation and verification
+
+- Authorization: the owner requested the next task after T12, authorizing T13.
+  T14–T16 remain outside this request. Existing workspace changes and the index
+  were preserved; no commit was created.
+- Existing per-app/day Room sessions and the DataStore boundary now control
+  foreground use, with an editable default of 300 seconds. App switches, pause,
+  restart, history deletion, monitoring toggles and remove/re-add preserve state.
+  Midnight selects fresh daily windows; boundary edits retain pending prompts.
+- Wallet/combined/session/cursor spending clips atomically at the session and
+  budget boundaries. Prompts never spend credit. Continue checks current budget
+  without awards/exercise; Finish requests Home before resetting and retains the
+  prompt when the request is rejected. Budget blockers take priority at collision.
+- Serialized service actions validate the displayed session and cumulative daily
+  usage, preventing duplicate/late taps from resetting a later window. Cursor
+  advancement and observation generations discard pre-tap queued time. Late
+  invalidation or midnight rolls back resets. No schema/dependency change.
+- Direct actual Kotlin 2.4.10/JUnit 4.13.2 source verification: exit 0, **267 tests
+  passed** (23 session + 244 existing). The first seven session tests failed before
+  implementation: 251 run, seven failures. The old overflow fixture is now safely
+  blocked, so rollback coverage injects a session-write failure instead.
+  [Core log](docs/verification/T13-core-tests.log),
+  [initial regressions](docs/verification/T13-session-red.log).
+- Android debug/release/lint/instrumentation-assembly attempt: exit 1,
+  BUILD FAILED in 9s, offline AGP 9.4.0 resolution before compilation. No APK,
+  fresh Maven reachability check or device outcome. XML/TOML, resource references,
+  service restrictions, translation/placeholder parity and whitespace passed.
+- Independent read-only review found no Critical/Important issues; no independent
+  test execution was claimed. Actual overlay ordering, completed Home navigation,
+  Room durability and Android compilation remain unverified. Two new Room checks,
+  a revised session-write rollback fixture and extended DataStore validation are
+  prepared, unrun. [Policy/evidence](docs/T13_SESSIONS.md),
+  [phone checklist](docs/T13_PHONE_TEST.md), [commit text](docs/T13_COMMIT_MESSAGE.txt).
+
+- Final project-native command: `env JAVA_HOME=/tmp/scrollfit-toolchain/jdk-21.0.12.1+1 GRADLE_USER_HOME=/tmp/scrollfit-gradle ./gradlew -p verification/core :core:test --rerun-tasks --offline --console=plain`.
+  Exit **0**, BUILD SUCCESSFUL in 6m26s; fresh JUnit XML confirms **267 tests,
+  0 failures, 0 errors, 0 skipped** (23 session + 244 existing).
+  [Gradle log](docs/verification/T13-gradle-core-tests.log),
+  [totals](docs/verification/T13-test-summary.txt), [session XML](docs/verification/T13-session-tests.xml).

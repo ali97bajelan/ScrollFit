@@ -102,12 +102,48 @@ class BudgetPersistenceTest {
         assertEquals(120_000L, repo().dailyUsage("app").awardedMs)
     }
 
-    @Test fun sessionOverflowRollsBackCursorAndWallets() = runBlocking {
-        prepare(); repo().saveSession(SessionState("app", day, Long.MAX_VALUE))
-        try { engine().spend(UsageInterval("app", day, 0, 1000)); fail() } catch (_: ArithmeticException) { }
+    @Test fun sessionWriteFailureRollsBackCursorAndWallets() = runBlocking {
+        prepare()
+        db.openHelper.writableDatabase.execSQL("CREATE TRIGGER t13_session_failure BEFORE INSERT ON sessions BEGIN SELECT RAISE(ABORT, 't13 injected'); END")
+        try { engine().spend(UsageInterval("app", day, 0, 1000)); fail() } catch (_: android.database.sqlite.SQLiteException) { }
         assertNull(db.records().cursor("same-boot"))
         assertEquals(0L, repo().dailyUsage("app").baseConsumedMs)
         assertEquals(0L, repo().combinedUsage().consumedMs)
+        db.openHelper.writableDatabase.execSQL("DROP TRIGGER t13_session_failure")
+        assertEquals(1000L, engine().spend(UsageInterval("app", day, 0, 1000)).spentMs)
+    }
+
+    @Test fun sessionBoundaryAndContinueSurviveReopenWithoutWalletChanges() = runBlocking {
+        prepare()
+        fun sessions() = BudgetEngine(RoomStore(db), wall, monotonic, "same-boot") {
+            AppPreferences(sessionBoundaryMs = 500)
+        }
+        assertEquals(500L, sessions().spend(UsageInterval("app", day, 0, 1000)).spentMs)
+        db.close(); db = ExerciseGateDatabase.open(context, name)
+        val displayed = sessions().sessionAccess("app")
+        assertTrue(displayed.session.promptPending)
+        val before = repo().dailyUsage("app")
+        assertEquals(0L, sessions().spend(UsageInterval("app", day, 1000, 2000)).spentMs)
+        assertEquals(SessionActionResult.APPLIED, sessions().resolveSession(displayed, SessionAction.CONTINUE))
+        db.close(); db = ExerciseGateDatabase.open(context, name)
+        assertEquals(before, repo().dailyUsage("app"))
+        assertEquals(SessionState("app", day), repo().session("app"))
+        assertEquals(SessionActionResult.STALE, sessions().resolveSession(displayed, SessionAction.CONTINUE))
+        assertEquals(0L, sessions().spend(UsageInterval("app", day, 2000, 9000)).spentMs)
+    }
+
+    @Test fun sessionResetFailureKeepsPendingPromptAndCursorAfterReopen() = runBlocking {
+        prepare()
+        val sessions = BudgetEngine(RoomStore(db), wall, monotonic, "same-boot") { AppPreferences(sessionBoundaryMs = 500) }
+        sessions.spend(UsageInterval("app", day, 0, 1000))
+        val displayed = sessions.sessionAccess("app")
+        db.openHelper.writableDatabase.execSQL("CREATE TRIGGER t13_reset_failure BEFORE UPDATE ON sessions BEGIN SELECT RAISE(ABORT, 't13 injected'); END")
+        try { sessions.resolveSession(displayed, SessionAction.FINISH); fail() } catch (_: android.database.sqlite.SQLiteException) { }
+        db.openHelper.writableDatabase.execSQL("DROP TRIGGER t13_reset_failure")
+        db.close(); db = ExerciseGateDatabase.open(context, name)
+        assertEquals(displayed.session, repo().session("app"))
+        assertEquals(1000L, db.records().cursor("same-boot")!!.value.throughElapsedMs)
+        assertEquals(500L, repo().dailyUsage("app").baseConsumedMs)
     }
 
     @Test fun v1ShapeFixtureMigrationPreservesBudgetAndAwardIdentity() = runBlocking {

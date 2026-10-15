@@ -292,9 +292,9 @@ class BudgetEngineTest {
         assertEquals(CompletionResult.Refused(RewardBlock.INACTIVE), engine.complete("two", 2))
     }
 
-    @Test fun sessionOverflowRollsBackEveryPriorSpendingWriteAndCursor() = run {
-        setup(); repo.saveSession(SessionState("a", clock.day.toString(), Long.MAX_VALUE))
-        try { spend(0, 500); fail() } catch (_: ArithmeticException) { }
+    @Test fun sessionWriteFailureRollsBackEveryPriorSpendingWriteAndCursor() = run {
+        setup(); store.failNextSession = true
+        try { spend(0, 500); fail() } catch (_: IllegalStateException) { }
         assertEquals(0L, repo.dailyUsage("a").baseConsumedMs)
         assertEquals(0L, repo.combinedUsage().consumedMs)
         assertNull(store.transaction { cursor("boot") })

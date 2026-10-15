@@ -60,22 +60,71 @@ class BudgetEngine(
             return@policy SpendResult(disposition = SpendDisposition.TARGET_UNAVAILABLE)
         }
         val elapsed = interval.endElapsedMs - maxOf(interval.startElapsedMs, through)
-        val spent = minOf(elapsed, budget.usableMs)
+        val window = session(interval.packageName, accountingDay) ?: SessionState(interval.packageName, accountingDay)
+        val remainingSession = if (window.promptPending) 0L else remaining(prefs.sessionBoundaryMs, window.consumedMs)
+        val spent = minOf(elapsed, budget.usableMs, remainingSession)
         val base = minOf(spent, budget.baseRemainingMs)
         val earned = spent - base
         if (spent > 0) {
             val usage = usage(interval.packageName, accountingDay) ?: DailyUsage(interval.packageName, accountingDay)
             val combined = combined(accountingDay) ?: CombinedUsage(accountingDay)
-            val session = session(interval.packageName, accountingDay) ?: SessionState(interval.packageName, accountingDay)
             if (!spendingDateStillValid(day, accountingDay, observed)) return@policy SpendResult(disposition = SpendDisposition.WRONG_DAY)
             putUsage(usage.copy(
                 baseConsumedMs = Math.addExact(usage.baseConsumedMs, base),
                 earnedConsumedMs = Math.addExact(usage.earnedConsumedMs, earned),
             ))
             putCombined(combined.copy(consumedMs = Math.addExact(combined.consumedMs, spent)))
-            putSession(session.copy(consumedMs = Math.addExact(session.consumedMs, spent)))
+            val consumed = Math.addExact(window.consumedMs, spent)
+            putSession(window.copy(consumedMs = consumed, promptPending = consumed >= prefs.sessionBoundaryMs))
+        } else if (!window.promptPending && remainingSession == 0L) {
+            putSession(window.copy(promptPending = true))
         }
         SpendResult(base, earned, SpendDisposition.ACCOUNTED)
+    }
+
+    suspend fun sessionAccess(packageName: String): SessionAccess = policy { day, prefs ->
+        readForCurrentDay(day) { current -> sessionAccessFor(packageName, current, prefs) }
+    }
+
+    /** No wallet writes or awards. A displayed prompt can reset exactly its own window once. */
+    suspend fun resolveSession(displayed: SessionAccess, action: SessionAction,
+        eligible: () -> Boolean = { true }): SessionActionResult {
+        var resetDay: String? = null
+        fun ensureEligible(day: String) {
+            if (!eligible() || wallClock.localDate().toString() != day) throw SessionInvalidated()
+        }
+        return try { policy(beforeCommit = { resetDay?.let(::ensureEligible) }) { day, prefs ->
+            if (displayed.session.day != day || !displayed.session.promptPending) return@policy SessionActionResult.STALE
+            val app = displayed.session.packageName
+            val current = sessionAccessFor(app, day, prefs)
+            if (!stillToday(day) || !eligible() || current.session != displayed.session ||
+                current.totalAppUsageMs != displayed.totalAppUsageMs ||
+                current.budget.blockedBy == BudgetBlock.TARGET_UNAVAILABLE) return@policy SessionActionResult.STALE
+            if (action == SessionAction.CONTINUE && current.budget.blockedBy != null) {
+                return@policy SessionActionResult.BUDGET_BLOCKED
+            }
+            resetDay = day
+            ensureEligible(day)
+            putSession(SessionState(app, day))
+            // Reject old observations queued while the prompt was on screen.
+            val through = cursor(timelineId)?.throughElapsedMs ?: 0L
+            putCursor(UsageCursor(timelineId, maxOf(through, monotonicClock.elapsedRealtimeMillis())))
+            ensureEligible(day)
+            SessionActionResult.APPLIED
+        } } catch (_: SessionInvalidated) { SessionActionResult.STALE }
+    }
+
+    private class SessionInvalidated : RuntimeException()
+
+    private suspend fun DataTransaction.sessionAccessFor(app: String, day: String, prefs: AppPreferences): SessionAccess {
+        val budget = budgetFor(app, day, prefs)
+        val usage = usage(app, day) ?: DailyUsage(app, day)
+        val old = session(app, day) ?: SessionState(app, day)
+        val window = if (!old.promptPending && old.consumedMs >= prefs.sessionBoundaryMs &&
+            budget.blockedBy != BudgetBlock.TARGET_UNAVAILABLE) old.copy(promptPending = true) else old
+        if (window != old) putSession(window)
+        return SessionAccess(budget, window, prefs.sessionBoundaryMs,
+            Math.addExact(usage.baseConsumedMs, usage.earnedConsumedMs))
     }
 
     suspend fun offer(packageName: String?, exercise: Exercise, mode: ChallengeMode): OfferResult = policy { day, prefs ->

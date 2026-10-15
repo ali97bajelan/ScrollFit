@@ -15,6 +15,7 @@ import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.challenge.ChallengeActivity
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.core.budget.*
 import com.example.scrollfit.core.data.AppPreferences
 import com.example.scrollfit.core.usage.*
 import kotlinx.coroutines.*
@@ -24,9 +25,13 @@ import java.time.ZoneId
 
 /** Main-source package-only monitor. No content access, polling of history or background launches. */
 class MonitoringService : AccessibilityService() {
-    private data class Observation(val signal: MonitorSignal, val ticket: Long)
+    private sealed interface Command
+    private data class Observation(val signal: MonitorSignal, val ticket: Long, val generation: Long) : Command
+    private data class SessionCommand(val access: SessionAccess, val action: SessionAction) : Command
+    private var sessionActionQueued = false
+    private lateinit var budgetEngine: BudgetEngine
     private lateinit var scope: CoroutineScope
-    private lateinit var observations: Channel<Observation>
+    private lateinit var observations: Channel<Command>
     private lateinit var controller: MonitoringController
     private lateinit var overlay: BudgetOverlay
     private lateinit var presentation: MonitorPresentation
@@ -75,7 +80,7 @@ class MonitoringService : AccessibilityService() {
         safePackages = emptySet(); overflow = false; lastFailure = MonitorFailure.NONE
         overlay = BudgetOverlay(this, { navigate(GLOBAL_ACTION_HOME) },
             { navigate(GLOBAL_ACTION_QUICK_SETTINGS) }, { disableMonitoring() }, { fail(MonitorFailure.OVERLAY) },
-            ::openChallenge)
+            ::openChallenge, ::resolveSession)
         presentation = MonitorPresentation(overlay::show, overlay::dismiss)
         MonitorRuntime.connected(this)
         MonitorRuntime.publish(MonitorStatus(failure = MonitorFailure.STARTING))
@@ -93,15 +98,22 @@ class MonitoringService : AccessibilityService() {
             val boot = try { MonitorAccess.bootIdentity(this@MonitoringService) }
             catch (_: Exception) { fail(MonitorFailure.BOOT_ID); return@launch }
             try {
-                controller = MonitoringController(persistence.budgetEngine(boot), TargetApps.protectedPackages(this@MonitoringService))
+                budgetEngine = persistence.budgetEngine(boot)
+                controller = MonitoringController(budgetEngine, TargetApps.protectedPackages(this@MonitoringService))
                 safePackages = withContext(Dispatchers.IO) { TargetApps.list(this@MonitoringService).map { it.packageName }.toSet() }
                 ready = true
                 startPreferenceCollection()
                 requestReconciliation()
-                for (observation in observations) {
+                for (command in observations) {
                     try {
-                        if (!readiness.available) continue
+                        if (!readiness.available) { sessionActionQueued = false; continue }
                         if (overflow) { overflow = false; fail(MonitorFailure.QUEUE); continue }
+                        if (command is SessionCommand) {
+                            try { applySessionAction(command) } finally { sessionActionQueued = false }
+                            continue
+                        }
+                        val observation = command as Observation
+                        if (observation.generation != generation) continue
                         if (SystemClock.elapsedRealtime() - observation.signal.sample.elapsedMs > MonitoringController.MAX_OBSERVED_GAP_MS) {
                             fail(MonitorFailure.QUEUE); continue
                         }
@@ -157,6 +169,48 @@ class MonitoringService : AccessibilityService() {
         } catch (_: Exception) {
             Toast.makeText(this, R.string.challenge_launch_error, Toast.LENGTH_LONG).show()
         }
+    }
+
+    /** User taps and observations share one queue; no reset races a suspended checkpoint. */
+    private fun resolveSession(access: SessionAccess, action: SessionAction) {
+        if (!connected || sessionActionQueued || !overlay.isCurrent(access)) return
+        sessionActionQueued = true
+        tick?.cancel()
+        if (!observations.trySend(SessionCommand(access, action)).isSuccess) {
+            sessionActionQueued = false
+            fail(MonitorFailure.QUEUE)
+        }
+    }
+
+    private suspend fun applySessionAction(command: SessionCommand) {
+        val displayed = command.access
+        val startedGeneration = generation
+        fun eligible() = connected && readiness.monitoringEnabled && leaseHeld &&
+            generation == startedGeneration && !overflow && MonitorAccess.usage(this) &&
+            !MonitorRuntime.ownUiVisible &&
+            requireNotNull(getSystemService(PowerManager::class.java)).isInteractive &&
+            !requireNotNull(getSystemService(KeyguardManager::class.java)).isKeyguardLocked
+        if (!eligible() || !overlay.isCurrent(displayed) || foreground != displayed.session.packageName) {
+            enqueue(); return
+        }
+        if (command.action == SessionAction.FINISH) {
+            // Keep the prompt/session if Home cannot be requested; never reveal the target on failure.
+            if (!performGlobalAction(GLOBAL_ACTION_HOME)) {
+                Toast.makeText(this, R.string.monitor_navigation_failed, Toast.LENGTH_LONG).show()
+                enqueue(); return
+            }
+            foreground = null; foregroundKnown = false
+        }
+        val result = budgetEngine.resolveSession(displayed, command.action) {
+            eligible() && (command.action == SessionAction.FINISH ||
+                (overlay.isCurrent(displayed) && foreground == displayed.session.packageName))
+        }
+        // Pause and reconcile so prompt time and queued pre-tap samples cannot be charged.
+        generation++
+        controller.abandon()
+        if (result == SessionActionResult.APPLIED) presentation.pause()
+        enqueue()
+        requestReconciliation()
     }
 
     /** Stop the live monitor immediately while the durable disable write completes. */
@@ -231,7 +285,7 @@ class MonitoringService : AccessibilityService() {
             !signal.usageAccess || !signal.interactive || signal.ownUiVisible || !signal.foregroundKnown)
         if (generation != beforePresentation) return
         if (!readiness.available) return
-        if (!observations.trySend(Observation(signal, ticket)).isSuccess) {
+        if (!observations.trySend(Observation(signal, ticket, generation)).isSuccess) {
             overflow = true
             presentation.pause()
             MonitorRuntime.publish(MonitorStatus(failure = MonitorFailure.QUEUE, hasUnmonitoredGap = true))
@@ -267,6 +321,7 @@ class MonitoringService : AccessibilityService() {
     private fun releaseLease() { MonitorRuntime.ownership.release(this); leaseHeld = false }
     private fun fail(failure: MonitorFailure) {
         if (!connected) return
+        sessionActionQueued = false
         generation++ // Invalidate any decision suspended in storage when failure arrived.
         lastFailure = failure
         tick?.cancel(); reconciliation?.cancel()

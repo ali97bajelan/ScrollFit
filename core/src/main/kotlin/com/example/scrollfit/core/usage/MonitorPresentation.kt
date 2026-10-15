@@ -1,9 +1,9 @@
 package com.example.scrollfit.core.usage
 
-import com.example.scrollfit.core.budget.BudgetBlock
+import com.example.scrollfit.core.budget.SessionAccess
 
 /** UI-thread adapter: immediate safe-surface dismissal and stale worker-result invalidation. */
-class MonitorPresentation(private val show: (String, BudgetBlock) -> Boolean, private val hide: () -> Boolean) {
+class MonitorPresentation(private val show: (String, BlockReason, SessionAccess?) -> Boolean, private val hide: () -> Boolean) {
     private var revision = 0L
     private var target: String? = null
     fun transition(foreground: String?, pause: Boolean): Long {
@@ -22,7 +22,7 @@ class MonitorPresentation(private val show: (String, BudgetBlock) -> Boolean, pr
         val app = decision.foreground
         val reason = decision.blockedBy
         if (app != null && reason != null) {
-            if (!show(app, reason)) return false
+            if (!show(app, reason, decision.sessionAccess)) return false
             target = app
         } else {
             if (!hide()) return false

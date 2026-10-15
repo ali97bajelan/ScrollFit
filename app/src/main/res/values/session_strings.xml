@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="session_title">زمان یک مکث کوتاه است</string>
+    <string name="session_explanation">بازهٔ استفاده تمام شد. ادامه فقط از زمان باقی‌مانده استفاده می‌کند و به ورزش دوباره نیاز ندارد. هنگام نمایش این پیام، زمانی کم نمی‌شود. پایان، شما را به صفحهٔ اصلی گوشی برمی‌گرداند و زمان استفاده‌نشده را نگه می‌دارد.</string>
+    <string name="session_continue">ادامه</string>
+    <string name="session_finish">پایان و رفتن به صفحهٔ اصلی</string>
+    <string name="session_boundary_seconds">بازهٔ استفاده برای هر برنامه (ثانیه، بیشتر از صفر)</string>
+    <string name="session_settings_explanation">پیش‌فرض ۳۰۰ ثانیه (۵ دقیقه) است. هر برنامه بازهٔ جداگانه دارد. جابه‌جایی بین برنامه‌ها یا راه‌اندازی دوباره، زمان جمع‌شده را پاک نمی‌کند. تغییر این مقدار، پیام مکثِ در انتظار را حذف نمی‌کند.</string>
+</resources>

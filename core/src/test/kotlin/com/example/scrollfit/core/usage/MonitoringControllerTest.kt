@@ -44,7 +44,7 @@ class MonitoringControllerTest {
         setup(base = 500); controller.observe(signal()); advance(200); controller.observe(signal(interactive = false))
         advance(1000); controller.observe(signal("self", own = true)); advance(1000); controller.observe(signal("a"))
         advance(300); val blocked = controller.observe(signal())
-        assertEquals(BudgetBlock.APP_BUDGET, blocked.blockedBy)
+        assertEquals(BlockReason.APP_BUDGET, blocked.blockedBy)
         advance(1000); controller.observe(signal())
         assertEquals(500L, repo.dailyUsage("a").baseConsumedMs)
         assertEquals(500L, repo.combinedUsage().consumedMs)
@@ -53,8 +53,8 @@ class MonitoringControllerTest {
     @Test fun combinedCeilingHasDistinctReasonAndSwitchingCannotBypassIt() = run {
         setup(); prefs = prefs.copy(combinedCeilingMs = 1000)
         controller.observe(signal()); advance(700); controller.observe(signal("b")); advance(700)
-        assertEquals(BudgetBlock.COMBINED_CEILING, controller.observe(signal("b")).blockedBy)
-        advance(500); assertEquals(BudgetBlock.COMBINED_CEILING, controller.observe(signal()).blockedBy)
+        assertEquals(BlockReason.COMBINED_CEILING, controller.observe(signal("b")).blockedBy)
+        advance(500); assertEquals(BlockReason.COMBINED_CEILING, controller.observe(signal()).blockedBy)
         assertEquals(1000L, repo.combinedUsage().consumedMs)
     }
 
@@ -143,7 +143,7 @@ class MonitoringControllerTest {
         assertEquals(500L, repo.dailyUsage("a").baseConsumedMs)
         repo.saveTarget(TargetConfig("a", baseAllowanceMs = 600))
         controller.observe(signal()); advance(500)
-        assertEquals(BudgetBlock.APP_BUDGET, controller.observe(signal()).blockedBy)
+        assertEquals(BlockReason.APP_BUDGET, controller.observe(signal()).blockedBy)
         assertEquals(600L, repo.combinedUsage().consumedMs)
     }
 
