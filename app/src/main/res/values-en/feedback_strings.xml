@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_language">en</string>
+    <string name="feedback_enabled">Audio feedback</string>
+    <string name="feedback_checking">Checking for an offline voice; visible counts and short tones are available.</string>
+    <string name="feedback_voice">Offline spoken counting is on.</string>
+    <string name="feedback_sounds">Offline speech is unavailable. Short tones and visible counts are available; no download is needed.</string>
+    <string name="feedback_visual">Audio is unavailable; follow the counts and messages on screen.</string>
+    <string name="feedback_muted">Audio is muted; counts and messages remain visible.</string>
+    <string name="feedback_position">Position your whole body in the camera frame.</string>
+    <string name="feedback_reward">Challenge complete. %1$s seconds of time saved.</string>
+    <string name="feedback_save_error">Could not save the audio setting. Try again.</string>
+    <string name="feedback_retry">Retry saving the audio setting</string>
+</resources>

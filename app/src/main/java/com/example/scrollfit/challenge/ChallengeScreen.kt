@@ -14,8 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.scrollfit.R
@@ -25,6 +28,9 @@ import com.example.scrollfit.core.budget.*
 import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.feedback.AudioStatus
+import com.example.scrollfit.feedback.formatRewardSeconds
+import java.util.Locale
 import kotlinx.coroutines.delay
 
 @Composable
@@ -40,8 +46,10 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
     val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permission = it }
     var returnError by remember { mutableStateOf(false) }
     LaunchedEffect(flow) { flow.load() }
-    LaunchedEffect(flow.session) {
-        while (true) { delay(1000); flow.checkDay() }
+    LaunchedEffect(owner, flow) {
+        owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) { delay(250); flow.checkDay(); flow.audio.controller.tick() }
+        }
     }
     DisposableEffect(owner, flow) {
         registerCancellation(flow::interrupt)
@@ -53,17 +61,18 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
             }
         }
         owner.lifecycle.addObserver(observer)
-        onDispose { flow.interrupt(); registerCancellation(null); owner.lifecycle.removeObserver(observer) }
+        onDispose { flow.interrupt(); flow.audio.close(); registerCancellation(null); owner.lifecycle.removeObserver(observer) }
     }
     fun close() { flow.interrupt(); onClose() }
     BackHandler { close() }
     val session = flow.session
     if (session != null && flow.phase == ChallengePhase.RUNNING) {
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
+            FeedbackControls(flow)
             Text(stringResource(R.string.challenge_progress, flow.repetitions, session.challenge.repetitionsRequired),
                 modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.headlineSmall)
             CameraScreen(session.challenge.exercise, onCancel = { close() }, challenge = session,
-                onProgress = flow::progressChanged, onInterrupted = flow::interrupt)
+                onProgress = flow::progressChanged, onInterrupted = flow::interrupt, onTracking = flow::trackingChanged)
         }
         return
     }
@@ -71,9 +80,10 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(if (mode == ChallengeMode.EXERCISE_ONLY) R.string.challenge_only else R.string.challenge_advance),
             style = MaterialTheme.typography.headlineMedium)
+        FeedbackControls(flow)
         val result = flow.result
         if (result is CompletionResult.Awarded || result == CompletionResult.ExerciseOnlyCompleted) {
-            Text(if (result is CompletionResult.Awarded) stringResource(R.string.challenge_success, result.award.amountMs / 1000)
+            Text(if (result is CompletionResult.Awarded) stringResource(R.string.feedback_reward, formatRewardSeconds(result.award.amountMs, Locale.forLanguageTag(stringResource(R.string.feedback_language))))
                 else stringResource(R.string.challenge_only_success))
             if (session != null) Text(stringResource(R.string.challenge_activity, session.repetitions, session.activeDurationMs / 1000))
             if (result is CompletionResult.Awarded) {
@@ -152,6 +162,33 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
             }
         }
         Button(onClick = { close() }) { Text(stringResource(R.string.challenge_close)) }
+    }
+}
+
+@Composable
+private fun FeedbackControls(flow: ChallengeFlow) {
+    val feedbackLabel = stringResource(R.string.feedback_enabled)
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Switch(checked = flow.speechEnabled, onCheckedChange = flow::setSpeechEnabled,
+                enabled = flow.speechLoaded, modifier = Modifier.semantics {
+                    contentDescription = feedbackLabel
+                })
+            Text(stringResource(R.string.feedback_enabled))
+        }
+        Text(stringResource(when (flow.audio.status) {
+            AudioStatus.CHECKING -> R.string.feedback_checking
+            AudioStatus.VOICE -> R.string.feedback_voice
+            AudioStatus.SOUNDS -> R.string.feedback_sounds
+            AudioStatus.VISUAL -> R.string.feedback_visual
+            AudioStatus.MUTED -> R.string.feedback_muted
+        }))
+        if (flow.speechError) {
+            Text(stringResource(R.string.feedback_save_error))
+            OutlinedButton(onClick = { flow.setSpeechEnabled(flow.speechEnabled) }) {
+                Text(stringResource(R.string.feedback_retry))
+            }
+        }
     }
 }
 

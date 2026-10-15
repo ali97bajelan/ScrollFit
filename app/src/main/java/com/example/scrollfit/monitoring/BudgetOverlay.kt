@@ -44,7 +44,7 @@ class BudgetOverlay(private val service: AccessibilityService,
         }.getOrDefault(packageName)
         val content = LinearLayout(service).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_VERTICAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL; setPadding(dp(24), dp(24), dp(24), dp(24))
+            layoutDirection = service.resources.configuration.layoutDirection; setPadding(dp(24), dp(24), dp(24), dp(24))
             addView(text(service.getString(R.string.monitor_blocked), 26f))
             addView(text(label, 20f))
             addView(text(service.getString(if (reason == BudgetBlock.COMBINED_CEILING)
@@ -54,7 +54,7 @@ class BudgetOverlay(private val service: AccessibilityService,
             addView(button(R.string.monitor_disable, stop))
         }
         val scroll = ScrollView(service).apply {
-            setBackgroundColor(Color.rgb(25, 32, 45)); layoutDirection = View.LAYOUT_DIRECTION_RTL; addView(content)
+            setBackgroundColor(Color.rgb(25, 32, 45)); layoutDirection = service.resources.configuration.layoutDirection; addView(content)
         }
         val attached = windows.replace(scroll)
         if (attached) {

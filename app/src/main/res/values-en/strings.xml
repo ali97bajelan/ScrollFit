@@ -2,7 +2,7 @@
     <string name="app_name">ScrollFit</string>
     <string name="welcome">Welcome to ScrollFit</string>
     <string name="welcome_body">ScrollFit helps you manage app usage time and earn time through exercise. Camera processing happens on your phone; photos and videos are not saved or sent.</string>
-    <string name="bootstrap_notice">Daily usage budgeting is ready for testing; on-device behavior has not yet been verified. Camera preview is ready for testing; exercise counting is not connected yet.</string>
+    <string name="bootstrap_notice">Four exercise challenges and time rewards are ready for testing. Camera and monitoring behavior on a phone remains unverified.</string>
     <string name="open_spike">30-second monitoring test</string>
     <string name="enter_dashboard">Open dashboard</string>
     <string name="dashboard">Home</string>
@@ -12,7 +12,7 @@
     <string name="monitoring_disabled">Monitoring is disabled</string>
     <string name="no_targets">No apps have been selected for limits yet.</string>
     <string name="view_exercises">Browse exercises</string>
-    <string name="exercise_catalog_notice">The values below are initial suggestions and may change in future versions. Camera preview is available for testing; exercise counting and challenges are not connected yet.</string>
+    <string name="exercise_catalog_notice">These cards open camera preview trials. Start a challenge from the dashboard for time rewards or saved exercise activity. The suggested values are editable.</string>
     <string name="push_up">Push-ups</string>
     <string name="squat">Squats</string>
     <string name="jumping_jack">Jumping jacks</string>

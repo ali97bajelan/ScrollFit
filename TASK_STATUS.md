@@ -1,6 +1,6 @@
 # Exercise Gate task status
 
-Updated: 2026-10-13 (Asia/Tehran). Current authorization: **T01–T10**, per the owner's explicit requests; later tasks are outside the current scope. The owner requested English communication; the product UI remains Persian RTL. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
+Updated: 2026-10-16 (Asia/Tehran). Current authorization: **T01–T12**, per the owner's explicit requests; later tasks are outside the current scope. The owner requested English communication; the product UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
 
 | ID | Status | Verification evidence | Blocker | Next action |
 | --- | --- | --- | --- | --- |
@@ -14,8 +14,8 @@ Updated: 2026-10-13 (Asia/Tehran). Current authorization: **T01–T10**, per the
 | T08 | implemented | Independent bilateral squat detector, stable standing calibration and Persian front/slight-angle camera trial prepared. 31 new sequence tests plus 110 existing JVM checks pass (141 total). Three calibration regressions failed before their fixes. [Evidence](docs/T08_SQUAT_COUNTER.md). | Android build/lint/instrumentation exit 1 at offline AGP 9.4.0 resolution before compilation. No APK or physical-device trial; threshold tuning pending. | Restore Android environment, build APK and record [T08 phone trial](docs/T08_PHONE_TEST.md) with observed counts before marking verified. |
 | T09 | implemented | Independent bilateral jumping-jack detector and Persian full-body front-view camera trial prepared. 30 new sequence tests plus 141 existing JVM checks pass (171 total). Isolated fault probe produces four expected failures. [Evidence](docs/T09_JUMPING_JACK_COUNTER.md). | Android build/lint/instrumentation exit 1 at offline AGP 9.4.0 resolution before compilation. No APK or recorded physical-device trial; threshold tuning pending. | Restore Android environment, build APK and record [T09 phone trial](docs/T09_PHONE_TEST.md) with observed counts before marking verified. |
 | T10 | implemented | Independent left/right knee-raise detector and Persian full-body front-view camera trial prepared. 32 new sequence tests plus 171 existing JVM checks pass (203 total). [Evidence](docs/T10_KNEE_RAISE_COUNTER.md). | Android build/lint/instrumentation exit 1 at offline AGP 9.4.0 resolution before compilation. No APK or recorded physical-device trial; threshold tuning pending. | Restore Android environment, build APK and record [T10 phone trial](docs/T10_PHONE_TEST.md) with observed counts before marking verified. |
-| T11 | todo | Not run. | Depends on T04/T06–T10; outside current request. | Connect both earning modes and exercise-only activity to exactly-once awards. |
-| T12 | todo | Not run. | Depends on T11; outside current request. | Implement offline speech and visual/sound fallback. |
+| T11 | implemented | Both earning paths, all four counters, captured offers, cancellation, persisted success and exercise-only activity connected. 221 JVM tests pass (17 lifecycle + 1 atomic regression + 203 existing); old engine fails the activity regression. Independent source review and structural checks passed. [Evidence](docs/T11_CHALLENGES.md). | Android build/lint/instrumentation exit 1 at AGP 9.4.0 resolution before compilation. Room/device execution pending; no APK. | Restore Android artifacts/SDK, run prepared Room checks and [T11 phone checklist](docs/T11_PHONE_TEST.md). |
+| T12 | implemented | Offline voice selection, coalesced counts, sustained-loss prompts, saved-result speech, persistent mute and tone/visual fallback connected. 244 JVM tests pass (23 new); refusal and warning timing regressions failed before their fixes. [Evidence](docs/T12_FEEDBACK.md). | Android build/lint/instrumentation assembly exits 1 at offline AGP 9.4.0 resolution before compilation. TTS/device output unverified; no APK. | Restore Android artifacts/SDK, run prepared DataStore tests and [T12 phone checklist](docs/T12_PHONE_TEST.md). |
 | T13 | todo | Not run. | Depends on T04/T05; outside current request. | Implement persistent session windows and Continue/Finish. |
 | T14 | todo | Navigation shell only; no product functionality claimed. | Depends on T05/T11–T13; outside current request. | Complete accessible Persian UI and actual settings/actions. |
 | T15 | todo | Not run. | Depends on T03/T11/T14; outside current request. | Implement separate usage/activity outcomes with monitoring coverage. |
@@ -155,3 +155,56 @@ Updated: 2026-10-13 (Asia/Tehran). Current authorization: **T01–T10**, per the
 - Actual Android command uses the same environment/runner with `:app:assembleDebug :app:assembleRelease :app:lintDebug :platform:assembleDebugAndroidTest :platform:connectedDebugAndroidTest --offline --console=plain`. Exit **1**, at offline AGP 9.4.0 resolution before compilation/lint/instrumentation. [Build log](docs/verification/T10-build.log). No APK or fresh Google Maven reachability result is claimed; no device trial ran.
 - Source XML/TOML, string references, integer count formatting, counter routing and whitespace checks are recorded in [source checks](docs/verification/T10-source-checks.log). Structural checks do not prove Android compilation or camera/lifecycle behavior.
 - T10 is **implemented, not device-verified**. [Detector policy/evidence](docs/T10_KNEE_RAISE_COUNTER.md), [pending phone checklist/trial record](docs/T10_PHONE_TEST.md), [generated commit message](docs/T10_COMMIT_MESSAGE.txt). The required recorded physical-device trial remains outstanding.
+
+
+## T11 implementation and verification
+
+- Scope: the owner requested the next ordered task, T11. Work began 2026-10-15
+  and final delivery was recorded 2026-10-16 (Asia/Tehran). T12–T16 remain outside
+  this request. Existing changes and concurrent localization/T11 commits are
+  preserved. This session did not create a git commit.
+- Connected dashboard target-first advance earning, all four production-blocker
+  exercise choices, shared preparation, immutable offers, UUID/start-day snapshots,
+  camera progress, persisted success, explicit target return and exercise-only mode.
+  Added Persian/English/French challenge text, preserving concurrent localization.
+- ChallengeSession rejects stale/future/duplicate timestamps and counter regression,
+  retains completed reps through tracking loss and requires fresh tracking to finish.
+  Observed active duration excludes loss/long gaps. Pause/back/rotation/lens/retry,
+  camera failures and navigation invalidate unfinished completion synchronously.
+- Award/status/wallet/activity commit atomically. Eligibility is checked before and
+  after writes and after suspended daily cleanup. Interrupted or failed activity
+  writes roll back. Duplicate callbacks retain one activity/award; history deletion
+  cannot revive them. Process recovery cancels incomplete rows, keeping saved awards.
+- Direct verification uses Kotlin 2.4.10, JUnit 4.13.2, Temurin Java21 and JVM target17
+  on real source/tests. Baseline HEAD 9f1dc0e: 203 passed. Old engine plus the new
+  atomic activity regression: 204 run, 1 expected failure. Final source: 221 passed
+  (17 lifecycle, 1 atomic regression, 203 existing). [Core log](docs/verification/T11-core-tests.log),
+  [baseline](docs/verification/T11-baseline-tests.log), [regression](docs/verification/T11-activity-regression-red.log).
+- Temporary tools were restored into /tmp. Initial Gradle launch with only a JRE
+  failed toolchain detection; full JDK21 rerun reached configuration and exited1,
+  BUILD FAILED in 4m11s: AGP9.4.0 could not resolve, before compilation/lint/Room/
+  instrumentation. Official AGP POM recheck returned HTTP404. No SDK/adb/emulator
+  or APK exists. [Android output](docs/verification/T11-build.log).
+- XML/TOML, resource references, private Activity, restricted accessibility config,
+  locale placeholder parity and whitespace were structurally checked. These checks
+  do not replace Android compilation. Independent review found preparation-resume
+  and rapid-tap Activity stacking issues; both were fixed and rechecked. Final
+  read-only review found no remaining Critical/Important issues in reviewed paths.
+- Two new Room checks cover saved activity/award after reopen and trigger-induced
+  activity rollback; concurrent completion also asserts one activity. They are
+  prepared, unrun. [Design/evidence](docs/T11_CHALLENGES.md), [phone checklist](docs/T11_PHONE_TEST.md),
+  [commit text](docs/T11_COMMIT_MESSAGE.txt). T11 is implemented, not device-verified.
+
+- Final native project check also passed: `env JAVA_HOME=/tmp/scrollfit-toolchain/jdk-21.0.12.1+1 GRADLE_USER_HOME=/tmp/scrollfit-gradle bash ./gradlew -p verification/core :core:test --console=plain`, exit0, BUILD SUCCESSFUL in 9m29s. Fresh JUnit XML confirms **221 tests, 0 failures, 0 errors, 0 skipped**. [Gradle log](docs/verification/T11-gradle-core-tests.log), [totals](docs/verification/T11-test-summary.txt), [lifecycle XML](docs/verification/T11-challenge-tests.xml). The final direct Kotlin/JUnit snapshot also passed221.
+
+
+## T12 implementation and verification
+
+- Authorization: the owner requested the next task after T11, authorizing T12. T13–T16 remain outside this turn. Existing uncommitted changes and the git index were preserved; no commit was created.
+- Added Android-free feedback policy, installed offline voice filtering and screen-owned TextToSpeech/ToneGenerator output. Saved audio controls are available in setup, counting and result phases; counts and guidance remain visible when muted or audio is unavailable. Locale markers match the language Android actually selected for strings.
+- Counts coalesce into one latest pending event and expire after one second. Tracking prompts require two seconds of sustained loss, stay relevant while tracking is lost and are at least ten seconds apart from actual playback. Completion uses only persisted results and exact saved reward milliseconds; refusal, cancellation/background and disposal clear feedback. Late callbacks do not resume output.
+- Final command: `env JAVA_HOME=/tmp/scrollfit-toolchain/jdk-21.0.12.1+1 GRADLE_USER_HOME=/tmp/scrollfit-gradle ./gradlew -p verification/core :core:test --offline --console=plain`, exit 0, **BUILD SUCCESSFUL in 1m13s**. Fresh JUnit XML: **244 tests, 0 failures, 0 errors, 0 skipped** (19 feedback, 4 voice-selection, 221 existing). [Log](docs/verification/T12-gradle-core-tests.log), [totals](docs/verification/T12-test-summary.txt).
+- Initial feedback tests failed before implementation; the refused-completion regression failed before its fix. Independent review found queued warning expiry and cooldown measured from queueing; both new timing regressions failed before fixes and pass in the final suite. Locale fallback and error copy findings were also addressed.
+- XML/TOML, string references, translation/placeholder parity, locale markers, narrow TTS service query, absence of app INTERNET permission and whitespace checks passed. These are structural checks, not Android compilation.
+- Actual Android debug/release/lint/instrumentation-assembly command exited 1, BUILD FAILED in 2s: offline AGP 9.4.0 resolution failed before compilation. No APK or physical-device result. This does not recheck current Maven reachability. [Build log](docs/verification/T12-build.log).
+- The existing DataStore instrumentation test covers muted preference persistence/reopening but remains unrun. All T12 device checks are pending, including engine behavior, airplane mode, speech/tones, mute persistence, rapid counts and lifecycle interruption. [Details](docs/T12_FEEDBACK.md), [phone checklist](docs/T12_PHONE_TEST.md), [commit text](docs/T12_COMMIT_MESSAGE.txt).

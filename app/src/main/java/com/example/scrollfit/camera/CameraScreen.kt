@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeSession? = null,
-    onProgress: () -> Unit = {}, onInterrupted: () -> Unit = {}) {
+    onProgress: () -> Unit = {}, onInterrupted: () -> Unit = {}, onTracking: (Boolean) -> Unit = {}) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val preferences = remember(context) { (context.applicationContext as ScrollFitApplication).persistence.preferences }
@@ -107,6 +107,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
                     Exercise.ALTERNATING_KNEE_RAISE -> AlternatingKneeRaiseCounter()
                 }) {
                 state = it
+                if (!closing) onTracking(it.status == CameraPoseStatus.TRACKING && it.progress?.trackingAvailable == true)
                 if (challenge == null && (it.status == CameraPoseStatus.PAUSED || it.status == CameraPoseStatus.INITIALIZING)) {
                     repetitions = 0
                 }
@@ -186,6 +187,9 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
             }
         }
         Text(stringResource(state.status.message()), style = MaterialTheme.typography.bodyLarge)
+        if (challenge != null && state.status in setOf(CameraPoseStatus.SEARCHING, CameraPoseStatus.TRACKING_LOST)) {
+            Text(stringResource(R.string.feedback_position))
+        }
         if (!permission) {
             Button(onClick = { requestPermission.launch(Manifest.permission.CAMERA) }) {
                 Text(stringResource(R.string.camera_grant))

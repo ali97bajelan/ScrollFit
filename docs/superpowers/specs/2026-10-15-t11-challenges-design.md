@@ -56,3 +56,7 @@ T14 screen completion and T15 outcomes stay outside this request.
 Execution ruling: the task list explicitly says to implement without intermediate
 approval. No design/plan approval pause or automatic commit is introduced. Existing
 changes and index are preserved; read-only Git metadata means no new worktree.
+
+Concurrent-work adaptation: preserve the owner’s English/French localization
+commit. Supply the new challenge strings in those locales and follow device
+layout direction, keeping Persian RTL. No existing commit is rewritten.

@@ -13,6 +13,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.scrollfit.core.data.ChallengeMode
 import com.example.scrollfit.core.exercise.Exercise
@@ -29,7 +30,9 @@ class ChallengeActivity : ComponentActivity() {
         enableEdgeToEdge()
         acceptRequest(intent)
         setContent {
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            val direction = if (LocalConfiguration.current.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL)
+                LayoutDirection.Rtl else LayoutDirection.Ltr
+            CompositionLocalProvider(LocalLayoutDirection provides direction) {
                 MaterialTheme {
                     request?.let { selected ->
                         key(selected.version) {

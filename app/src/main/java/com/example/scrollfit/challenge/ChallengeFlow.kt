@@ -9,6 +9,7 @@ import com.example.scrollfit.core.challenge.ChallengeSession
 import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.feedback.ChallengeAudio
 import com.example.scrollfit.monitoring.MonitorRuntime
 import com.example.scrollfit.monitoring.TargetApp
 import com.example.scrollfit.monitoring.TargetApps
@@ -21,6 +22,12 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     private val initialTarget: String?, private val initialExercise: Exercise?) {
     private val persistence = app.persistence
     private val scope = app.challengeScope
+    val audio = ChallengeAudio(app)
+    private var speechWrite: Job? = null
+    private var speechRevision = 0L
+    var speechEnabled by mutableStateOf(false); private set
+    var speechLoaded by mutableStateOf(false); private set
+    var speechError by mutableStateOf(false); private set
     private var engine: BudgetEngine? = null
     private var generation = 0L
     private var refreshOnResume = false
@@ -54,12 +61,30 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
                 val policy = persistence.budgetEngine("challenge-ui")
                 if (ticket != generation) return@launch
                 engine = policy; targets = available; camera = prefs.camera
+                if (!speechLoaded) {
+                    speechEnabled = prefs.speechEnabled; speechLoaded = true
+                    audio.setEnabled(speechEnabled)
+                }
                 if (!initialized) exercise = initialExercise ?: prefs.lastExercise
                 target = (target ?: initialTarget)?.takeIf { wanted -> available.any { it.packageName == wanted } }
                 refreshOffer(ticket)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { if (ticket == generation) error = true }
             finally { if (ticket == generation) busy = false }
+        }
+    }
+
+    fun setSpeechEnabled(value: Boolean) {
+        if (!speechLoaded) return
+        speechEnabled = value
+        audio.setEnabled(value) // Muting takes effect before any storage suspension.
+        speechError = false
+        val ticket = ++speechRevision
+        speechWrite?.cancel()
+        speechWrite = scope.launch {
+            try { persistence.preferences.update { it.copy(speechEnabled = value) } }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { if (ticket == speechRevision) speechError = true }
         }
     }
 
@@ -109,6 +134,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
                     }
                     session = ChallengeSession(started.challenge, policy, persistence.wallClock, persistence.monotonicClock)
                     phase = ChallengePhase.RUNNING
+                    audio.controller.begin()
                 } else if (ticket == generation) {
                     offer = (started as StartResult.OfferChanged).current; changed = true
                 }
@@ -118,9 +144,16 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
         }
     }
 
+    private var tracking = false
+    fun trackingChanged(available: Boolean) {
+        tracking = available
+        audio.controller.progress(session?.repetitions ?: 0, available)
+    }
+
     fun progressChanged() {
         val active = session ?: return
         repetitions = active.repetitions; phase = active.phase
+        if (active.phase != ChallengePhase.INTERRUPTED) audio.controller.progress(repetitions, tracking)
         if (active.phase == ChallengePhase.READY && !busy) complete()
         if (active.phase == ChallengePhase.INTERRUPTED) interrupt()
     }
@@ -134,6 +167,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
                 val persisted = active.complete()
                 // A committed award remains valid even if navigation occurred during delivery.
                 result = persisted; phase = active.phase
+                audio.controller.complete(persisted)
                 if (persisted is CompletionResult.Awarded) MonitorRuntime.configurationChanged()
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { error = true; phase = active.phase }
@@ -148,6 +182,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     }
 
     fun interrupt() {
+        audio.controller.stop()
         ++generation // Synchronous: also invalidates a start suspended in Room/DataStore.
         val active = session
         active?.interrupt()

@@ -64,10 +64,11 @@ TASK_STATUS and T11 documentation/phone checklist/commit-message text.
 
 - [x] Add dashboard earning and exercise-only entry.
 - [x] Fetch/display all four blocker offers, reject stale async results, launch only on click.
-- [ ] Attempt Android build/lint/instrumentation and run final JVM/source checks.
+- [x] Android build/lint/instrumentation attempted: AGP9.4.0 resolution failure.
+  Direct snapshot and native Gradle suites both pass221; source/locale checks pass.
 - [x] Independent review of accounting/lifecycle/launch races; preparation-resume and
   Activity-stacking findings fixed and rechecked by reviewer.
-- [ ] Record exact evidence and pending physical-device checks; generate commit text.
+- [x] Recorded exact evidence and pending physical-device checks; generated commit text.
 
 ## Execution ledger
 
@@ -80,5 +81,14 @@ TASK_STATUS and T11 documentation/phone checklist/commit-message text.
   real source/test compilation targets JVM17. No Android proof is inferred.
 - Ruling: final daily cleanup can suspend, so policy now checks completion eligibility
   again after cleanup before returning its transaction block; two regressions cover it.
-- Status: implementation and core verification finished; Android attempt and delivery
-  documentation are being finalized.
+- Status: implementation, core verification and delivery documentation finished;
+  Android/device verification remains blocked at the documented build gate.
+
+- Ruling: concurrent owner commits introduced English/French localization and
+  committed T11 source during this session. Preserved both commits, supplied
+  translated challenge resources and locale direction, and verified a stable
+  source snapshot after a transient file replacement interrupted a runner read.
+
+- Final: source implementation complete. Native Gradle core task exit0, fresh
+  JUnit totals221/0 failures/0 errors/0 skipped. Android task exit1 at AGP resolution;
+  no APK/phone result. Owner commits and unrelated CRLF changes preserved.

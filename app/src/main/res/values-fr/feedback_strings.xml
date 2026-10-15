@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_language">fr</string>
+    <string name="feedback_enabled">Retour sonore</string>
+    <string name="feedback_checking">Recherche de voix hors ligne ; le compteur et des sons courts sont disponibles.</string>
+    <string name="feedback_voice">Le comptage vocal hors ligne est activé.</string>
+    <string name="feedback_sounds">La parole hors ligne est indisponible. Le compteur et des sons courts restent disponibles ; aucun téléchargement requis.</string>
+    <string name="feedback_visual">Audio indisponible ; suivez le compteur et les messages à l’écran.</string>
+    <string name="feedback_muted">Audio coupé ; le compteur et les messages restent visibles.</string>
+    <string name="feedback_position">Placez tout votre corps dans le cadre de la caméra.</string>
+    <string name="feedback_reward">Défi terminé. %1$s secondes de temps enregistrées.</string>
+    <string name="feedback_save_error">Impossible d’enregistrer le réglage audio. Réessayez.</string>
+    <string name="feedback_retry">Réessayer d’enregistrer le réglage audio</string>
+</resources>

@@ -1,18 +1,18 @@
 # ScrollFit — Exercise Gate
 
-Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T10: bootstrap, feasibility experiment, persistence, budgets, production monitoring, offline camera/pose sources and independent push-up/squat/jumping-jack/knee-raise counters**. The product UI remains Persian and RTL; communication and these delivery instructions are in English.
+Native Kotlin/Jetpack Compose app for limiting selected apps and earning time through on-device exercise. Current work covers **T01–T12: bootstrap, feasibility experiment, persistence, budgets, production monitoring, offline camera/pose sources, four exercise counters, challenge-to-award integration and offline audio feedback**. The product UI supports Persian RTL plus English and French; communication and these delivery instructions are in English.
 
-The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07 adds the independently tested push-up detector and a camera trial count; Android/device verification is pending. T08 adds the independent squat detector and front/slight-angle camera trial; Android/device verification is pending. T09 adds the independent jumping-jack detector and full-body front-view camera trial; Android/device verification is pending. T10 adds the independent alternating knee-raise detector and full-body front-view camera trial; Android/device verification is pending. T11–T16 are not implemented.
+The full product specification is in [the brief](exercise_gate_codex_brief.md), ordered tasks in [the task list](exercise_gate_tasks.md), and actual progress in [TASK_STATUS.md](TASK_STATUS.md). T03 source is implemented with Android persistence verification pending. T04 core policy and T05 integration sources are implemented; Android/device verification is pending. T06 camera/pose sources and the offline model are implemented; Android/device verification is pending. T07 adds the independently tested push-up detector and a camera trial count; Android/device verification is pending. T08 adds the independent squat detector and front/slight-angle camera trial; Android/device verification is pending. T09 adds the independent jumping-jack detector and full-body front-view camera trial; Android/device verification is pending. T10 adds the independent alternating knee-raise detector and full-body front-view camera trial; Android/device verification is pending. T11 connects both earning paths and exercise-only activity; Android/device verification is pending. T12 adds offline spoken counting, tracking prompts, persisted mute and sound/visual fallback; Android/device verification is pending. T13–T16 are not implemented.
 
 ## Current delivery status
 
-The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; T07 adds a visible push-up trial count with side-view guidance. T08 adds a visible squat trial count with front/slight-angle full-body guidance. T09 adds a visible jumping-jack trial count with full-body front guidance. T10 adds a visible alternating knee-raise trial count with full-body front guidance. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. Camera-to-reward integration remains T11.
+The source includes onboarding, dashboard, four-exercise introduction, empty history, proposed defaults, and a debug-only **30-second single-app monitoring/blocking spike**. The spike has an app picker, explicit Start/Stop controls, Usage Access and Accessibility settings links, countdown banner, and blocking overlay with Home/system-panel/Stop controls. T06 adds a reachable camera preview/pose candidate; T07 adds a visible push-up trial count with side-view guidance. T08 adds a visible squat trial count with front/slight-angle full-body guidance. T09 adds a visible jumping-jack trial count with full-body front guidance. T10 adds a visible alternating knee-raise trial count with full-body front guidance. T05 production controls and service connect durable budgets to foreground events; the debug spike keeps its separate countdown. T11 adds dashboard advance earning, direct production-blocker exercise choice, captured terms, live progress, atomic activity/award completion and exercise-only mode. T12 connects optional offline spoken counts, rate-limited tracking prompts and actual saved-reward announcements, with a persistent mute switch and local tone/visual fallback.
 
 **There is no APK yet.** The Android build fails during configuration because the AGP 9.4.0 plugin cannot be resolved. Earlier T01/T02 Google Maven and Android SDK download attempts returned HTTP 404, including outside the sandbox; T06 rechecked official Google Maven (AGP POM HTTP 404) and attempted both online and offline builds after restoring the temporary toolchain. Android SDK, adb and emulator are absent. Gradle 9.6.0 and a temporary Temurin JDK 21 run successfully. T01 and T02 remain blocked at delivery/verification gates.
 
-The actual Kotlin/JVM core compiled and **203 tests passed** (32 knee-raise sequence checks, 30 jumping-jack sequence checks, 31 squat sequence checks, 21 push-up sequence checks, 18 pose-processing checks, 22 monitoring/failure checks, 27 budget/reward checks, 12 repository/model checks and 10 countdown checks), with zero failures/errors/skips, through the isolated core build. The Android service, Compose screen, manifest merge and overlay have **not** compiled or run on a phone/emulator. Source XML, resource references and restricted service configuration passed structural checks. These checks do not prove enforcement or camera accuracy.
+The actual Kotlin/JVM core compiled and **244 tests passed**, with zero failures, using the project's Kotlin 2.4.10 compiler, JUnit 4.13.2 and temporary Temurin Java 21 (JVM target 17). This includes 19 feedback-policy checks, four offline-voice selection checks and all 221 existing challenge, detector, pose, monitoring, accounting and repository checks. The old engine fails the new atomic-activity test as expected (204 run, one failure). The Android service, Compose screens, manifest merge, Room integration and overlay remain **uncompiled and untested on a phone/emulator**. Structural checks do not prove enforcement, lifecycle execution or camera accuracy.
 
-Evidence: [T10 Android build attempt](docs/verification/T10-build.log), [current core test log](docs/verification/T10-core-tests.log), [actual test totals](docs/verification/T10-test-summary.txt), [knee-raise JUnit results](docs/verification/T10-knee-raise-tests.xml). Earlier task evidence remains in `docs/verification` locally; this directory is git-ignored. T02 evidence remains in [its Android build log](docs/verification/T02-build.log) and [countdown results](docs/verification/T02-countdown-tests.xml). T01 evidence remains in [its build log](docs/verification/T01-build.log) and [tool version output](docs/verification/T01-gradle-version.log).
+Evidence: [T12 Gradle core tests](docs/verification/T12-gradle-core-tests.log), [fresh JUnit totals](docs/verification/T12-test-summary.txt), [T12 Android attempt](docs/verification/T12-build.log), [structural checks](docs/verification/T12-source-checks.log), [localization checks](docs/verification/T12-localization-checks.log). Evidence files are local and git-ignored. Earlier task logs remain in `docs/verification`. See [T12 behavior and verification](docs/T12_FEEDBACK.md), [pending phone checks](docs/T12_PHONE_TEST.md), and [suggested commit message](docs/T12_COMMIT_MESSAGE.txt).
 
 Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
@@ -59,7 +59,7 @@ Select one launchable non-system app, grant both required accesses, then explici
 
 The system-bound AccessibilityService receives only `TYPE_WINDOW_STATE_CHANGED`. Its configuration disables window-content retrieval and gestures and declares `isAccessibilityTool=false`: this is a self-control experiment. Code reads event package metadata, never event text, source nodes or another app's screen tree. Temporary usage-event reconciliation on unlock reads only foreground/background metadata; it neither logs nor stores other apps' package history. Limited package queries follow [Android package visibility guidance](https://developer.android.com/training/package-visibility/declaring).
 
-The blocking surface uses [TYPE_ACCESSIBILITY_OVERLAY](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_ACCESSIBILITY_OVERLAY), supported for a connected service. It stays within the app window area, does not request fullscreen/immersive mode, and leaves system navigation available. Home and quick-settings actions are triggered by visible buttons. The service never starts an Activity from the background, avoiding reliance on [background activity launch exceptions](https://developer.android.com/guide/components/activities/secure-bal). Special-access screens and the target app are opened only from the visible Activity.
+The blocking surface uses [TYPE_ACCESSIBILITY_OVERLAY](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_ACCESSIBILITY_OVERLAY), supported for a connected service. It stays within the app window area, does not request fullscreen/immersive mode, and leaves system navigation available. Home and quick-settings actions are triggered by visible buttons. The T02 spike never starts an Activity from the background. T11 production blocker buttons use an explicit user-triggered PendingIntent with Android visibility/opt-in checks; see [launch handling and limitations](docs/T11_CHALLENGES.md). Special-access screens and the target app are opened only from the visible Activity.
 
 A monotonic countdown charges prior eligible intervals once. The intended signals pause it outside the selected app, while the screen is off/locked, while the blocker is shown, and when required access is missing. Small non-touchable banners update at most once per second, only while target use is observed; there is no continuous usage-statistics polling, foreground service, wake lock or boot receiver. [UsageEvents queries](https://developer.android.com/reference/android/app/usage/UsageStatsManager#queryEvents(long,%20long)) are bounded to five minutes. [Screen broadcasts](https://developer.android.com/develop/background-work/background-tasks/broadcasts) and UI lifecycle callbacks trigger pauses/reconciliation.
 
@@ -73,7 +73,7 @@ Only a single fullscreen target is in scope for this spike. Split-screen, PiP, w
 
 T03 adds Room records for target configuration, app/combined daily usage, immutable challenge snapshots, a unique award ledger, exercise activity and session state. DataStore stores reward rules, combined ceiling, zero-base mode, speech, camera, last exercise and session boundary. Per-app award caps live in Room configuration so award transactions read them consistently. App removal/re-addition and settings edits preserve counters. Clearing visible history preserves accounting records and award identities. The application owns the stores, and startup repository access cancels interrupted challenges.
 
-The 12 new JVM checks validate atomic repository contracts, rollback, duplicate identity, preserved current-day counters and history semantics with an in-memory test adapter. They do **not** prove Room persistence. Seven file-backed Room tests and one DataStore restart/concurrent-edit test are prepared but have not run. The actual Android build/check attempt exited 1 at offline AGP resolution, before compilation, KSP, lint or instrumentation; no APK or generated schema exists. T03 is **implemented, not verified**. T04 eligibility/spending is described below; T11 camera-to-award integration remains pending.
+The 12 new JVM checks validate atomic repository contracts, rollback, duplicate identity, preserved current-day counters and history semantics with an in-memory test adapter. They do **not** prove Room persistence. Seven file-backed Room tests and one DataStore restart/concurrent-edit test are prepared but have not run. The actual Android build/check attempt exited 1 at offline AGP resolution, before compilation, KSP, lint or instrumentation; no APK or generated schema exists. T03 is **implemented, not verified**. T04 eligibility/spending is described below; T11 now integrates camera challenges with those awards.
 
 T03 introduced Room v1 with export enabled and no destructive migration/downgrade fallback; T04 extends it to v2. Both authentic schema exports must be retained once Android builds work. Future versions require data-preserving migrations and tests. Stored durations use integer milliseconds, with the existing reward settings explicitly in seconds. Wall and monotonic clocks are injectable. Details, API boundaries, deletion semantics and commands are in [T03_PERSISTENCE.md](docs/T03_PERSISTENCE.md). Evidence: [JVM log](docs/verification/T03-core-tests.log), [repository JUnit XML](docs/verification/T03-repository-tests.xml), [Android attempt](docs/verification/T03-build.log). A generated commit message is in [T03_COMMIT_MESSAGE.txt](docs/T03_COMMIT_MESSAGE.txt); no commit was requested.
 
@@ -90,8 +90,8 @@ intact, including when the date moves backwards.
 A persisted cursor per device boot rejects duplicate and overlapping intervals
 across app switching, process restart and history deletion. T05 supplies the
 stable boot identity, eligible chronological intervals and midnight splitting.
-Android execution remains unverified; camera callbacks and user-facing reward
-disclosure remain T11 integration work. The T02 spike still uses its experimental countdown.
+Android execution remains unverified; T11 now connects camera callbacks and
+user-facing reward disclosure to this engine. The T02 spike still uses its experimental countdown.
 
 The application exposes a data repository facade for settings, history and reads;
 spending/challenge creation/awards go through the budget engine. The 27 new JVM
@@ -161,7 +161,7 @@ select rear/front and see positioning/tracking feedback. Camera and last
 exercise selections persist. Permission denial, camera/model failure and
 storage errors offer recovery. A debug-only point overlay stays in memory.
 T07–T10 now add temporary trial counts for all four exercises;
-challenge lifecycle and awards remain T11.
+T11 adds the challenge lifecycle and awards described below.
 
 CameraX preview and latest-frame analysis share an owned lifecycle and
 viewport. One background worker runs the bundled MediaPipe Lite model with
@@ -221,7 +221,7 @@ Open the squat camera screen for Persian full-body front/slight-angle
 guidance and completed counts. The existing serial camera worker feeds raw
 fresh samples to the detector before UI coalescing. Camera restart resets
 this temporary trial. T08 grants no reward and records no activity history;
-T11 owns durable challenge integration.
+T11 now provides a separate durable challenge entry.
 
 All **31 squat tests and 110 existing JVM checks pass**, including three
 standing-calibration outlier regressions that failed before their fixes.
@@ -243,7 +243,7 @@ Completed repetitions survive loss within the trial; camera restart resets it.
 
 Open Exercises → **پروانه** → **باز کردن دوربین** for Persian full-body
 front-view placement guidance and completed counts. This temporary trial
-grants no reward; durable challenges and awards remain T11.
+grants no reward; T11 now supplies separate durable challenges and awards.
 
 **30 new sequence tests plus 141 existing JVM checks pass (171 total)**,
 including 33 ms sampling, transformations, asynchronous arm/leg noise,
@@ -278,12 +278,39 @@ provisional. [Detector policy/evidence](docs/T10_KNEE_RAISE_COUNTER.md),
 [pending phone checks](docs/T10_PHONE_TEST.md),
 [generated commit message](docs/T10_COMMIT_MESSAGE.txt).
 
+## T11 challenge lifecycle and awards
+
+From the dashboard, choose **Earn time for an app**, select a configured safe
+target, choose any exercise, inspect its repetitions/reward/capacity, grant camera
+access and Start. The production blocker offers all four exercises directly,
+preselecting its target and exercise in the same preparation flow. Last exercise
+and camera are restored. Changed offers require another explicit Start.
+**Exercise only** works without a target or credit at either cap. New challenge
+text includes Persian, English and French resources and follows locale direction.
+
+Fresh cumulative detector progress preserves completed reps through tracking loss.
+Cancel/back, background, rotation, lens/retry, camera failure and navigation end
+unfinished challenges. UUID, terms and start-day are durable. Completion records
+activity, status, award and wallet atomically and rechecks eligibility after
+suspended I/O. Success shows the actual saved reward and an explicit return button.
+Storage failure can retry the same identity. Startup recovery cancels incomplete
+rows and keeps committed awards. Observed active duration excludes tracking loss
+and long frame gaps. Cancelled partial activity is discarded.
+
+Blocker entry uses a user-triggered immutable PendingIntent with visibility opt-ins;
+Activity reuse prevents stacked challenge screens. Device launch acceptance and
+camera behavior remain pending. **221 JVM tests pass**; Android build/lint and
+instrumentation exit 1 at AGP 9.4.0 resolution before compilation. No APK exists.
+[Policy and evidence](docs/T11_CHALLENGES.md), [phone checklist](docs/T11_PHONE_TEST.md),
+[commit message](docs/T11_COMMIT_MESSAGE.txt). No git commit was created by this
+session; concurrent owner commits were preserved.
+
 ## Architecture
 
 | Module | Responsibility |
 | --- | --- |
-| `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup, T06 camera screen and debug-only T02 experiment. |
-| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers; T07–T10 add independent push-up, squat, jumping-jack and alternating knee-raise detectors. |
+| `:app` | MainActivity, Persian Compose navigation, main T05 service/access/overlay/setup, T06 camera screen, T11 challenge preparation/success/Activity and debug-only T02 experiment. |
+| `:core` | Android-free Kotlin/JVM contracts for pose/counters/clocks/monitoring/blocking, four exercise types and configurable proposals; separate experimental countdown with tests. Durable models/repository operations are implemented in T03; T04 adds transactional spending, reward policy and interval identity; T05 adds the monitoring controller, presentation/failure guards and ownership lease. T06 adds pose confidence/smoothing, frame admission and preview projection helpers; T07–T10 add independent push-up, squat, jumping-jack and alternating knee-raise detectors. T11 adds lifecycle progress/invalidation and atomic completion activity. |
 | `:platform` | Live-zone Android clock adapters, durable monitoring preference and pinned CameraX/Room/DataStore/MediaPipe dependencies. Room/DataStore persistence is implemented in T03 with Android verification pending; T06 adds the bundled offline model, CameraX lifecycle/session and MediaPipe pose adapter; hardware verification is pending. |
 
 Dependencies flow `app → platform → core` and `app → core`. Time units are explicit. There is no backend or DI framework. Each future exercise detector will have independent replaceable state. T03 added Room v1 and KSP; T04 adds v2 with a preserving cursor migration. Actual schema exports await successful Android builds.
@@ -311,3 +338,10 @@ Pose provisioning choice: Lite float16 model version 1, one body and CPU delegat
 Per-app base allowance: 30 minutes/day. Combined usage ceiling: 60 minutes/day. Per-app daily award cap: 20 minutes awarded, including already consumed awards. Short session: 5 minutes. Zero-base mode: off. Speech: on. Suggested camera: rear. Rewards: 2 push-ups, 10 squats, 20 jumping jacks or 20 alternating knee raises, each for 2 minutes. These are editable product proposals, not exercise prescriptions or equivalence claims.
 
 T04 rules: local-midnight allowance reset/credit expiry; old-day reward challenges cancel at rollover without new-day awards. Elapsed use uses monotonic time. Deliberate device-clock abuse is not hardened in v1. T05 defines split-screen/PiP, reboot and accounting-loss behavior above; actual device results remain pending.
+
+
+## T12 offline audio feedback
+
+Live challenges use an installed offline voice in the language Android selected for UI strings (Persian, English or French). Speech defaults to on; its switch saves through the existing DataStore preference and is available before, during and after a challenge. Missing/failed offline speech uses short local count, positioning and completion tones, with visible equivalents. No network voice or download is selected.
+
+Counts keep only the latest fresh pending repetition. Tracking prompts need two seconds of sustained loss and are at least ten seconds apart from playback. Completion announces the exact committed award, including reduced credit; exercise-only completion makes no reward claim. Mute, cancel, background and disposal clear output, and late callbacks cannot replay it. TTS/speaker/lifecycle behavior remains pending physical-device verification. See [T12 details](docs/T12_FEEDBACK.md).

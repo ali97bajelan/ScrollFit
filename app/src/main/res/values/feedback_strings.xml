@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_language">fa-IR</string>
+    <string name="feedback_enabled">بازخورد صوتی</string>
+    <string name="feedback_checking">در حال بررسی صدای آفلاین؛ شمارش روی صفحه و بوق‌های کوتاه فعال است.</string>
+    <string name="feedback_voice">شمارش گفتاری آفلاین فعال است.</string>
+    <string name="feedback_sounds">گفتار آفلاین در دسترس نیست. بوق‌های کوتاه و شمارش روی صفحه فعال است؛ دانلود لازم نیست.</string>
+    <string name="feedback_visual">صدا در دسترس نیست؛ شمارش و پیام‌ها را روی صفحه دنبال کنید.</string>
+    <string name="feedback_muted">صدا خاموش است؛ شمارش و پیام‌ها روی صفحه نمایش داده می‌شود.</string>
+    <string name="feedback_position">تمام بدن را در کادر دوربین قرار دهید.</string>
+    <string name="feedback_reward">چالش کامل شد. %1$s ثانیه زمان ذخیره شد.</string>
+    <string name="feedback_save_error">تنظیم صدا ذخیره نشد. دوباره تلاش کنید.</string>
+    <string name="feedback_retry">تلاش دوباره برای ذخیره تنظیم صدا</string>
+</resources>

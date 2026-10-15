@@ -1,6 +1,6 @@
 # T11 — challenge lifecycle and awards
 
-T11 connects the four independent counters to the existing budget engine. Open
+T11 connects the four independent counters to the existing budget engine. New challenge text supports Persian, English and French, preserving the concurrent localization commit; the challenge Activity follows locale direction. Open
 **کسب زمان برای یک برنامه** from the dashboard, select a configured safe target,
 then choose an exercise. The production blocker displays all four current offers;
 an exercise button opens the same preparation flow with its target/exercise.
@@ -78,13 +78,21 @@ device checks; an API choice is not evidence that a phone accepted a launch.
 
 ## Verification
 
+The native isolated Gradle task also completed with BUILD SUCCESSFUL and fresh
+JUnit totals of 221 tests, zero failures/errors/skips. See the [Gradle log](verification/T11-gradle-core-tests.log)
+and [JUnit totals](verification/T11-test-summary.txt).
+
 See the current [core output](verification/T11-core-tests.log),
 [baseline output](verification/T11-baseline-tests.log),
 [old-engine regression](verification/T11-activity-regression-red.log),
 [Android attempt](verification/T11-build.log) and
 [structural checks](verification/T11-source-checks.log).
-These local evidence files are ignored by Git. Final totals and actual Android
-outcome are recorded in README/TASK_STATUS after the commands finish.
+These local evidence files are ignored by Git. Direct Kotlin/JUnit compilation of
+the final source snapshot passed all 221 tests, including 17 lifecycle tests and
+one atomic-activity regression. The 203-test baseline passes; the old engine fails
+the added activity regression (204 tests, one expected failure). Android checks
+exit 1 at AGP 9.4.0 resolution before compilation, lint or instrumentation. The
+official pinned POM returned HTTP 404. No APK or phone result exists.
 
 The JVM store is a serialized rollback adapter, not SQLite. Room reopen/duplicate
 activity and trigger-induced activity-write rollback checks have been added to

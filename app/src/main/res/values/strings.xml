@@ -2,7 +2,7 @@
     <string name="app_name">ScrollFit</string>
     <string name="welcome">به اسکرول‌فیت خوش آمدید</string>
     <string name="welcome_body">اسکرول‌فیت برای مدیریت زمان استفاده از برنامه‌ها و کسب زمان با ورزش طراحی شده است. پردازش دوربین روی گوشی انجام خواهد شد؛ عکس و ویدئو ذخیره یا ارسال نمی‌شوند.</string>
-    <string name="bootstrap_notice">پایش بودجهٔ روزانه آمادهٔ آزمایش است؛ اجرای آن روی گوشی هنوز تأیید نشده است. پیش‌نمایش دوربین برای آزمایش آماده است؛ شمارش ورزش هنوز متصل نیست.</string>
+    <string name="bootstrap_notice">چالش‌های چهار ورزش و پاداش زمانی برای آزمایش آماده‌اند؛ رفتار دوربین و پایش روی گوشی هنوز تأیید نشده است.</string>
     <string name="open_spike">تست پایش ۳۰ ثانیه‌ای</string>
     <string name="enter_dashboard">ورود به خانه</string>
     <string name="dashboard">خانه</string>
@@ -12,7 +12,7 @@
     <string name="monitoring_disabled">پایش غیرفعال است</string>
     <string name="no_targets">هنوز برنامه‌ای برای محدود کردن انتخاب نشده است.</string>
     <string name="view_exercises">آشنایی با ورزش‌ها</string>
-    <string name="exercise_catalog_notice">مقادیر زیر پیشنهاد اولیه و قابل تغییر در نسخه‌های بعدی هستند. پیش‌نمایش دوربین برای آزمایش در دسترس است؛ شمارش حرکت و چالش هنوز متصل نیستند.</string>
+    <string name="exercise_catalog_notice">این کارت‌ها پیش‌نمایش آزمایشی دوربین را باز می‌کنند. برای پاداش زمانی یا ورزشِ ثبت‌شده، از داشبورد چالش را شروع کنید. مقادیر پیشنهادی قابل تغییرند.</string>
     <string name="push_up">شنا</string>
     <string name="squat">اسکوات</string>
     <string name="jumping_jack">پروانه</string>
