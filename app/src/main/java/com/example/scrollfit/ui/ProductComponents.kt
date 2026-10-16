@@ -46,8 +46,18 @@ internal fun number(value: Number): String = NumberFormat.getNumberInstance(Loca
 }.format(value)
 
 @Composable
-internal fun SecondsMetric(@StringRes label: Int, milliseconds: Long) {
-    Text(stringResource(R.string.product_metric, stringResource(label), number(milliseconds / 1000.0)))
+internal fun DurationMetric(@StringRes label: Int, milliseconds: Long) {
+    Text(stringResource(R.string.product_metric, stringResource(label), duration(milliseconds)))
+}
+
+@Composable
+internal fun duration(milliseconds: Long): String {
+    val absolute = milliseconds.coerceAtLeast(0)
+    val hours = absolute / 3_600_000
+    val minutes = absolute / 60_000 % 60
+    val seconds = (absolute % 60_000) / 1000.0
+    return stringResource(R.string.product_duration,
+        number(hours), number(minutes), number(seconds))
 }
 
 @Composable

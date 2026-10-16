@@ -2,7 +2,12 @@
 <resources>
     <string name="product_read_error">Saved data could not be read. Try again.</string>
     <string name="product_save_error">The action could not be saved. Try again.</string>
-    <string name="product_metric">%1$s: %2$s seconds</string>
+    <string name="product_metric">%1$s: %2$s</string>
+    <string name="product_duration">%1$s hr %2$s min %3$s sec</string>
+    <string name="product_combined_summary">Daily combined limit</string>
+    <string name="product_show_awards">Show reward details</string>
+    <string name="product_hide_awards">Hide reward details</string>
+    <string name="product_seconds_hint">Enter values in seconds; for example, 300 seconds (5 minutes).</string>
     <string name="product_positive_error">Enter a whole number greater than zero within the supported range.</string>
     <string name="product_nonnegative_error">Enter zero or a positive whole number within the supported range.</string>
     <string name="product_correct_fields">Correct the highlighted values to save.</string>

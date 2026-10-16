@@ -23,7 +23,14 @@
     <string name="monitor_zero_base">Start the day with no free allowance</string>
     <string name="monitor_select_apps">Select the apps to monitor. System and essential apps are not listed.</string>
     <string name="monitor_no_apps">No selectable apps were found.</string>
-    <string name="monitor_budget">Remaining: free allowance %1$d seconds, rewards %2$d seconds, combined cap %3$d seconds</string>
+    <string name="monitor_budget">Remaining: free allowance %1$s, earned time %2$s, combined cap %3$s</string>
+    <string name="monitor_enable_prerequisites">To enable monitoring, correct the values, select at least one app, and make all three access states below ready.</string>
+    <string name="monitor_usage_readiness">App usage access</string>
+    <string name="monitor_accessibility_readiness">Accessibility service</string>
+    <string name="monitor_service_readiness">Monitoring service</string>
+    <string name="monitor_readiness_line">%1$s: %2$s</string>
+    <string name="monitor_ready">Ready</string>
+    <string name="monitor_not_ready">Action needed</string>
     <string name="monitor_open_app">Open app</string>
     <string name="monitor_save">Save settings</string>
     <string name="monitor_retry">Check storage and monitoring again</string>

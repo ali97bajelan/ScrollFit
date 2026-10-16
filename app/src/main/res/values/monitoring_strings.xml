@@ -23,7 +23,14 @@
     <string name="monitor_zero_base">شروع روز بدون سهمیهٔ رایگان</string>
     <string name="monitor_select_apps">برنامه‌های موردنظر را انتخاب کنید؛ برنامه‌های سیستمی و حیاتی در این فهرست نیستند.</string>
     <string name="monitor_no_apps">برنامهٔ قابل انتخاب پیدا نشد.</string>
-    <string name="monitor_budget">باقی‌مانده: سهمیهٔ رایگان %1$d ثانیه، پاداش %2$d ثانیه، سقف مجموع %3$d ثانیه</string>
+    <string name="monitor_budget">باقی‌مانده: سهمیهٔ رایگان %1$s، پاداش %2$s، سقف مجموع %3$s</string>
+    <string name="monitor_enable_prerequisites">برای فعال‌سازی، مقدارها را اصلاح کنید، دست‌کم یک برنامه انتخاب کنید و هر سه وضعیت دسترسی زیر را برقرار کنید.</string>
+    <string name="monitor_usage_readiness">دسترسی به مصرف برنامه</string>
+    <string name="monitor_accessibility_readiness">سرویس دسترس‌پذیری</string>
+    <string name="monitor_service_readiness">سرویس پایش</string>
+    <string name="monitor_readiness_line">%1$s: %2$s</string>
+    <string name="monitor_ready">آماده</string>
+    <string name="monitor_not_ready">نیازمند اقدام</string>
     <string name="monitor_open_app">باز کردن برنامه</string>
     <string name="monitor_save">ذخیرهٔ تنظیمات</string>
     <string name="monitor_retry">بررسی دوبارهٔ ذخیره‌سازی و پایش</string>

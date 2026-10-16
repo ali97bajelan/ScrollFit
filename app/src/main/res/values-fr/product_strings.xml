@@ -2,7 +2,12 @@
 <resources>
     <string name="product_read_error">Impossible de lire les données enregistrées. Réessayez.</string>
     <string name="product_save_error">Impossible d’enregistrer cette action. Réessayez.</string>
-    <string name="product_metric">%1$s : %2$s secondes</string>
+    <string name="product_metric">%1$s : %2$s</string>
+    <string name="product_duration">%1$s h %2$s min %3$s s</string>
+    <string name="product_combined_summary">Plafond quotidien combiné</string>
+    <string name="product_show_awards">Afficher le détail des gains</string>
+    <string name="product_hide_awards">Masquer le détail des gains</string>
+    <string name="product_seconds_hint">Saisissez les valeurs en secondes, par exemple 300 secondes (5 minutes).</string>
     <string name="product_positive_error">Saisissez un entier supérieur à zéro dans la plage autorisée.</string>
     <string name="product_nonnegative_error">Saisissez zéro ou un entier positif dans la plage autorisée.</string>
     <string name="product_correct_fields">Corrigez les valeurs signalées pour enregistrer.</string>

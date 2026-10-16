@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.navigation.compose.*
@@ -25,11 +26,11 @@ import com.example.scrollfit.core.exercise.Exercise
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
-private enum class Destination(val route: String, @param:StringRes val label: Int, val symbol: String) {
-    DASHBOARD("dashboard", R.string.dashboard, "⌂"),
-    EXERCISES("exercises", R.string.exercises, "↟"),
-    HISTORY("history", R.string.history, "◷"),
-    SETTINGS("settings", R.string.settings, "⚙"),
+private enum class Destination(val route: String, @param:StringRes val label: Int, val icon: Int) {
+    DASHBOARD("dashboard", R.string.dashboard, R.drawable.ic_nav_dashboard),
+    EXERCISES("exercises", R.string.exercises, R.drawable.ic_nav_exercises),
+    HISTORY("history", R.string.history, R.drawable.ic_nav_history),
+    SETTINGS("settings", R.string.settings, R.drawable.ic_nav_settings),
 }
 
 @Composable
@@ -69,7 +70,10 @@ fun ScrollFitApp() {
                                     popUpTo(Destination.DASHBOARD.route) { saveState = true }
                                     launchSingleTop = true; restoreState = true
                                 }
-                            }, icon = { Text(destination.symbol, modifier = Modifier.clearAndSetSemantics { }) }, label = { Text(stringResource(destination.label)) })
+                            }, icon = {
+                                Icon(painterResource(destination.icon), contentDescription = null,
+                                    modifier = Modifier.clearAndSetSemantics { })
+                            }, label = { Text(stringResource(destination.label)) })
                     }
                 }
             }) { insets ->

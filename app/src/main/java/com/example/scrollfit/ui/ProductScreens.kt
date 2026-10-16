@@ -3,6 +3,7 @@ package com.example.scrollfit.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -25,27 +26,39 @@ internal fun DashboardScreen(onSetup: () -> Unit, onEarn: (String?) -> Unit, onO
         ProductContent(data) { snapshot ->
             MonitoringHealthInfo(snapshot.preferences.monitoringEnabled)
             Text(snapshot.day)
-            SecondsMetric(R.string.product_combined_used, snapshot.combined.consumedMs)
-            SecondsMetric(R.string.product_combined_limit, snapshot.preferences.combinedCeilingMs)
-            SecondsMetric(R.string.product_combined_left,
-                (snapshot.preferences.combinedCeilingMs - snapshot.combined.consumedMs).coerceAtLeast(0))
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.product_combined_summary), style = MaterialTheme.typography.titleLarge)
+                    DurationMetric(R.string.product_combined_limit, snapshot.preferences.combinedCeilingMs)
+                    DurationMetric(R.string.product_combined_used, snapshot.combined.consumedMs)
+                    DurationMetric(R.string.product_combined_left,
+                        (snapshot.preferences.combinedCeilingMs - snapshot.combined.consumedMs).coerceAtLeast(0))
+                }
+            }
             Text(stringResource(R.string.product_recorded_notice))
             Button(onClick = onSetup) { Text(stringResource(R.string.monitor_title)) }
             if (snapshot.configs.isEmpty()) Text(stringResource(R.string.no_targets))
             snapshot.configs.forEach { config ->
                 val budget = snapshot.budgets.getValue(config.packageName)
                 val app = snapshot.apps.find { it.packageName == config.packageName }
+                var expandedAwards by rememberSaveable(config.packageName) { mutableStateOf(false) }
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(app?.label ?: config.packageName, style = MaterialTheme.typography.titleLarge)
                         val usage = snapshot.usage.getValue(config.packageName)
-                        SecondsMetric(R.string.product_app_used, usage.baseConsumedMs + usage.earnedConsumedMs)
-                        SecondsMetric(R.string.product_base_left, budget.baseRemainingMs)
-                        SecondsMetric(R.string.product_earned_left, budget.earnedRemainingMs)
-                        SecondsMetric(R.string.product_awarded, budget.awardedMs)
-                        SecondsMetric(R.string.product_award_limit, config.dailyAwardCapMs)
-                        SecondsMetric(R.string.product_award_left, budget.awardCapacityMs)
-                        SecondsMetric(R.string.product_usable, budget.usableMs)
+                        Text(stringResource(R.string.product_usable), style = MaterialTheme.typography.titleMedium)
+                        Text(duration(budget.usableMs), style = MaterialTheme.typography.headlineMedium)
+                        DurationMetric(R.string.product_app_used, usage.baseConsumedMs + usage.earnedConsumedMs)
+                        DurationMetric(R.string.product_base_left, budget.baseRemainingMs)
+                        DurationMetric(R.string.product_earned_left, budget.earnedRemainingMs)
+                        TextButton(onClick = { expandedAwards = !expandedAwards }) {
+                            Text(stringResource(if (expandedAwards) R.string.product_hide_awards else R.string.product_show_awards))
+                        }
+                        if (expandedAwards) {
+                            DurationMetric(R.string.product_awarded, budget.awardedMs)
+                            DurationMetric(R.string.product_award_limit, config.dailyAwardCapMs)
+                            DurationMetric(R.string.product_award_left, budget.awardCapacityMs)
+                        }
                         if (budget.blockedBy != null) Text(stringResource(when (budget.blockedBy) {
                             BudgetBlock.COMBINED_CEILING -> R.string.monitor_combined_exhausted
                             BudgetBlock.APP_BUDGET -> R.string.product_app_exhausted

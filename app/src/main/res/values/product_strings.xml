@@ -2,7 +2,12 @@
 <resources>
     <string name="product_read_error">خواندن اطلاعات ذخیره‌شده ممکن نشد. دوباره تلاش کنید.</string>
     <string name="product_save_error">ذخیره‌سازی انجام نشد. دوباره تلاش کنید.</string>
-    <string name="product_metric">%1$s: ⁨%2$s⁩ ثانیه</string>
+    <string name="product_metric">%1$s: ⁨%2$s⁩</string>
+    <string name="product_duration">%1$s ساعت، %2$s دقیقه، %3$s ثانیه</string>
+    <string name="product_combined_summary">خلاصهٔ سقف روزانه</string>
+    <string name="product_show_awards">نمایش جزئیات پاداش</string>
+    <string name="product_hide_awards">پنهان کردن جزئیات پاداش</string>
+    <string name="product_seconds_hint">مقدار را برحسب ثانیه وارد کنید؛ مانند ۳۰۰ ثانیه (۵ دقیقه).</string>
     <string name="product_positive_error">یک عدد صحیح بزرگ‌تر از صفر و در محدودهٔ مجاز وارد کنید.</string>
     <string name="product_nonnegative_error">صفر یا یک عدد صحیح مثبت در محدودهٔ مجاز وارد کنید.</string>
     <string name="product_correct_fields">برای ذخیره، مقدارهای مشخص‌شده را اصلاح کنید.</string>

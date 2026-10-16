@@ -23,7 +23,14 @@
     <string name="monitor_zero_base">Commencer la journée sans quota gratuit</string>
     <string name="monitor_select_apps">Sélectionnez les applications à suivre. Les applications système et essentielles ne figurent pas dans la liste.</string>
     <string name="monitor_no_apps">Aucune application sélectionnable n’a été trouvée.</string>
-    <string name="monitor_budget">Restant : quota gratuit %1$d secondes, récompenses %2$d secondes, plafond combiné %3$d secondes</string>
+    <string name="monitor_budget">Restant : quota gratuit %1$s, temps gagné %2$s, plafond combiné %3$s</string>
+    <string name="monitor_enable_prerequisites">Pour activer le suivi, corrigez les valeurs, sélectionnez au moins une application et vérifiez les trois états d’accès ci-dessous.</string>
+    <string name="monitor_usage_readiness">Accès aux données d’utilisation</string>
+    <string name="monitor_accessibility_readiness">Service d’accessibilité</string>
+    <string name="monitor_service_readiness">Service de suivi</string>
+    <string name="monitor_readiness_line">%1$s : %2$s</string>
+    <string name="monitor_ready">Prêt</string>
+    <string name="monitor_not_ready">Action requise</string>
     <string name="monitor_open_app">Ouvrir l’application</string>
     <string name="monitor_save">Enregistrer les paramètres</string>
     <string name="monitor_retry">Vérifier à nouveau le stockage et le suivi</string>
