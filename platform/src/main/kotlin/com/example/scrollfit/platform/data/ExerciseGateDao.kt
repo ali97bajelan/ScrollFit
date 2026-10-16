@@ -35,7 +35,7 @@ interface ExerciseGateDao {
     suspend fun award(challengeId: String): AwardRow?
     @Insert suspend fun insertAward(value: AwardRow)
     @Insert suspend fun insertActivity(value: ActivityRow)
-    @Query("SELECT * FROM exercise_activity ORDER BY recordedAtEpochMs, id")
+    @Query("SELECT * FROM exercise_activity WHERE day > COALESCE((SELECT coverageHiddenThroughDay FROM history_visibility WHERE id = 1), '0000-01-01') ORDER BY recordedAtEpochMs, id")
     suspend fun activities(): List<ActivityRow>
     @Query("SELECT * FROM sessions WHERE packageName = :packageName AND day = :day")
     suspend fun session(packageName: String, day: String): SessionRow?
@@ -44,7 +44,23 @@ interface ExerciseGateDao {
     suspend fun visibleUsages(): List<UsageRow>
     @Query("SELECT * FROM combined_usage WHERE historyVisible = 1 ORDER BY day DESC")
     suspend fun visibleCombined(): List<CombinedRow>
+    @Query("SELECT * FROM monitoring_coverage WHERE recordingSessionId = :session AND day = :day ORDER BY endElapsedMs DESC LIMIT 1")
+    suspend fun coverageTail(session: String, day: String): CoverageRow?
+    @Upsert suspend fun putCoverage(value: CoverageRow)
+    @Query("SELECT packageName FROM monitoring_coverage_targets WHERE coverageId = :id ORDER BY packageName")
+    suspend fun coverageTargets(id: String): List<String>
+    @Query("DELETE FROM monitoring_coverage_targets WHERE coverageId = :id")
+    suspend fun deleteCoverageTargets(id: String)
+    @Upsert suspend fun putCoverageTargets(values: List<CoverageTargetRow>)
+    @Query("SELECT * FROM monitoring_coverage WHERE historyVisible = 1 ORDER BY day, startEpochMs")
+    suspend fun visibleCoverage(): List<CoverageRow>
+    @Query("SELECT DISTINCT day FROM daily_usage WHERE historyVisible = 0 UNION SELECT day FROM combined_usage WHERE historyVisible = 0")
+    suspend fun hiddenUsageDays(): List<String>
+    @Query("SELECT coverageHiddenThroughDay FROM history_visibility WHERE id = 1")
+    suspend fun coverageHiddenThroughDay(): String?
+    @Upsert suspend fun putHistoryVisibility(value: HistoryVisibilityRow)
     @Query("DELETE FROM exercise_activity") suspend fun deleteActivityHistory()
     @Query("UPDATE daily_usage SET historyVisible = 0") suspend fun hideUsageHistory()
     @Query("UPDATE combined_usage SET historyVisible = 0") suspend fun hideCombinedHistory()
+    @Query("UPDATE monitoring_coverage SET historyVisible = 0") suspend fun hideCoverageHistory()
 }

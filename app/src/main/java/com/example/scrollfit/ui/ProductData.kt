@@ -14,9 +14,11 @@ import com.example.scrollfit.monitoring.TargetApps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collect
+import java.time.Instant
+import java.time.ZoneId
 
 internal data class ProductSnapshot(
-    val day: String, val preferences: AppPreferences, val configs: List<TargetConfig>,
+    val day: String, val zoneId: String, val preferences: AppPreferences, val configs: List<TargetConfig>,
     val apps: List<TargetApp>, val budgets: Map<String, Budget>, val combined: CombinedUsage,
     val sessions: Map<String, SessionState>, val usage: Map<String, DailyUsage>, val history: VisibleHistory?,
 )
@@ -55,7 +57,9 @@ internal fun rememberProductData(history: Boolean = false): ProductData {
         try {
             val repo = persistence.repository()
             val prefs = persistence.preferences.values.first()
-            val day = persistence.wallClock.localDate().toString()
+            val capturedZone = ZoneId.systemDefault()
+            val day = Instant.ofEpochMilli(persistence.wallClock.epochMillis()).atZone(capturedZone).toLocalDate().toString()
+            val zoneId = capturedZone.id
             val configs = repo.targets().filter { it.selected }
             val apps = withContext(Dispatchers.IO) { TargetApps.list(context) }
             // Read-only UI engine: this identity never submits usage intervals.
@@ -65,8 +69,14 @@ internal fun rememberProductData(history: Boolean = false): ProductData {
             val sessions = configs.associate { it.packageName to repo.session(it.packageName, day) }
             val usage = configs.associate { it.packageName to repo.dailyUsage(it.packageName, day) }
             val records = if (history) repo.visibleHistory() else null
-            check(persistence.wallClock.localDate().toString() == day)
-            data.snapshot = ProductSnapshot(day, prefs, configs, apps, budgets, combined, sessions, usage, records)
+            val publishedZone = ZoneId.systemDefault()
+            val publishedDay = Instant.ofEpochMilli(persistence.wallClock.epochMillis()).atZone(publishedZone).toLocalDate().toString()
+            if (publishedDay != day || publishedZone.id != zoneId) {
+                data.snapshot = null
+                data.refresh()
+                return@LaunchedEffect
+            }
+            data.snapshot = ProductSnapshot(day, zoneId, prefs, configs, apps, budgets, combined, sessions, usage, records)
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { data.failed = true }
         finally { data.loading = false }
@@ -75,7 +85,8 @@ internal fun rememberProductData(history: Boolean = false): ProductData {
         while (true) {
             delay(1000)
             if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) &&
-                data.snapshot?.day?.let { it != persistence.wallClock.localDate().toString() } == true && !data.loading && !data.failed) {
+                data.snapshot?.let { snapshot -> snapshot.day != persistence.wallClock.localDate().toString() ||
+                    snapshot.zoneId != ZoneId.systemDefault().id } == true && !data.loading && !data.failed) {
                 data.refresh()
             }
         }

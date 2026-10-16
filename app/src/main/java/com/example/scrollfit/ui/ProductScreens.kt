@@ -104,43 +104,6 @@ internal fun ExerciseCatalog(onExercise: (Exercise) -> Unit, onEarn: () -> Unit)
 }
 
 @Composable
-internal fun HistoryScreen() {
-    val data = rememberProductData(history = true)
-    ProductPage(R.string.history) {
-        ProductContent(data) { snapshot ->
-            Text(stringResource(R.string.product_history_notice))
-            val records = requireNotNull(snapshot.history)
-            val days = (records.usage.map { it.day } + records.combined.map { it.day } +
-                records.activities.map { it.day }).distinct().sortedDescending()
-            if (days.isEmpty()) Text(stringResource(R.string.product_history_empty))
-            days.forEach { day ->
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(day, style = MaterialTheme.typography.titleLarge)
-                        Text(stringResource(R.string.product_usage), style = MaterialTheme.typography.titleMedium)
-                        records.combined.find { it.day == day }?.let { SecondsMetric(R.string.product_combined_used, it.consumedMs) }
-                        records.usage.filter { it.day == day }.forEach { row ->
-                            Text(snapshot.apps.find { it.packageName == row.packageName }?.label ?: row.packageName)
-                            SecondsMetric(R.string.product_app_used, row.baseConsumedMs + row.earnedConsumedMs)
-                            SecondsMetric(R.string.product_awarded, row.awardedMs)
-                        }
-                        Text(stringResource(R.string.product_activity), style = MaterialTheme.typography.titleMedium)
-                        val activities = records.activities.filter { it.day == day }
-                        if (activities.isEmpty()) Text(stringResource(R.string.product_no_activity))
-                        activities.forEach { activity ->
-                            Text(stringResource(activity.exercise.label()))
-                            Text(stringResource(R.string.product_reps, number(activity.repetitions)))
-                            SecondsMetric(R.string.product_active, activity.activeDurationMs)
-                        }
-                    }
-                }
-            }
-            OutlinedButton(onClick = data::refresh, enabled = !data.loading) { Text(stringResource(R.string.product_refresh)) }
-        }
-    }
-}
-
-@Composable
 internal fun WelcomeScreen(onSetup: () -> Unit, onEnter: () -> Unit) {
     val context = LocalContext.current
     val persistence = (context.applicationContext as ScrollFitApplication).persistence

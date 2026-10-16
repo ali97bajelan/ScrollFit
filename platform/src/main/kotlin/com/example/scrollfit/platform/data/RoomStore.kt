@@ -14,9 +14,15 @@ private class RoomTransaction(private val dao: ExerciseGateDao) : DataTransactio
     override suspend fun targets() = dao.targets().map { it.value }
     override suspend fun putTarget(value: TargetConfig) = dao.putTarget(TargetRow(value))
     override suspend fun usage(packageName: String, day: String) = dao.usage(packageName, day)?.value
-    override suspend fun putUsage(value: DailyUsage) = dao.putUsage(UsageRow(value))
+    override suspend fun putUsage(value: DailyUsage) {
+        val visible = value.historyVisible && (coverageHiddenThroughDay()?.let { value.day > it } != false)
+        dao.putUsage(UsageRow(value.copy(historyVisible = visible)))
+    }
     override suspend fun combined(day: String) = dao.combined(day)?.value
-    override suspend fun putCombined(value: CombinedUsage) = dao.putCombined(CombinedRow(value))
+    override suspend fun putCombined(value: CombinedUsage) {
+        val visible = value.historyVisible && (coverageHiddenThroughDay()?.let { value.day > it } != false)
+        dao.putCombined(CombinedRow(value.copy(historyVisible = visible)))
+    }
     override suspend fun challenge(id: String) = dao.challenge(id)?.value
     override suspend fun insertChallenge(value: Challenge) = dao.insertChallenge(ChallengeRow(value))
     override suspend fun putChallenge(value: Challenge) = dao.putChallenge(ChallengeRow(value))
@@ -32,9 +38,26 @@ private class RoomTransaction(private val dao: ExerciseGateDao) : DataTransactio
     override suspend fun putSession(value: SessionState) = dao.putSession(SessionRow(value))
     override suspend fun visibleUsages() = dao.visibleUsages().map { it.value }
     override suspend fun visibleCombined() = dao.visibleCombined().map { it.value }
+    override suspend fun coverageTail(recordingSessionId: String, day: String): CoverageInterval? =
+        dao.coverageTail(recordingSessionId, day)?.let { it.value(dao.coverageTargets(it.id).toSet()) }
+    override suspend fun putCoverage(value: CoverageInterval) {
+        dao.putCoverage(CoverageRow.from(value))
+        dao.deleteCoverageTargets(value.id)
+        dao.putCoverageTargets(value.selectedPackages.map { CoverageTargetRow(value.id, it) })
+    }
+    override suspend fun visibleCoverage() = dao.visibleCoverage().map { it.value(dao.coverageTargets(it.id).toSet()) }
+    override suspend fun hiddenUsageDays() = dao.hiddenUsageDays().toSet()
+    override suspend fun coverageHiddenThroughDay() = dao.coverageHiddenThroughDay()
+    override suspend fun putCoverageHiddenThroughDay(day: String) {
+        val current = dao.coverageHiddenThroughDay()
+        val cutoff = maxOf(current ?: "0000-01-01", day)
+        dao.putHistoryVisibility(HistoryVisibilityRow(1, cutoff))
+        dao.hideCoverageHistory()
+    }
     override suspend fun clearVisibleHistory() {
         dao.deleteActivityHistory()
         dao.hideUsageHistory()
         dao.hideCombinedHistory()
+        dao.hideCoverageHistory()
     }
 }

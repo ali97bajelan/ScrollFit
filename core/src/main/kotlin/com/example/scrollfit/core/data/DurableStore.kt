@@ -28,6 +28,12 @@ interface DataTransaction {
     suspend fun putSession(value: SessionState)
     suspend fun visibleUsages(): List<DailyUsage>
     suspend fun visibleCombined(): List<CombinedUsage>
+    suspend fun coverageTail(recordingSessionId: String, day: String): CoverageInterval?
+    suspend fun putCoverage(value: CoverageInterval)
+    suspend fun visibleCoverage(): List<CoverageInterval>
+    suspend fun hiddenUsageDays(): Set<String>
+    suspend fun coverageHiddenThroughDay(): String?
+    suspend fun putCoverageHiddenThroughDay(day: String)
     /** Hide accounting history, delete activity; retain enforcement counters and award identities. */
     suspend fun clearVisibleHistory()
 }

@@ -1,0 +1,32 @@
+<resources>
+    <string name="outcome_seven_day_title">Seven day recorded outcomes</string>
+    <string name="outcome_recorded_total">Recorded usage total: %1$s</string>
+    <string name="outcome_awarded_total">Time awarded: %1$s</string>
+    <string name="outcome_awarded_unknown">Awarded time: not recorded</string>
+    <string name="outcome_weekly_activity">Seven-day exercise activity</string>
+    <string name="outcome_coverage_note">Totals include recorded values only. Coverage explains what was observed.</string>
+    <string name="outcome_daily_comparison">Yesterday compared with the day before</string>
+    <string name="outcome_weekly_comparison">Seven completed days compared with the preceding seven</string>
+    <string name="outcome_comparison_values">%1$s: %2$s; %3$s: %4$s; %5$s</string>
+    <string name="outcome_previous">Previous</string>
+    <string name="outcome_current">Current</string>
+    <string name="outcome_change_more">More by %1$s</string>
+    <string name="outcome_change_less">Less by %1$s</string>
+    <string name="outcome_change_same">Same use</string>
+    <string name="outcome_coverage_complete">Coverage complete</string>
+    <string name="outcome_coverage_partial">Coverage partial</string>
+    <string name="outcome_coverage_unknown">Coverage unknown</string>
+    <string name="outcome_in_progress">In progress</string>
+    <string name="outcome_not_recorded">Usage not recorded</string>
+    <string name="outcome_accounting_inconsistent">Saved usage totals do not agree; comparisons are unavailable.</string>
+    <string name="outcome_combined_usage">Combined recorded usage: %1$s</string>
+    <string name="outcome_app_usage">%1$s: %2$s recorded</string>
+    <string name="outcome_activity_detail">%1$s repetitions; active time %2$s</string>
+    <string name="outcome_exercise_only">Exercise-only: %1$s repetitions; %2$s</string>
+    <string name="outcome_older_history">Older history</string>
+    <string name="outcome_insufficient">Not enough comparable monitoring data yet.</string>
+    <string name="outcome_scope_changed">Selected apps changed, so these periods cannot be compared.</string>
+    <string name="outcome_zone_changed">Time zone changed, so these periods cannot be compared.</string>
+    <string name="outcome_hidden_history">History was deleted for one of these periods.</string>
+    <string name="outcome_inconsistent">Saved usage records do not agree, so these periods cannot be compared.</string>
+</resources>

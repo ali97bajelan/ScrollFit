@@ -23,8 +23,9 @@ class EnumConverters {
 
 @Database(
     entities = [TargetRow::class, UsageRow::class, CombinedRow::class, ChallengeRow::class,
-        AwardRow::class, ActivityRow::class, SessionRow::class, CursorRow::class],
-    version = 2, exportSchema = true,
+        AwardRow::class, ActivityRow::class, SessionRow::class, CursorRow::class, CoverageRow::class,
+        CoverageTargetRow::class, HistoryVisibilityRow::class],
+    version = 3, exportSchema = true,
 )
 @TypeConverters(EnumConverters::class)
 abstract class ExerciseGateDatabase : RoomDatabase() {
@@ -36,9 +37,19 @@ abstract class ExerciseGateDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS usage_cursors (timelineId TEXT NOT NULL, throughElapsedMs INTEGER NOT NULL, PRIMARY KEY(timelineId))")
             }
         }
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS monitoring_coverage (id TEXT NOT NULL, recordingSessionId TEXT NOT NULL, timelineId TEXT NOT NULL, day TEXT NOT NULL, zoneId TEXT NOT NULL, startElapsedMs INTEGER NOT NULL, endElapsedMs INTEGER NOT NULL, startEpochMs INTEGER NOT NULL, endEpochMs INTEGER NOT NULL, historyVisible INTEGER NOT NULL, PRIMARY KEY(id))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_monitoring_coverage_recordingSessionId_day ON monitoring_coverage(recordingSessionId, day)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_monitoring_coverage_day ON monitoring_coverage(day)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS monitoring_coverage_targets (coverageId TEXT NOT NULL, packageName TEXT NOT NULL, PRIMARY KEY(coverageId, packageName), FOREIGN KEY(coverageId) REFERENCES monitoring_coverage(id) ON UPDATE NO ACTION ON DELETE CASCADE)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_monitoring_coverage_targets_coverageId ON monitoring_coverage_targets(coverageId)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS history_visibility (id INTEGER NOT NULL, coverageHiddenThroughDay TEXT, PRIMARY KEY(id))")
+            }
+        }
         /** No destructive fallback: an unsupported upgrade fails rather than replenishing budgets. */
         fun open(context: Context, name: String = "exercise-gate.db"): ExerciseGateDatabase =
             Room.databaseBuilder(context.applicationContext, ExerciseGateDatabase::class.java, name)
-                .addMigrations(MIGRATION_1_2).build()
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
     }
 }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import java.time.ZoneId
+import java.util.UUID
 
 /** Main-source package-only monitor. No content access, polling of history or background launches. */
 class MonitoringService : AccessibilityService() {
@@ -44,17 +45,23 @@ class MonitoringService : AccessibilityService() {
     private var safePackages = emptySet<String>()
     private var overflow = false
     private var tick: Job? = null
+    private var coverageCheckpoint: Job? = null
     private var reconciliation: Job? = null
     private var preferenceJob: Job? = null
     private var leaseHeld = false
     private var lastFailure = MonitorFailure.NONE
     private var generation = 0L
+    private var coverageRecorder: CoverageRecorder? = null
+    private var lastProcessedElapsedMs: Long? = null
 
     private val usageListener = AppOpsManager.OnOpChangedListener { operation, _ ->
-        if (operation == AppOpsManager.OPSTR_GET_USAGE_STATS && connected) scope.launch {
-            // Flush to detection time, then require new metadata for recovery.
-            enqueue(); foreground = null; foregroundKnown = false
-            requestReconciliation()
+        if (operation == AppOpsManager.OPSTR_GET_USAGE_STATS && connected) {
+            coverageRecorder?.invalidate()
+            scope.launch {
+                // Flush to detection time, then require new metadata for recovery.
+                enqueue(); foreground = null; foregroundKnown = false
+                requestReconciliation()
+            }
         }
     }
     private val screenReceiver = object : BroadcastReceiver() {
@@ -74,6 +81,7 @@ class MonitoringService : AccessibilityService() {
         super.onServiceConnected()
         if (connected) cleanup()
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        generation++
         observations = Channel(64)
         connected = true
         ready = false; readiness.failed(); foreground = null; foregroundKnown = false
@@ -98,8 +106,10 @@ class MonitoringService : AccessibilityService() {
             val boot = try { MonitorAccess.bootIdentity(this@MonitoringService) }
             catch (_: Exception) { fail(MonitorFailure.BOOT_ID); return@launch }
             try {
+                val sessionId = UUID.randomUUID().toString()
                 budgetEngine = persistence.budgetEngine(boot)
                 controller = MonitoringController(budgetEngine, TargetApps.protectedPackages(this@MonitoringService))
+                coverageRecorder = persistence.coverageRecorder(boot, sessionId)
                 safePackages = withContext(Dispatchers.IO) { TargetApps.list(this@MonitoringService).map { it.packageName }.toSet() }
                 ready = true
                 startPreferenceCollection()
@@ -125,7 +135,15 @@ class MonitoringService : AccessibilityService() {
                         val result = controller.observe(observation.signal)
                         if (generation != startedGeneration) { controller.abandon(); continue }
                         if (overflow) { overflow = false; fail(MonitorFailure.QUEUE); continue }
+                        val selectedScope = persistence.repository().targets().filter { it.selected }.map { it.packageName }.toSet()
+                        if (generation != startedGeneration) { coverageRecorder?.invalidate(); continue }
+                        coverageRecorder?.observe(observation.signal, result, selectedScope, leaseHeld) {
+                            connected && readiness.available && generation == startedGeneration && !overflow && leaseHeld
+                                && MonitorAccess.usage(this@MonitoringService)
+                        }
+                        lastProcessedElapsedMs = observation.signal.sample.elapsedMs
                         render(result, observation.ticket)
+                        scheduleCoverageCheckpoint(result)
                     } catch (cancelled: CancellationException) { throw cancelled }
                     catch (_: Exception) { fail(MonitorFailure.STORAGE) }
                 }
@@ -260,6 +278,10 @@ class MonitoringService : AccessibilityService() {
 
     fun reloadConfiguration() {
         if (!connected || !ready) return
+        generation++
+        coverageRecorder?.invalidate()
+        controller.abandon()
+        coverageCheckpoint?.cancel()
         startPreferenceCollection(restart = !readiness.available)
         scope.launch {
             try {
@@ -273,6 +295,7 @@ class MonitoringService : AccessibilityService() {
     private fun enqueue() {
         if (!connected || !ready) return
         tick?.cancel()
+        coverageCheckpoint?.cancel()
         val interactive = requireNotNull(getSystemService(PowerManager::class.java)).isInteractive &&
             !requireNotNull(getSystemService(KeyguardManager::class.java)).isKeyguardLocked
         val sample = MonitorSample(SystemClock.elapsedRealtime(), System.currentTimeMillis(), ZoneId.systemDefault().id)
@@ -303,6 +326,23 @@ class MonitoringService : AccessibilityService() {
         }
     }
 
+    private fun scheduleCoverageCheckpoint(result: MonitorDecision) {
+        coverageCheckpoint?.cancel()
+        if (!connected || !ready || !readiness.available || result.health != MonitoringHealth.HEALTHY || result.shouldTick) return
+        val delayMs = CoverageCheckpoint.nextDelayMs(SystemClock.elapsedRealtime(), lastProcessedElapsedMs, true) ?: return
+        coverageCheckpoint = scope.launch {
+            delay(delayMs)
+            if (connected && ready && readiness.available) requestReconciliation()
+        }
+    }
+
+    fun historyCleared() {
+        if (!connected || !ready) return
+        coverageRecorder?.invalidate()
+        enqueue()
+        requestReconciliation()
+    }
+
     private fun navigate(action: Int) {
         if (!performGlobalAction(action)) Toast.makeText(this, R.string.monitor_navigation_failed, Toast.LENGTH_LONG).show()
     }
@@ -323,8 +363,9 @@ class MonitoringService : AccessibilityService() {
         if (!connected) return
         sessionActionQueued = false
         generation++ // Invalidate any decision suspended in storage when failure arrived.
+        coverageRecorder?.invalidate()
         lastFailure = failure
-        tick?.cancel(); reconciliation?.cancel()
+        tick?.cancel(); coverageCheckpoint?.cancel(); reconciliation?.cancel()
         if (::controller.isInitialized) controller.abandon()
         while (observations.tryReceive().isSuccess) { /* discard uncertain queue */ }
         foreground = null; foregroundKnown = false
@@ -341,7 +382,8 @@ class MonitoringService : AccessibilityService() {
         // Last asynchronous checkpoint may be cancelled by Android; do not block the main thread.
         connected = false; ready = false
         readiness.failed()
-        tick?.cancel(); reconciliation?.cancel(); preferenceJob?.cancel()
+        tick?.cancel(); coverageCheckpoint?.cancel(); reconciliation?.cancel(); preferenceJob?.cancel()
+        coverageRecorder?.invalidate(); coverageRecorder = null
         scope.cancel(); observations.close()
         requireNotNull(getSystemService(AppOpsManager::class.java)).stopWatchingMode(usageListener)
         runCatching { unregisterReceiver(screenReceiver) }

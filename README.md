@@ -398,3 +398,14 @@ Android UI, Room persistence, accessibility or enforcement on a phone. See
 [T14 behavior/evidence](docs/T14_PRODUCT_UI.md),
 [pending phone checks](docs/T14_PHONE_TEST.md), and
 [commit text](docs/T14_COMMIT_MESSAGE.txt).
+
+## T15 daily and weekly outcomes
+
+History now presents a rolling seven-day view with daily usage, activity, awarded
+credit and monitoring coverage. Recorded usage stays separate from exercise
+activity and awarded time. Unknown periods are labeled as not recorded; a
+coverage-gated comparison appears only when both periods have complete matching
+scope and time zone. Coverage writes do not charge usage. See
+[T15 behavior and verification status](docs/T15_OUTCOMES.md), the
+[pending phone checklist](docs/T15_PHONE_TEST.md), and
+[proposed commit text](docs/T15_COMMIT_MESSAGE.txt).

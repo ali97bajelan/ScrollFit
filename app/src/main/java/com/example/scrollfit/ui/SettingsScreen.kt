@@ -118,7 +118,7 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
         text = { Text(stringResource(R.string.product_delete_explanation)) },
         confirmButton = { TextButton(onClick = {
             confirmDelete = false
-            perform { persistence.repository().clearHistory(); message = R.string.product_deleted }
+            perform { persistence.repository().clearHistory(); MonitorRuntime.historyCleared(); message = R.string.product_deleted }
         }) { Text(stringResource(R.string.product_delete)) } },
         dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.product_keep)) } })
 }

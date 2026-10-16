@@ -6,6 +6,7 @@ import com.example.scrollfit.core.data.DataRepository
 import com.example.scrollfit.core.budget.BudgetEngine
 import com.example.scrollfit.core.time.MonotonicClock
 import com.example.scrollfit.core.time.WallClock
+import com.example.scrollfit.core.usage.CoverageRecorder
 import com.example.scrollfit.platform.time.AndroidMonotonicClock
 import com.example.scrollfit.platform.time.AndroidWallClock
 import kotlinx.coroutines.sync.Mutex
@@ -41,5 +42,10 @@ class ExerciseGatePersistence(
     suspend fun budgetEngine(timelineId: String): BudgetEngine {
         repository() // Recovery must precede any challenge completion.
         return BudgetEngine(store, wallClock, monotonicClock, timelineId) { preferences.values.first() }
+    }
+
+    suspend fun coverageRecorder(timelineId: String, recordingSessionId: String): CoverageRecorder {
+        repository()
+        return CoverageRecorder(timelineId, recordingSessionId, durableRepository::recordCoverage)
     }
 }

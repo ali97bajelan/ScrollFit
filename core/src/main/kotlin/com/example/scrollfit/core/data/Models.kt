@@ -73,6 +73,10 @@ enum class CameraChoice { REAR, FRONT }
 
 data class VisibleHistory(
     val usage: List<DailyUsage>, val combined: List<CombinedUsage>, val activities: List<ExerciseActivity>,
+    val coverage: List<CoverageInterval> = emptyList(),
+    val activityModes: Map<String, ChallengeMode> = emptyMap(),
+    val hiddenUsageDays: Set<String> = emptySet(),
+    val coverageHiddenThroughDay: String? = null,
 )
 
 data class AppPreferences(

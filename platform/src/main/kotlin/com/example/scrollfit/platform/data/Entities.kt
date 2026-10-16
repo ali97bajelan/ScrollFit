@@ -40,3 +40,24 @@ data class SessionRow(@Embedded val value: SessionState)
 
 @Entity(tableName = "usage_cursors", primaryKeys = ["timelineId"])
 data class CursorRow(@Embedded val value: UsageCursor)
+
+@Entity(tableName = "monitoring_coverage", primaryKeys = ["id"], indices = [Index(value = ["recordingSessionId", "day"]), Index("day")])
+data class CoverageRow(
+    val id: String, val recordingSessionId: String, val timelineId: String, val day: String, val zoneId: String,
+    val startElapsedMs: Long, val endElapsedMs: Long, val startEpochMs: Long, val endEpochMs: Long,
+    val historyVisible: Boolean,
+) {
+    fun value(packages: Set<String>) = CoverageInterval(id, recordingSessionId, timelineId, day, zoneId,
+        startElapsedMs, endElapsedMs, startEpochMs, endEpochMs, packages, historyVisible)
+    companion object { fun from(value: CoverageInterval) = CoverageRow(value.id, value.recordingSessionId,
+        value.timelineId, value.day, value.zoneId, value.startElapsedMs, value.endElapsedMs, value.startEpochMs,
+        value.endEpochMs, value.historyVisible) }
+}
+
+@Entity(tableName = "monitoring_coverage_targets", primaryKeys = ["coverageId", "packageName"], foreignKeys = [
+    ForeignKey(entity = CoverageRow::class, parentColumns = ["id"], childColumns = ["coverageId"], onDelete = ForeignKey.CASCADE),
+], indices = [Index("coverageId")])
+data class CoverageTargetRow(val coverageId: String, val packageName: String)
+
+@Entity(tableName = "history_visibility", primaryKeys = ["id"])
+data class HistoryVisibilityRow(val id: Int = 1, val coverageHiddenThroughDay: String? = null)

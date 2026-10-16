@@ -40,6 +40,24 @@ class DurableRepository(private val store: DurableStore, private val wallClock: 
         putSession(window.copy(consumedMs = Math.addExact(window.consumedMs, delta)))
     }
 
+    suspend fun recordCoverage(value: CoverageInterval, eligible: () -> Boolean = { true }) = store.transaction {
+        if (!eligible()) throw CoverageInvalidated()
+        if (coverageHiddenThroughDay()?.let { value.day <= it } == true) return@transaction
+        val old = coverageTail(value.recordingSessionId, value.day)
+        val compatible = old != null && old.historyVisible && old.timelineId == value.timelineId &&
+            old.zoneId == value.zoneId && old.selectedPackages == value.selectedPackages &&
+            value.startElapsedMs <= old.endElapsedMs && value.endElapsedMs >= old.startElapsedMs
+        val merged = if (compatible) old!!.copy(
+            startElapsedMs = minOf(old.startElapsedMs, value.startElapsedMs),
+            endElapsedMs = maxOf(old.endElapsedMs, value.endElapsedMs),
+            startEpochMs = if (value.startElapsedMs < old.startElapsedMs) value.startEpochMs else old.startEpochMs,
+            endEpochMs = if (value.endElapsedMs >= old.endElapsedMs) value.endEpochMs else old.endEpochMs,
+        ) else value
+        if (!eligible()) throw CoverageInvalidated()
+        putCoverage(merged)
+        if (!eligible()) throw CoverageInvalidated()
+    }
+
     suspend fun startChallenge(value: Challenge) = store.transaction {
         require(value.status == ChallengeStatus.ACTIVE && value.day == today())
         if (value.packageName != null) require(target(value.packageName)?.selected == true)
@@ -91,8 +109,17 @@ class DurableRepository(private val store: DurableStore, private val wallClock: 
             visibleUsages().sortedWith(compareByDescending<DailyUsage> { it.day }.thenBy { it.packageName }),
             visibleCombined().sortedByDescending { it.day },
             activities().sortedWith(compareBy<ExerciseActivity> { it.recordedAtEpochMs }.thenBy { it.id }),
+            visibleCoverage(),
+            activities().mapNotNull { item -> item.challengeId?.let { id -> challenge(id)?.let { id to it.mode } } }.toMap(),
+            hiddenUsageDays(),
+            coverageHiddenThroughDay(),
         )
     }
-    override suspend fun clearHistory() = store.transaction { clearVisibleHistory() }
+    override suspend fun clearHistory() = store.transaction {
+        clearVisibleHistory()
+        putCoverageHiddenThroughDay(maxOf(coverageHiddenThroughDay() ?: "0000-01-01", wallClock.localDate().toString()))
+    }
     private fun today(): String = wallClock.localDate().toString()
 }
+
+class CoverageInvalidated : IllegalStateException("coverage write invalidated")

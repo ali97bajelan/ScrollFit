@@ -1,0 +1,32 @@
+<resources>
+    <string name="outcome_seven_day_title">Résultats enregistrés sur sept jours</string>
+    <string name="outcome_recorded_total">Utilisation enregistrée : %1$s</string>
+    <string name="outcome_awarded_total">Temps accordé : %1$s</string>
+    <string name="outcome_awarded_unknown">Temps accordé : non enregistré</string>
+    <string name="outcome_weekly_activity">Activité sportive sur sept jours</string>
+    <string name="outcome_coverage_note">Les totaux ne comprennent que les valeurs enregistrées. La couverture décrit les périodes observées.</string>
+    <string name="outcome_daily_comparison">Hier par rapport au jour précédent</string>
+    <string name="outcome_weekly_comparison">Sept jours terminés par rapport aux sept précédents</string>
+    <string name="outcome_comparison_values">%1$s : %2$s ; %3$s : %4$s ; %5$s</string>
+    <string name="outcome_previous">Avant</string>
+    <string name="outcome_current">Actuel</string>
+    <string name="outcome_change_more">Plus de %1$s</string>
+    <string name="outcome_change_less">Moins de %1$s</string>
+    <string name="outcome_change_same">Utilisation identique</string>
+    <string name="outcome_coverage_complete">Couverture complète</string>
+    <string name="outcome_coverage_partial">Couverture partielle</string>
+    <string name="outcome_coverage_unknown">Couverture inconnue</string>
+    <string name="outcome_in_progress">En cours</string>
+    <string name="outcome_not_recorded">Utilisation non enregistrée</string>
+    <string name="outcome_accounting_inconsistent">Les totaux enregistrés ne concordent pas ; comparaison indisponible.</string>
+    <string name="outcome_combined_usage">Utilisation totale enregistrée : %1$s</string>
+    <string name="outcome_app_usage">%1$s : %2$s enregistrées</string>
+    <string name="outcome_activity_detail">%1$s répétitions ; durée active : %2$s</string>
+    <string name="outcome_exercise_only">Exercice seul : %1$s répétitions ; %2$s</string>
+    <string name="outcome_older_history">Historique antérieur</string>
+    <string name="outcome_insufficient">Données de suivi comparables insuffisantes.</string>
+    <string name="outcome_scope_changed">Les applications sélectionnées ont changé ; comparaison impossible.</string>
+    <string name="outcome_zone_changed">Le fuseau horaire a changé ; comparaison impossible.</string>
+    <string name="outcome_hidden_history">L’historique d’une de ces périodes a été supprimé.</string>
+    <string name="outcome_inconsistent">Les données enregistrées sont incohérentes ; comparaison impossible.</string>
+</resources>

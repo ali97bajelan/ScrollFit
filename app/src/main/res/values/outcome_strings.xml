@@ -1,0 +1,32 @@
+<resources>
+    <string name="outcome_seven_day_title">نتایج ثبت‌شدهٔ هفت روز</string>
+    <string name="outcome_recorded_total">مجموع استفادهٔ ثبت‌شده: %1$s</string>
+    <string name="outcome_awarded_total">اعتبار اعطاشده: %1$s</string>
+    <string name="outcome_awarded_unknown">اعتبار اعطاشده: ثبت نشده</string>
+    <string name="outcome_weekly_activity">فعالیت ورزشی هفت‌روزه</string>
+    <string name="outcome_coverage_note">مجموع‌ها فقط مقدارهای ثبت‌شده را شامل می‌شوند. پوشش، زمان‌های پایش‌شده را نشان می‌دهد.</string>
+    <string name="outcome_daily_comparison">مقایسهٔ دیروز با روز پیش از آن</string>
+    <string name="outcome_weekly_comparison">مقایسهٔ هفت روز کامل با هفت روز پیش از آن</string>
+    <string name="outcome_comparison_values">%1$s: %2$s؛ %3$s: %4$s؛ %5$s</string>
+    <string name="outcome_previous">پیشین</string>
+    <string name="outcome_current">فعلی</string>
+    <string name="outcome_change_more">%1$s بیشتر</string>
+    <string name="outcome_change_less">%1$s کمتر</string>
+    <string name="outcome_change_same">استفاده یکسان</string>
+    <string name="outcome_coverage_complete">پوشش کامل</string>
+    <string name="outcome_coverage_partial">پوشش ناقص</string>
+    <string name="outcome_coverage_unknown">پوشش نامشخص</string>
+    <string name="outcome_in_progress">در حال انجام</string>
+    <string name="outcome_not_recorded">استفاده ثبت نشده است</string>
+    <string name="outcome_accounting_inconsistent">مجموع‌های ثبت‌شده سازگار نیستند؛ مقایسه ممکن نیست.</string>
+    <string name="outcome_combined_usage">استفادهٔ ثبت‌شدهٔ همهٔ برنامه‌ها: %1$s</string>
+    <string name="outcome_app_usage">%1$s: %2$s ثبت‌شده</string>
+    <string name="outcome_activity_detail">%1$s تکرار؛ زمان فعالیت: %2$s</string>
+    <string name="outcome_exercise_only">فقط ورزش: %1$s تکرار؛ %2$s</string>
+    <string name="outcome_older_history">سوابق قدیمی‌تر</string>
+    <string name="outcome_insufficient">هنوز دادهٔ پایش کافی برای مقایسه وجود ندارد.</string>
+    <string name="outcome_scope_changed">برنامه‌های انتخاب‌شده تغییر کرده‌اند؛ این دوره‌ها قابل مقایسه نیستند.</string>
+    <string name="outcome_zone_changed">منطقهٔ زمانی تغییر کرده است؛ این دوره‌ها قابل مقایسه نیستند.</string>
+    <string name="outcome_hidden_history">سوابق یکی از این دوره‌ها حذف شده است.</string>
+    <string name="outcome_inconsistent">سوابق استفاده با هم سازگار نیستند؛ این دوره‌ها قابل مقایسه نیستند.</string>
+</resources>

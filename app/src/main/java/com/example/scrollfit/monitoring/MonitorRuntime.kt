@@ -30,4 +30,5 @@ object MonitorRuntime {
     fun activityResumed() { ownUiVisible = true; service?.ownActivityResumed() }
     fun activityPaused() { ownUiVisible = false; service?.requestReconciliation() }
     fun configurationChanged() { service?.reloadConfiguration() }
+    fun historyCleared() { service?.historyCleared() }
 }

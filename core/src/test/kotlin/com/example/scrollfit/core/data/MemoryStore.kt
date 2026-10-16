@@ -13,6 +13,8 @@ class MemoryStore : DurableStore, DataTransaction {
     private var activities = mutableMapOf<String, ExerciseActivity>()
     private var sessions = mutableMapOf<Pair<String, String>, SessionState>()
     private var cursors = mutableMapOf<String, UsageCursor>()
+    private var coverage = mutableMapOf<String, CoverageInterval>()
+    private var coverageCutoff: String? = null
     var failNextSession = false
     var failNextUsage = false
     var onUsageRead: (() -> Unit)? = null
@@ -26,10 +28,12 @@ class MemoryStore : DurableStore, DataTransaction {
         val savedAwards = awards.toMutableMap(); val savedActivities = activities.toMutableMap()
         val savedSessions = sessions.toMutableMap()
         val savedCursors = cursors.toMutableMap()
+        val savedCoverage = coverage.toMutableMap(); val savedCoverageCutoff = coverageCutoff
         return try { block(this) } catch (failure: Throwable) {
             targets = savedTargets; usages = savedUsages; combined = savedCombined; challenges = savedChallenges
             awards = savedAwards; activities = savedActivities; sessions = savedSessions
             cursors = savedCursors
+            coverage = savedCoverage; coverageCutoff = savedCoverageCutoff
             throw failure
         } finally {
             transactions.release()
@@ -44,10 +48,14 @@ class MemoryStore : DurableStore, DataTransaction {
     }
     override suspend fun putUsage(value: DailyUsage) {
         if (failNextUsage) { failNextUsage = false; error("injected failure") }
-        usages[value.packageName to value.day] = value
+        val visible = value.historyVisible && (coverageCutoff?.let { value.day > it } != false)
+        usages[value.packageName to value.day] = value.copy(historyVisible = visible)
     }
     override suspend fun combined(day: String) = combined[day]
-    override suspend fun putCombined(value: CombinedUsage) { combined[value.day] = value }
+    override suspend fun putCombined(value: CombinedUsage) {
+        val visible = value.historyVisible && (coverageCutoff?.let { value.day > it } != false)
+        combined[value.day] = value.copy(historyVisible = visible)
+    }
     override suspend fun challenge(id: String) = challenges[id]
     override suspend fun insertChallenge(value: Challenge) { require(value.id !in challenges); challenges[value.id] = value }
     override suspend fun putChallenge(value: Challenge) { challenges[value.id] = value }
@@ -69,7 +77,7 @@ class MemoryStore : DurableStore, DataTransaction {
         require(value.id !in activities); activities[value.id] = value
         onActivityWrite?.let { hook -> onActivityWrite = null; hook() }
     }
-    override suspend fun activities() = activities.values.toList()
+    override suspend fun activities() = activities.values.filter { it.day > (coverageCutoff ?: "0000-01-01") }
     override suspend fun session(packageName: String, day: String) = sessions[packageName to day]
     override suspend fun putSession(value: SessionState) {
         if (failNextSession) { failNextSession = false; error("injected session failure") }
@@ -77,9 +85,22 @@ class MemoryStore : DurableStore, DataTransaction {
     }
     override suspend fun visibleUsages() = usages.values.filter { it.historyVisible }
     override suspend fun visibleCombined() = combined.values.filter { it.historyVisible }
+    override suspend fun coverageTail(recordingSessionId: String, day: String) = coverage.values
+        .filter { it.recordingSessionId == recordingSessionId && it.day == day }
+        .maxByOrNull { it.endElapsedMs }
+    override suspend fun putCoverage(value: CoverageInterval) { coverage[value.id] = value }
+    override suspend fun visibleCoverage() = coverage.values.filter { it.historyVisible && it.day > (coverageCutoff ?: "0000-01-01") }
+    override suspend fun hiddenUsageDays() = (usages.values.filterNot { it.historyVisible }.map { it.day } +
+        combined.values.filterNot { it.historyVisible }.map { it.day }).toSet()
+    override suspend fun coverageHiddenThroughDay() = coverageCutoff
+    override suspend fun putCoverageHiddenThroughDay(day: String) {
+        coverageCutoff = maxOf(coverageCutoff ?: "0000-01-01", day)
+        coverage.replaceAll { _, value -> if (value.day <= coverageCutoff!!) value.copy(historyVisible = false) else value }
+    }
     override suspend fun clearVisibleHistory() {
         activities.clear()
         usages.replaceAll { _, value -> value.copy(historyVisible = false) }
         combined.replaceAll { _, value -> value.copy(historyVisible = false) }
+        coverage.replaceAll { _, value -> value.copy(historyVisible = false) }
     }
 }
