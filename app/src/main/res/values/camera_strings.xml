@@ -3,9 +3,9 @@
     <string name="camera_title">پیش‌نمایش حرکت</string>
     <string name="camera_open">باز کردن دوربین</string>
     <string name="camera_privacy">تصویر فقط روی گوشی پردازش می‌شود؛ عکس و فیلم ذخیره یا ارسال نمی‌شوند. دوربین هنگام خروج یا رفتن به پس‌زمینه متوقف می‌شود.</string>
-    <string name="camera_candidate_notice">این مرحله برای آزمایش تصویر و تشخیص بدن است. شمارش حرکت و کسب پاداش هنوز متصل نیستند.</string>
     <string name="camera_grant">اجازهٔ استفاده از دوربین</string>
     <string name="camera_settings">تنظیمات مجوز دوربین</string>
+    <string name="camera_app_info">اطلاعات برنامه</string>
     <string name="camera_permission_required">برای دیدن حرکت، دسترسی دوربین را فعال کنید. اگر درخواست مجوز نمایش داده نمی‌شود، از تنظیمات برنامه استفاده کنید.</string>
     <string name="camera_initializing">دوربین در حال آماده شدن است…</string>
     <string name="camera_searching">بدن را در کادر قرار دهید و نور محیط را بیشتر کنید.</string>
@@ -14,7 +14,7 @@
     <string name="camera_paused">دوربین متوقف است.</string>
     <string name="camera_unavailable">این دوربین در دسترس نیست. دوربین دیگر را انتخاب کنید.</string>
     <string name="camera_error">دوربین باز نشد. برنامهٔ دیگری که از دوربین استفاده می‌کند را ببندید، مجوز را بررسی کنید و دوباره تلاش کنید.</string>
-    <string name="camera_model_error">پردازش تصویر آماده نشد. دوباره تلاش کنید؛ اگر مشکل ادامه داشت، نسخهٔ سالم برنامه را نصب کنید.</string>
+    <string name="camera_model_error">پردازش تصویر آغاز نشد. دوباره تلاش کنید؛ اگر مشکل ادامه داشت، اطلاعات برنامه را باز کنید.</string>
     <string name="camera_inference_error">پردازش حرکت متوقف شد. دوباره تلاش کنید یا دوربین دیگر را انتخاب کنید.</string>
     <string name="camera_rear">دوربین پشت</string>
     <string name="camera_front">دوربین جلو</string>

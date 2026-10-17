@@ -46,7 +46,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeSession? = null,
-    onProgress: () -> Unit = {}, onInterrupted: () -> Unit = {}, onTracking: (Boolean) -> Unit = {}) {
+    onProgress: () -> Unit = {}, onInterrupted: () -> Unit = {}, onTracking: (Boolean) -> Unit = {},
+    onModelError: () -> Unit = {}) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val preferences = remember(context) { (context.applicationContext as ScrollFitApplication).persistence.preferences }
@@ -122,6 +123,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
                 if (challenge != null && !closing && it.status in setOf(CameraPoseStatus.PAUSED,
                         CameraPoseStatus.PERMISSION_REQUIRED, CameraPoseStatus.CAMERA_UNAVAILABLE,
                         CameraPoseStatus.CAMERA_ERROR, CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {
+                    if (it.status == CameraPoseStatus.MODEL_ERROR) onModelError()
                     onInterrupted()
                 }
                 if (it.status == CameraPoseStatus.PERMISSION_REQUIRED) permission = false
@@ -207,7 +209,15 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
                     enabled = !saving && camera != CameraChoice.FRONT) { Text(stringResource(R.string.camera_front)) }
             }
             Text(stringResource(if (camera == CameraChoice.FRONT) R.string.camera_selected_front else R.string.camera_selected_rear))
-            if (state.status in setOf(CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.CAMERA_UNAVAILABLE,
+            if (state.status == CameraPoseStatus.MODEL_ERROR) {
+                Button(onClick = { if (challenge != null) onInterrupted(); retry++ }) {
+                    Text(stringResource(R.string.camera_retry))
+                }
+                OutlinedButton(onClick = {
+                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:${context.packageName}")))
+                }) { Text(stringResource(R.string.camera_app_info)) }
+            } else if (state.status in setOf(CameraPoseStatus.CAMERA_UNAVAILABLE,
                     CameraPoseStatus.CAMERA_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {
                 Button(onClick = { if (challenge != null) onInterrupted(); retry++ }) { Text(stringResource(R.string.camera_retry)) }
             }

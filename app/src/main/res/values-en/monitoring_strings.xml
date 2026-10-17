@@ -2,10 +2,10 @@
     <string name="monitor_title">App monitoring and budgets</string>
     <string name="monitor_service_label">App monitoring in ScrollFit</string>
     <string name="monitor_service_description">Only the foreground app’s name is checked to calculate usage time and show limits. Screen text, messages, and page content are not read. You choose when to enable monitoring and can stop it at any time.</string>
-    <string name="monitor_explanation">Choose apps and daily allowances. Monitoring starts only after you tap “Enable.” Time already used is not reset when you change settings, remove an app, or reopen the app.</string>
+    <string name="monitor_explanation">Choose apps and their daily free time. Monitoring starts only after you tap “Enable.” Time already used is not reset when you change settings, remove an app, or reopen the app.</string>
     <string name="monitor_permission_missing">Required access is missing; limits cannot be enforced.</string>
     <string name="monitor_service_stopped">The monitoring service is not ready. Open ScrollFit and check Accessibility settings.</string>
-    <string name="monitor_healthy">Service connected and permissions granted. On-device limit enforcement still needs testing.</string>
+    <string name="monitor_healthy">Access is connected. Monitoring may still have gaps; review recorded usage in ScrollFit.</string>
     <string name="monitor_starting">Preparing monitoring</string>
     <string name="monitor_owner_busy">Another monitoring session is active. Stop the 30-second test or main monitoring first.</string>
     <string name="monitor_boot_failed">The device startup identifier is unavailable. Monitoring has stopped to prevent duplicate time accounting.</string>
@@ -18,12 +18,12 @@
     <string name="monitor_reboot_notice">After a restart, Android must reconnect the service for monitoring to continue. If the status remains “Not ready,” check Accessibility settings. Time while the service is disconnected is not counted.</string>
     <string name="monitor_usage_settings">App usage access settings</string>
     <string name="monitor_accessibility_settings">Accessibility settings</string>
-    <string name="monitor_ceiling_seconds">Combined daily app usage cap (greater than zero)</string>
-    <string name="monitor_allowance_seconds">Daily allowance for this app (zero allowed)</string>
-    <string name="monitor_zero_base">Start the day with no free allowance</string>
+    <string name="monitor_ceiling_seconds">Shared daily limit across apps (greater than zero)</string>
+    <string name="monitor_allowance_seconds">Daily free time for this app (zero allowed)</string>
+    <string name="monitor_zero_base">Start the day with no free time</string>
     <string name="monitor_select_apps">Select the apps to monitor. System and essential apps are not listed.</string>
     <string name="monitor_no_apps">No selectable apps were found.</string>
-    <string name="monitor_budget">Remaining: free allowance %1$s, earned time %2$s, combined cap %3$s</string>
+    <string name="monitor_budget">Remaining: free time %1$s, earned time %2$s, shared daily limit %3$s</string>
     <string name="monitor_enable_prerequisites">To enable monitoring, correct the values, select at least one app, and make all three access states below ready.</string>
     <string name="monitor_usage_readiness">App usage access</string>
     <string name="monitor_accessibility_readiness">Accessibility service</string>
@@ -39,10 +39,10 @@
     <string name="monitor_disable">Stop monitoring</string>
     <string name="monitor_action_failed">Could not complete the action. Check the values and permissions; previous usage has not been reset.</string>
     <string name="monitor_blocked">Usage time is up</string>
-    <string name="monitor_app_exhausted">This app’s allowance and rewards are used up. The next day’s allowance starts at midnight. Camera and reward earning are not connected yet.</string>
-    <string name="monitor_combined_exhausted">The combined app usage cap for today is used up. Exercise rewards do not increase this cap; saved time remains until midnight.</string>
+    <string name="monitor_app_exhausted">This app’s free time and earned time are used up for today. You can earn more through exercise while the daily reward cap has room.</string>
+    <string name="monitor_combined_exhausted">The shared daily limit for app use is reached. Exercise rewards add earned time but do not raise this limit; earned time remains until midnight.</string>
     <string name="monitor_home">Go to the phone’s home screen</string>
     <string name="monitor_panel">Open Quick Settings</string>
     <string name="monitor_navigation_failed">Could not perform this action. Use a system button or navigation gesture instead.</string>
-    <string name="monitor_limits_notice">This tool supports self-control. Revoking access, force-stopping the app, and some phone behaviors can bypass limits. In split-screen, only the last foreground app is counted; picture-in-picture and manufacturer-specific behavior need testing. No Xiaomi battery-settings issue has been observed yet.</string>
+    <string name="monitor_limits_notice">Monitoring can miss some app use; removing access or stopping the service can disable limits. Check monitoring status and recorded usage regularly.</string>
 </resources>

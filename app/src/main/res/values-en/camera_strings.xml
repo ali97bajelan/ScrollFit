@@ -2,9 +2,9 @@
     <string name="camera_title">Movement preview</string>
     <string name="camera_open">Open camera</string>
     <string name="camera_privacy">Images are processed only on this phone. Photos and videos are not saved or sent. The camera stops when you leave or send the app to the background.</string>
-    <string name="camera_candidate_notice">This step tests the camera preview and body detection. Exercise counting and rewards are not connected yet.</string>
     <string name="camera_grant">Allow camera access</string>
     <string name="camera_settings">Camera permission settings</string>
+    <string name="camera_app_info">App info</string>
     <string name="camera_permission_required">Allow camera access to track movement. If no permission prompt appears, open the app settings.</string>
     <string name="camera_initializing">Starting camera…</string>
     <string name="camera_searching">Move your body into the frame and improve the lighting.</string>
@@ -13,7 +13,7 @@
     <string name="camera_paused">Camera is paused.</string>
     <string name="camera_unavailable">This camera is unavailable. Select the other camera.</string>
     <string name="camera_error">Could not open the camera. Close other apps using it, check permissions, and try again.</string>
-    <string name="camera_model_error">Image processing could not start. Try again; if the problem continues, reinstall the app.</string>
+    <string name="camera_model_error">Image processing could not start. Try again; if it continues, open App info for details.</string>
     <string name="camera_inference_error">Movement processing stopped. Try again or select the other camera.</string>
     <string name="camera_rear">Rear camera</string>
     <string name="camera_front">Front camera</string>

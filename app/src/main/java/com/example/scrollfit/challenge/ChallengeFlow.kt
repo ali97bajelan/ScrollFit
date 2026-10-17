@@ -43,6 +43,8 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     var error by mutableStateOf(false); private set
     var changed by mutableStateOf(false); private set
     var interrupted by mutableStateOf(false); private set
+    var cameraModelError by mutableStateOf(false); private set
+    var cancellationPending by mutableStateOf(false); private set
     var repetitions by mutableStateOf(0); private set
 
     fun load() {
@@ -177,6 +179,28 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
 
     fun checkDay() { if (session?.checkDay() == false) interrupt() }
 
+    fun recordCameraModelError() { cameraModelError = true }
+
+    fun reviewNewChallenge() {
+        if (!interrupted || !cameraModelError || cancellationPending || error) return
+        session = null
+        phase = null
+        result = null
+        offer = null
+        changed = false
+        repetitions = 0
+        interrupted = false
+        cameraModelError = false
+        refreshOnResume = false
+        load()
+    }
+
+    fun retryInterruptionCancellation() {
+        val active = session ?: return
+        if (!interrupted || !error || cancellationPending) return
+        persistInterruptionCancellation(active)
+    }
+
     fun resume() {
         if (refreshOnResume && session == null) { refreshOnResume = false; load() }
     }
@@ -189,11 +213,19 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
         if (active == null) { refreshOnResume = true; busy = false; return }
         phase = active.phase
         if (active.phase == ChallengePhase.FINISHED) return
+        if (interrupted) return
         interrupted = true
+        persistInterruptionCancellation(active)
+    }
+
+    private fun persistInterruptionCancellation(active: ChallengeSession) {
+        error = false
+        cancellationPending = true
         scope.launch {
             try { persistence.repository().cancelChallenge(active.challenge.id) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { error = true }
+            finally { cancellationPending = false }
         }
     }
 }

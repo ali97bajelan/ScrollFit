@@ -23,9 +23,9 @@
     <string name="front_guidance">تمام بدن از روبه‌رو در تصویر دیده شود.</string>
     <string name="history_empty">نمایش سابقهٔ روزانه و فعالیت در مراحل بعد کامل می‌شود؛ مقدار مصرف امروز در صفحهٔ پایش قابل مشاهده است.</string>
     <string name="defaults_notice">پیش‌فرض‌های پیشنهادی؛ سهمیه و سقف مصرف در صفحهٔ پایش قابل ویرایش‌اند. تنظیمات کامل ورزش در مراحل بعد اضافه می‌شود.</string>
-    <string name="default_allowance">سهمیهٔ روزانهٔ هر برنامه: %1$d دقیقه</string>
-    <string name="default_ceiling">سقف مصرف روزانهٔ مجموع برنامه‌ها: %1$d دقیقه</string>
-    <string name="default_award_cap">سقف پاداش روزانهٔ هر برنامه: %1$d دقیقه</string>
+    <string name="default_allowance">زمان رایگان روزانه برای هر برنامه: %1$d دقیقه</string>
+    <string name="default_ceiling">سقف مشترک روزانه: %1$d دقیقه</string>
+    <string name="default_award_cap">سقف پاداش روزانه برای هر برنامه: %1$d دقیقه</string>
     <string name="default_session">مدت هر نوبت استفاده: %1$d دقیقه</string>
     <string name="other_defaults">حالت بدون سهمیهٔ رایگان: خاموش\nشمارش صوتی: روشن\nدوربین پیشنهادی: پشت</string>
 </resources>

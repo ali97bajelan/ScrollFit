@@ -2,7 +2,7 @@
 
 Reviewed: **2026-10-16**. Method: **static source review only**.
 
-This review covers the current working tree, including uncommitted work. No app, emulator, device session, build, or test suite was run. Only this review file was added. Layout clipping, perceived performance, contrast, exercise recognition quality, and actual accessibility behavior remain unverified.
+At review time, this file covered the current working tree, including uncommitted work. No app, emulator, device session, build, or test suite was run; only this review file was added. Layout clipping, perceived performance, contrast, exercise recognition quality, and actual accessibility behavior remain unverified.
 
 ## 1. Product assessment
 
@@ -224,4 +224,16 @@ These are proposed measurements; this review does not establish an analytics pip
 
 The evidence is the source linked above, especially the product screens, monitoring setup/blocker, challenge lifecycle, camera UI, reward model, outcome aggregation, and Persian/English/French resources. Existing documentation provided context; implementation observations were checked against current code.
 
-This assessment establishes source-level observations and product hypotheses. No implementation changes are included. Future feature choices should be refined with users and tested on the actual app.
+This assessment records source-level observations and product hypotheses from the 2026-10-16 review. Future feature choices should be refined with users and tested on the actual app.
+
+## 10. Implementation status
+
+Updated **2026-10-17**. Status below means implemented in source; it does not mean build or device acceptance has passed.
+
+| Review item | Planned task | Status |
+| --- | --- | --- |
+| UX07 — Time presentation and entry | U1 tasks 1–2 (B1–B2) | Implemented in source: [localized duration formatter](../app/src/main/java/com/example/scrollfit/ui/ProductFormatters.kt) and [minutes-first editor](../app/src/main/java/com/example/scrollfit/ui/DurationSetting.kt). |
+| UX11 — Shared theme and blocker actions | U1 task 3 (B3) | Implemented in source: [shared theme](../app/src/main/java/com/example/scrollfit/ui/ScrollFitTheme.kt), [product tokens](../app/src/main/java/com/example/scrollfit/ui/ProductTokens.kt), and [native blocker styling and actions](../app/src/main/java/com/example/scrollfit/monitoring/BudgetOverlay.kt). Build, UI, contrast, and device validation remain pending; no Gradle or emulator checks were run for this task. |
+| UX13 — Production language and recovery copy | U1 task 4 (B4) | Implemented in source: localized production vocabulary, cautious monitoring status, and reachable camera model-error recovery with retryable interruption persistence in Persian, English, and French; [source checker](../verification/check_source.py) passes and checks touched resource parity. Build and [phone acceptance](UX_FOUNDATION_PHONE_TEST.md) remain pending; no Gradle tests or emulator checks were run for this task. |
+
+U1 source implementation tasks B1–B4 are complete; the device acceptance checks remain pending.

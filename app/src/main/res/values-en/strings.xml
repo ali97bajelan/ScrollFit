@@ -23,8 +23,8 @@
     <string name="front_guidance">Keep your whole body visible from the front.</string>
     <string name="history_empty">Daily history and activity details will be added in a later step. Today’s usage is available on the monitoring screen.</string>
     <string name="defaults_notice">Suggested defaults. Daily allowances and the usage cap can be edited on the monitoring screen. Full exercise settings will be added later.</string>
-    <string name="default_allowance">Daily allowance per app: %1$d minutes</string>
-    <string name="default_ceiling">Combined daily usage cap: %1$d minutes</string>
+    <string name="default_allowance">Daily free time per app: %1$d minutes</string>
+    <string name="default_ceiling">Shared daily limit: %1$d minutes</string>
     <string name="default_award_cap">Daily reward cap per app: %1$d minutes</string>
     <string name="default_session">Length of each usage session: %1$d minutes</string>
     <string name="other_defaults">Usage without a free allowance: off\nVoice counting: on\nSuggested camera: rear</string>

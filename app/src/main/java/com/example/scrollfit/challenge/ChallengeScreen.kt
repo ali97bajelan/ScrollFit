@@ -72,7 +72,8 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
             Text(stringResource(R.string.challenge_progress, flow.repetitions, session.challenge.repetitionsRequired),
                 modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.headlineSmall)
             CameraScreen(session.challenge.exercise, onCancel = { close() }, challenge = session,
-                onProgress = flow::progressChanged, onInterrupted = flow::interrupt, onTracking = flow::trackingChanged)
+                onProgress = flow::progressChanged, onInterrupted = flow::interrupt, onTracking = flow::trackingChanged,
+                onModelError = flow::recordCameraModelError)
         }
         return
     }
@@ -101,10 +102,26 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         } else if (session != null) {
             if (flow.busy) Text(stringResource(R.string.challenge_saving))
             else if (flow.interrupted) Text(stringResource(R.string.challenge_interrupted))
+            if (flow.interrupted && flow.cancellationPending) {
+                Text(stringResource(R.string.challenge_cancel_pending))
+            }
             else if (result is CompletionResult.Refused) Text(stringResource(result.reason.message()))
+            if (flow.cameraModelError) {
+                Text(stringResource(R.string.camera_model_error))
+                if (!flow.error) Button(onClick = flow::reviewNewChallenge, enabled = !flow.cancellationPending) {
+                    Text(stringResource(R.string.challenge_new_attempt))
+                }
+                OutlinedButton(onClick = {
+                    context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        android.net.Uri.parse("package:${context.packageName}")))
+                }) { Text(stringResource(R.string.camera_app_info)) }
+            }
             if (flow.error) {
                 Text(stringResource(R.string.challenge_storage_error))
-                if (!flow.interrupted) Button(onClick = flow::complete, enabled = !flow.busy) {
+                if (flow.interrupted) Button(onClick = flow::retryInterruptionCancellation,
+                    enabled = !flow.cancellationPending) {
+                    Text(stringResource(R.string.camera_retry))
+                } else Button(onClick = flow::complete, enabled = !flow.busy) {
                     Text(stringResource(R.string.camera_retry))
                 }
             }

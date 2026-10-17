@@ -23,8 +23,8 @@
     <string name="front_guidance">Gardez tout le corps visible de face.</string>
     <string name="history_empty">L’historique quotidien et le détail de l’activité seront ajoutés ultérieurement. Votre consommation du jour est visible dans l’écran de suivi.</string>
     <string name="defaults_notice">Valeurs suggérées. Les quotas quotidiens et le plafond d’utilisation peuvent être modifiés dans l’écran de suivi. Les réglages détaillés des exercices seront ajoutés ultérieurement.</string>
-    <string name="default_allowance">Quota quotidien par application : %1$d minutes</string>
-    <string name="default_ceiling">Plafond quotidien combiné d’utilisation : %1$d minutes</string>
+    <string name="default_allowance">Temps gratuit quotidien par application : %1$d minutes</string>
+    <string name="default_ceiling">Limite quotidienne partagée : %1$d minutes</string>
     <string name="default_award_cap">Plafond quotidien de récompense par application : %1$d minutes</string>
     <string name="default_session">Durée de chaque session d’utilisation : %1$d minutes</string>
     <string name="other_defaults">Utilisation sans quota gratuit : désactivée\nComptage vocal : activé\nCaméra suggérée : arrière</string>

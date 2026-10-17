@@ -2,10 +2,10 @@
     <string name="monitor_title">Suivi et budgets des applications</string>
     <string name="monitor_service_label">Suivi des applications dans ScrollFit</string>
     <string name="monitor_service_description">Seul le nom de l’application au premier plan est vérifié pour calculer le temps d’utilisation et afficher les limites. Le texte, les messages et le contenu des pages ne sont pas lus. Vous activez le suivi vous-même et pouvez l’arrêter à tout moment.</string>
-    <string name="monitor_explanation">Choisissez les applications et leurs quotas quotidiens. Le suivi commence uniquement après avoir appuyé sur « Activer ». Le temps déjà utilisé n’est pas remis à zéro si vous modifiez les paramètres, retirez une application ou rouvrez l’application.</string>
+    <string name="monitor_explanation">Choisissez les applications et leur temps gratuit quotidien. Le suivi commence uniquement après avoir appuyé sur « Activer ». Le temps déjà utilisé n’est pas remis à zéro si vous modifiez les paramètres, retirez une application ou rouvrez l’application.</string>
     <string name="monitor_permission_missing">L’autorisation nécessaire est absente ; les limites ne peuvent pas être appliquées.</string>
     <string name="monitor_service_stopped">Le service de suivi n’est pas prêt. Ouvrez ScrollFit et vérifiez les paramètres d’accessibilité.</string>
-    <string name="monitor_healthy">Le service est connecté et les autorisations sont accordées. L’application des limites sur le téléphone doit encore être testée.</string>
+    <string name="monitor_healthy">Les accès sont connectés. Le suivi peut toutefois comporter des interruptions ; vérifiez le temps enregistré dans ScrollFit.</string>
     <string name="monitor_starting">Préparation du suivi</string>
     <string name="monitor_owner_busy">Une autre session de suivi est active. Arrêtez d’abord le test de 30 secondes ou le suivi principal.</string>
     <string name="monitor_boot_failed">L’identifiant de démarrage du téléphone est indisponible. Le suivi a été arrêté pour éviter de compter deux fois le temps.</string>
@@ -18,12 +18,12 @@
     <string name="monitor_reboot_notice">Après un redémarrage, Android doit reconnecter le service pour que le suivi reprenne. Si l’état reste « Pas prêt », vérifiez les paramètres d’accessibilité. Le temps pendant lequel le service est déconnecté n’est pas compté.</string>
     <string name="monitor_usage_settings">Paramètres d’accès aux statistiques d’utilisation</string>
     <string name="monitor_accessibility_settings">Paramètres d’accessibilité</string>
-    <string name="monitor_ceiling_seconds">Plafond quotidien combiné d’utilisation des applications (supérieur à zéro)</string>
-    <string name="monitor_allowance_seconds">Quota quotidien pour cette application (zéro autorisé)</string>
-    <string name="monitor_zero_base">Commencer la journée sans quota gratuit</string>
+    <string name="monitor_ceiling_seconds">Limite quotidienne partagée entre les applications (supérieure à zéro)</string>
+    <string name="monitor_allowance_seconds">Temps gratuit quotidien pour cette application (zéro autorisé)</string>
+    <string name="monitor_zero_base">Commencer la journée sans temps gratuit</string>
     <string name="monitor_select_apps">Sélectionnez les applications à suivre. Les applications système et essentielles ne figurent pas dans la liste.</string>
     <string name="monitor_no_apps">Aucune application sélectionnable n’a été trouvée.</string>
-    <string name="monitor_budget">Restant : quota gratuit %1$s, temps gagné %2$s, plafond combiné %3$s</string>
+    <string name="monitor_budget">Restant : temps gratuit %1$s, temps gagné %2$s, limite quotidienne partagée %3$s</string>
     <string name="monitor_enable_prerequisites">Pour activer le suivi, corrigez les valeurs, sélectionnez au moins une application et vérifiez les trois états d’accès ci-dessous.</string>
     <string name="monitor_usage_readiness">Accès aux données d’utilisation</string>
     <string name="monitor_accessibility_readiness">Service d’accessibilité</string>
@@ -39,10 +39,10 @@
     <string name="monitor_disable">Arrêter le suivi</string>
     <string name="monitor_action_failed">L’opération n’a pas abouti. Vérifiez les valeurs et les autorisations ; l’utilisation précédente n’a pas été remise à zéro.</string>
     <string name="monitor_blocked">Temps d’utilisation écoulé</string>
-    <string name="monitor_app_exhausted">Le quota et les récompenses de cette application sont épuisés. Le quota du lendemain commence à minuit. La caméra et l’obtention de récompenses ne sont pas encore reliées.</string>
-    <string name="monitor_combined_exhausted">Le plafond d’utilisation combiné des applications pour aujourd’hui est atteint. Les récompenses d’exercice n’augmentent pas ce plafond ; le temps enregistré reste disponible jusqu’à minuit.</string>
+    <string name="monitor_app_exhausted">Le temps gratuit et le temps gagné de cette application sont épuisés pour aujourd’hui. Vous pouvez en gagner davantage grâce à l’exercice tant que le plafond quotidien de récompense n’est pas atteint.</string>
+    <string name="monitor_combined_exhausted">La limite quotidienne partagée d’utilisation des applications est atteinte. L’exercice ajoute du temps gagné sans relever cette limite ; le temps gagné reste disponible jusqu’à minuit.</string>
     <string name="monitor_home">Aller à l’écran d’accueil du téléphone</string>
     <string name="monitor_panel">Ouvrir les réglages rapides</string>
     <string name="monitor_navigation_failed">Cette action n’a pas pu être effectuée. Utilisez un bouton ou un geste de navigation du système.</string>
-    <string name="monitor_limits_notice">Cet outil aide à mieux gérer son temps. Le retrait des autorisations, l’arrêt forcé de l’application et certains comportements du téléphone peuvent contourner les limites. En écran partagé, seule la dernière application au premier plan est comptée ; le mode image dans l’image et les comportements propres aux fabricants doivent être testés. Aucun problème lié aux paramètres de batterie Xiaomi n’a encore été observé.</string>
+    <string name="monitor_limits_notice">Le suivi peut manquer certaines utilisations ; le retrait des accès ou l’arrêt du service peut désactiver les limites. Vérifiez régulièrement l’état du suivi et le temps enregistré.</string>
 </resources>

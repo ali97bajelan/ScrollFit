@@ -2,10 +2,10 @@
     <string name="monitor_title">پایش و بودجهٔ برنامه‌ها</string>
     <string name="monitor_service_label">پایش برنامه‌ها در اسکرول‌فیت</string>
     <string name="monitor_service_description">فقط نام برنامهٔ جلوی صفحه برای محاسبهٔ زمان و نمایش محدودیت بررسی می‌شود؛ متن، پیام و محتوای صفحه خوانده نمی‌شود. پایش را خودتان فعال می‌کنید و همیشه می‌توانید متوقفش کنید.</string>
-    <string name="monitor_explanation">برنامه‌ها و سهمیهٔ روزانه را انتخاب کنید. پایش فقط پس از لمس «فعال کردن» شروع می‌شود. زمان مصرف‌شده با تغییر تنظیمات، حذف انتخاب یا بازگشت برنامه صفر نمی‌شود.</string>
+    <string name="monitor_explanation">برنامه‌ها و زمان رایگان روزانه را انتخاب کنید. پایش فقط پس از لمس «فعال کردن» شروع می‌شود. زمان مصرف‌شده با تغییر تنظیمات، حذف انتخاب یا بازگشت برنامه صفر نمی‌شود.</string>
     <string name="monitor_permission_missing">دسترسی لازم وجود ندارد؛ محدودیت قابل اجرا نیست.</string>
     <string name="monitor_service_stopped">سرویس پایش آماده نیست؛ اسکرول‌فیت را باز کنید و وضعیت دسترس‌پذیری را بررسی کنید.</string>
-    <string name="monitor_healthy">سرویس متصل و دسترسی‌ها برقرارند؛ اجرای محدودیت روی گوشی هنوز نیاز به آزمایش دارد.</string>
+    <string name="monitor_healthy">دسترسی‌ها وصل‌اند. ممکن است در پایش وقفه پیش بیاید؛ زمان ثبت‌شده را در اسکرول‌فیت بررسی کنید.</string>
     <string name="monitor_starting">در حال آماده‌سازی پایش</string>
     <string name="monitor_owner_busy">یک پایش دیگر فعال است. ابتدا تست ۳۰ ثانیه‌ای یا پایش اصلی را متوقف کنید.</string>
     <string name="monitor_boot_failed">شناسهٔ راه‌اندازی گوشی در دسترس نیست؛ برای جلوگیری از محاسبهٔ تکراری، پایش متوقف است.</string>
@@ -18,12 +18,12 @@
     <string name="monitor_reboot_notice">بعد از راه‌اندازی مجدد، ادامهٔ پایش به اتصال سرویس توسط اندروید وابسته است. اگر وضعیت «آماده نیست» باقی ماند، دسترس‌پذیری را بررسی کنید. بازهٔ قطع سرویس محاسبه نمی‌شود.</string>
     <string name="monitor_usage_settings">تنظیمات دسترسی به مصرف برنامه‌ها</string>
     <string name="monitor_accessibility_settings">تنظیمات دسترس‌پذیری</string>
-    <string name="monitor_ceiling_seconds">سقف مصرف مشترک روزانه (بیشتر از صفر)</string>
-    <string name="monitor_allowance_seconds">سهمیهٔ روزانهٔ این برنامه (صفر مجاز است)</string>
-    <string name="monitor_zero_base">شروع روز بدون سهمیهٔ رایگان</string>
+    <string name="monitor_ceiling_seconds">سقف مشترک روزانهٔ برنامه‌ها (بیشتر از صفر)</string>
+    <string name="monitor_allowance_seconds">زمان رایگان روزانهٔ این برنامه (صفر مجاز است)</string>
+    <string name="monitor_zero_base">شروع روز بدون زمان رایگان</string>
     <string name="monitor_select_apps">برنامه‌های موردنظر را انتخاب کنید؛ برنامه‌های سیستمی و حیاتی در این فهرست نیستند.</string>
     <string name="monitor_no_apps">برنامهٔ قابل انتخاب پیدا نشد.</string>
-    <string name="monitor_budget">باقی‌مانده: سهمیهٔ رایگان %1$s، پاداش %2$s، سقف مجموع %3$s</string>
+    <string name="monitor_budget">باقی‌مانده: زمان رایگان %1$s، زمان کسب‌شده %2$s، سقف مشترک روزانه %3$s</string>
     <string name="monitor_enable_prerequisites">برای فعال‌سازی، مقدارها را اصلاح کنید، دست‌کم یک برنامه انتخاب کنید و هر سه وضعیت دسترسی زیر را برقرار کنید.</string>
     <string name="monitor_usage_readiness">دسترسی به مصرف برنامه</string>
     <string name="monitor_accessibility_readiness">سرویس دسترس‌پذیری</string>
@@ -39,10 +39,10 @@
     <string name="monitor_disable">متوقف کردن پایش</string>
     <string name="monitor_action_failed">عملیات کامل نشد. مقادیر معتبر و دسترسی‌ها را بررسی کنید؛ مصرف قبلی صفر نشده است.</string>
     <string name="monitor_blocked">زمان استفاده تمام شد</string>
-    <string name="monitor_app_exhausted">سهمیه و پاداش این برنامه تمام شده است. سهمیهٔ روز بعد از نیمه‌شب شروع می‌شود. دوربین و کسب پاداش در این مرحله هنوز متصل نیستند.</string>
-    <string name="monitor_combined_exhausted">سقف مصرف مجموع برنامه‌ها برای امروز تمام شده است. پاداش ورزشی این سقف را افزایش نمی‌دهد؛ زمان ذخیره‌شده تا نیمه‌شب باقی می‌ماند.</string>
+    <string name="monitor_app_exhausted">زمان رایگان و زمان کسب‌شدهٔ این برنامه برای امروز تمام شده است. اگر در سقف پاداش روزانه ظرفیت باقی باشد، می‌توانید با ورزش زمان بیشتری کسب کنید.</string>
+    <string name="monitor_combined_exhausted">سقف مشترک روزانهٔ مصرف برنامه‌ها تمام شده است. پاداش ورزشی زمان کسب‌شده را افزایش می‌دهد، اما این سقف را بالا نمی‌برد؛ زمان کسب‌شده تا نیمه‌شب باقی می‌ماند.</string>
     <string name="monitor_home">رفتن به صفحهٔ اصلی گوشی</string>
     <string name="monitor_panel">باز کردن تنظیمات سریع</string>
     <string name="monitor_navigation_failed">این فرمان اجرا نشد؛ از دکمه یا حرکت پیمایشی سیستم استفاده کنید.</string>
-    <string name="monitor_limits_notice">این ابزار کمک به خودکنترلی است؛ لغو دسترسی، توقف اجباری و بعضی رفتارهای گوشی می‌توانند محدودیت را دور بزنند. در چندپنجره‌ای فقط آخرین برنامهٔ جلوی صفحه محاسبه می‌شود؛ تصویر در تصویر و رفتارهای سازنده نیاز به آزمایش دارند. هنوز شکست مرتبط با تنظیمات باتری شیائومی مشاهده نشده است.</string>
+    <string name="monitor_limits_notice">پایش ممکن است بعضی زمان‌ها را ثبت نکند؛ لغو دسترسی یا متوقف‌شدن سرویس می‌تواند محدودیت را از کار بیندازد. وضعیت پایش و زمان ثبت‌شده را مرتب بررسی کنید.</string>
 </resources>
