@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="ux_take_break">Take a break</string>
+    <string name="ux_earn_time">Earn time</string>
+    <string name="ux_exercise_without_rewards">Exercise without rewards</string>
+    <string name="ux_other_options">Other options</string>
+    <string name="ux_open_scrollfit">Open ScrollFit</string>
     <plurals name="ux_duration_hours">
         <item quantity="one">%1$s hr</item>
         <item quantity="other">%1$s hr</item>

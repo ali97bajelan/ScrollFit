@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import com.example.scrollfit.R
+import com.example.scrollfit.MainActivity
 import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.challenge.ChallengeActivity
 import com.example.scrollfit.core.exercise.Exercise
@@ -24,7 +25,7 @@ import kotlinx.coroutines.flow.collect
 import java.time.ZoneId
 import java.util.UUID
 
-/** Main-source package-only monitor. No content access, polling of history or background launches. */
+/** Main-source package-only monitor. Activities launch only after a tap on the visible blocker. */
 class MonitoringService : AccessibilityService() {
     private sealed interface Command
     private data class Observation(val signal: MonitorSignal, val ticket: Long, val generation: Long) : Command
@@ -87,7 +88,7 @@ class MonitoringService : AccessibilityService() {
         ready = false; readiness.failed(); foreground = null; foregroundKnown = false
         safePackages = emptySet(); overflow = false; lastFailure = MonitorFailure.NONE
         overlay = BudgetOverlay(this, { navigate(GLOBAL_ACTION_HOME) },
-            { navigate(GLOBAL_ACTION_QUICK_SETTINGS) }, { disableMonitoring() }, { fail(MonitorFailure.OVERLAY) },
+            { openScrollFit() }, { disableMonitoring() }, { fail(MonitorFailure.OVERLAY) },
             ::openChallenge, ::resolveSession)
         presentation = MonitorPresentation(overlay::show, overlay::dismiss)
         MonitorRuntime.connected(this)
@@ -186,6 +187,33 @@ class MonitoringService : AccessibilityService() {
             // Keep the blocker until the Activity actually resumes: Android may silently reject BAL.
         } catch (_: Exception) {
             Toast.makeText(this, R.string.challenge_launch_error, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** Only called by a user tap on the live blocker. */
+    private fun openScrollFit() {
+        if (!connected || !overlay.visible) return
+        try {
+            val intent = Intent(this, MainActivity::class.java).addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP,
+            )
+            val creator = ActivityOptions.makeBasic()
+            if (Build.VERSION.SDK_INT >= 35) creator.setPendingIntentCreatorBackgroundActivityStartMode(
+                if (Build.VERSION.SDK_INT >= 36) ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
+                else ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED,
+            )
+            val pending = PendingIntent.getActivity(this, 1, intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_ONE_SHOT,
+                creator.toBundle())
+            val sender = ActivityOptions.makeBasic()
+            if (Build.VERSION.SDK_INT >= 34) sender.setPendingIntentBackgroundActivityStartMode(
+                if (Build.VERSION.SDK_INT >= 36) ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
+                else ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED,
+            )
+            pending.send(this, 0, null, null, null, null, sender.toBundle())
+        } catch (_: Exception) {
+            Toast.makeText(this, R.string.monitor_navigation_failed, Toast.LENGTH_LONG).show()
         }
     }
 

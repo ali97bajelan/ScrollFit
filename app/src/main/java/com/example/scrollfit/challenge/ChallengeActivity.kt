@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -18,6 +17,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.example.scrollfit.core.data.ChallengeMode
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.monitoring.MonitorRuntime
+import com.example.scrollfit.ui.ScrollFitTheme
 
 /** Explicit, unexported entry, used only by a visible blocker button. Extras never award credit. */
 class ChallengeActivity : ComponentActivity() {
@@ -33,7 +33,7 @@ class ChallengeActivity : ComponentActivity() {
             val direction = if (LocalConfiguration.current.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL)
                 LayoutDirection.Rtl else LayoutDirection.Ltr
             CompositionLocalProvider(LocalLayoutDirection provides direction) {
-                MaterialTheme {
+                ScrollFitTheme {
                     request?.let { selected ->
                         key(selected.version) {
                             ChallengeScreen(if (selected.only) ChallengeMode.EXERCISE_ONLY else ChallengeMode.JUST_IN_TIME,

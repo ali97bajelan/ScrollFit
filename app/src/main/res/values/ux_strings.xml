@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="ux_take_break">کمی استراحت کن</string>
+    <string name="ux_earn_time">کسب زمان</string>
+    <string name="ux_exercise_without_rewards">ورزش بدون پاداش</string>
+    <string name="ux_other_options">گزینه‌های دیگر</string>
+    <string name="ux_open_scrollfit">باز کردن اسکرول‌فیت</string>
     <plurals name="ux_duration_hours">
         <item quantity="one">%1$s ساعت</item>
         <item quantity="other">%1$s ساعت</item>

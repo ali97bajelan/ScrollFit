@@ -1,7 +1,6 @@
 package com.example.scrollfit.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -51,7 +50,7 @@ fun ScrollFitApp() {
     val route = backStackEntry?.destination?.route
     val layoutDirection = if (LocalConfiguration.current.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL) LayoutDirection.Rtl else LayoutDirection.Ltr
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
-        MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
+        ScrollFitTheme {
             if (initial == null) {
                 ProductPage(R.string.app_name) {
                     if (failed) {
@@ -59,7 +58,7 @@ fun ScrollFitApp() {
                         Button(onClick = { retry++ }) { Text(stringResource(R.string.camera_retry)) }
                     } else CircularProgressIndicator()
                 }
-                return@MaterialTheme
+                return@ScrollFitTheme
             }
             Scaffold(bottomBar = {
                 if (Destination.entries.any { it.route == route }) NavigationBar {

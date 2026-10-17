@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="ux_take_break">Faire une pause</string>
+    <string name="ux_earn_time">Gagner du temps</string>
+    <string name="ux_exercise_without_rewards">Faire de l’exercice sans récompense</string>
+    <string name="ux_other_options">Autres options</string>
+    <string name="ux_open_scrollfit">Ouvrir ScrollFit</string>
     <plurals name="ux_duration_hours">
         <item quantity="one">%1$s h</item>
         <item quantity="other">%1$s h</item>
