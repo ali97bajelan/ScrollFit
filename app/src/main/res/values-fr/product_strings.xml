@@ -7,7 +7,6 @@
     <string name="product_combined_summary">Plafond quotidien combiné</string>
     <string name="product_show_awards">Afficher le détail des gains</string>
     <string name="product_hide_awards">Masquer le détail des gains</string>
-    <string name="product_seconds_hint">Saisissez les valeurs en secondes, par exemple 300 secondes (5 minutes).</string>
     <string name="product_positive_error">Saisissez un entier supérieur à zéro dans la plage autorisée.</string>
     <string name="product_nonnegative_error">Saisissez zéro ou un entier positif dans la plage autorisée.</string>
     <string name="product_correct_fields">Corrigez les valeurs signalées pour enregistrer.</string>
@@ -35,7 +34,7 @@
     <string name="product_active">Durée d’exercice actif observée</string>
     <string name="product_onboarding_limits">Valeurs initiales modifiables : 30 minutes par jour et par application, plafond total de 60 minutes, gain quotidien maximal de 20 minutes par application et sessions de 5 minutes. Le suivi démarre uniquement sur activation explicite.</string>
     <string name="product_repetitions">Répétitions complètes (supérieur à zéro)</string>
-    <string name="product_reward_seconds">Récompense (secondes, supérieur à zéro)</string>
+    <string name="product_reward_seconds">Récompense (supérieure à zéro)</string>
     <string name="product_camera">Caméra préférée</string>
     <string name="product_last_exercise">Exercice présélectionné pour la prochaine fois</string>
     <string name="product_delete_explanation">Supprimer l’activité physique et masquer l’historique d’utilisation. L’utilisation du jour, le crédit, les sessions et la protection contre les gains en double sont conservés. Cette action est irréversible.</string>
@@ -45,7 +44,7 @@
     <string name="product_about">Configuration et confidentialité</string>
     <string name="product_search">Rechercher une application</string>
     <string name="product_no_matches">Aucune application ne correspond à la recherche.</string>
-    <string name="product_cap_seconds">Plafond quotidien de gain pour cette application (secondes, zéro autorisé)</string>
+    <string name="product_cap_seconds">Plafond quotidien de gain pour cette application (zéro autorisé)</string>
     <string name="product_cap_notice">Le plafond compte tout le temps accordé aujourd’hui, y compris le crédit dépensé. Le réduire conserve le crédit existant. Zéro bloque les nouveaux gains.</string>
     <string name="product_enable_access">Pour activer le suivi, autorisez l’accès aux données d’utilisation et connectez le service d’accessibilité, puis revenez ici.</string>
     <string name="product_back">Retour</string>

@@ -7,7 +7,6 @@
     <string name="product_combined_summary">خلاصهٔ سقف روزانه</string>
     <string name="product_show_awards">نمایش جزئیات پاداش</string>
     <string name="product_hide_awards">پنهان کردن جزئیات پاداش</string>
-    <string name="product_seconds_hint">مقدار را برحسب ثانیه وارد کنید؛ مانند ۳۰۰ ثانیه (۵ دقیقه).</string>
     <string name="product_positive_error">یک عدد صحیح بزرگ‌تر از صفر و در محدودهٔ مجاز وارد کنید.</string>
     <string name="product_nonnegative_error">صفر یا یک عدد صحیح مثبت در محدودهٔ مجاز وارد کنید.</string>
     <string name="product_correct_fields">برای ذخیره، مقدارهای مشخص‌شده را اصلاح کنید.</string>
@@ -35,7 +34,7 @@
     <string name="product_active">زمان فعال مشاهده‌شده</string>
     <string name="product_onboarding_limits">پیش‌فرض قابل ویرایش: روزانه ۳۰ دقیقه برای هر برنامه، سقف مشترک ۶۰ دقیقه، سقف دریافت اعتبار ۲۰ دقیقه برای هر برنامه و بازه‌های استفادهٔ ۵ دقیقه‌ای. پایش تنها با انتخاب صریح شما فعال می‌شود.</string>
     <string name="product_repetitions">تعداد تکرار کامل (بزرگ‌تر از صفر)</string>
-    <string name="product_reward_seconds">پاداش (ثانیه، بزرگ‌تر از صفر)</string>
+    <string name="product_reward_seconds">پاداش (بزرگ‌تر از صفر)</string>
     <string name="product_camera">دوربین ترجیحی</string>
     <string name="product_last_exercise">ورزش انتخاب‌شده برای شروع بعدی</string>
     <string name="product_delete_explanation">فعالیت ورزشی حذف و سابقهٔ مصرف پنهان می‌شود. مصرف امروز، اعتبار، وضعیت بازه‌ها و رکوردهای جلوگیری از پاداش تکراری حفظ می‌شوند. این کار قابل بازگردانی نیست.</string>
@@ -45,7 +44,7 @@
     <string name="product_about">راهنما و حریم خصوصی</string>
     <string name="product_search">جست‌وجوی برنامه</string>
     <string name="product_no_matches">برنامه‌ای مطابق جست‌وجو پیدا نشد.</string>
-    <string name="product_cap_seconds">سقف اعتبار روزانهٔ این برنامه (ثانیه، صفر مجاز است)</string>
+    <string name="product_cap_seconds">سقف اعتبار روزانهٔ این برنامه (صفر مجاز است)</string>
     <string name="product_cap_notice">سقف اعتبار بر کل زمان اعطاشدهٔ امروز، حتی اعتبار مصرف‌شده، اعمال می‌شود. کاهش سقف، اعتبار قبلی را حذف نمی‌کند. سقف صفر دریافت اعتبار جدید را متوقف می‌کند.</string>
     <string name="product_enable_access">برای فعال‌کردن پایش، دسترسی استفاده و سرویس دسترس‌پذیری را فعال کنید و به این صفحه برگردید.</string>
     <string name="product_back">بازگشت</string>

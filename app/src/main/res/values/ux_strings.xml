@@ -14,4 +14,9 @@
     </plurals>
     <string name="ux_duration_pair">%1$s %2$s</string>
     <string name="ux_duration_triple">%1$s %2$s %3$s</string>
+    <string name="ux_duration_unit_minutes">دقیقه</string>
+    <string name="ux_duration_unit_seconds">ثانیه</string>
+    <string name="ux_duration_hint">مقدار فعلی: %1$s</string>
+    <string name="ux_duration_preserved">مقدار ذخیره‌شده: %1$s. برای تغییر، یک عدد صحیح وارد کنید.</string>
+    <string name="ux_duration_unit_error">این مقدار در واحد انتخاب‌شده به عدد صحیح تبدیل نمی‌شود.</string>
 </resources>

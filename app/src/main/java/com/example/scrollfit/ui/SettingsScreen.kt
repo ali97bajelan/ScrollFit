@@ -19,6 +19,8 @@ import com.example.scrollfit.challenge.label
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.exercise.RewardRule
+import com.example.scrollfit.core.settings.DurationInput
+import com.example.scrollfit.core.settings.DurationUnit
 import com.example.scrollfit.core.settings.SettingNumbers
 import com.example.scrollfit.monitoring.MonitorRuntime
 import kotlinx.coroutines.CancellationException
@@ -47,7 +49,13 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
     ProductPage(R.string.settings) {
         ProductContent(data) { snapshot ->
             val initial = snapshot.preferences
-            var rules by rememberSaveable { mutableStateOf(initial.rewardRules.mapValues { (_, r) -> r.repetitions.toString() to r.rewardSeconds.toString() }) }
+            val initialRewardDrafts = remember(initial.rewardRules) { initial.rewardRules.mapValues { (_, rule) ->
+                DurationDraft.fromMilliseconds(Math.multiplyExact(rule.rewardSeconds, 1_000L))
+            } }
+            var rules by rememberSaveable { mutableStateOf(initial.rewardRules.mapValues { (item, rule) ->
+                rule.repetitions.toString() to initialRewardDrafts.getValue(item).value
+            }) }
+            var rewardUnits by rememberSaveable { mutableStateOf(initialRewardDrafts.mapValues { (_, draft) -> draft.unit.name }) }
             var speech by rememberSaveable { mutableStateOf(initial.speechEnabled) }
             var camera by rememberSaveable { mutableStateOf(initial.camera) }
             var exercise by rememberSaveable { mutableStateOf(initial.lastExercise) }
@@ -55,7 +63,10 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
             var speechDirty by rememberSaveable { mutableStateOf(false) }
             var cameraDirty by rememberSaveable { mutableStateOf(false) }
             var exerciseDirty by rememberSaveable { mutableStateOf(false) }
-            val valid = rules.values.all { SettingNumbers.positiveInt(it.first) != null && SettingNumbers.milliseconds(it.second, true) != null }
+            val valid = rules.all { (exercise, value) ->
+                SettingNumbers.positiveInt(value.first) != null &&
+                    DurationInput.parse(value.second, DurationUnit.valueOf(rewardUnits.getValue(exercise)), true) != null
+            }
             MonitoringHealthInfo(initial.monitoringEnabled)
             Button(onClick = onSetup, enabled = !busy) { Text(stringResource(R.string.monitor_title)) }
             Button(enabled = !busy && initial.monitoringEnabled, onClick = { perform {
@@ -67,10 +78,26 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
             Exercise.entries.forEach { item ->
                 Text(stringResource(item.label()), style = MaterialTheme.typography.titleLarge)
                 val rule = rules.getValue(item)
+                val rewardUnit = DurationUnit.valueOf(rewardUnits.getValue(item))
                 NumberSetting(rule.first, { rules = rules + (item to (it to rule.second)); message = null },
                     R.string.product_repetitions, SettingNumbers.positiveInt(rule.first) != null, !busy)
-                NumberSetting(rule.second, { rules = rules + (item to (rule.first to it)); message = null },
-                    R.string.product_reward_seconds, SettingNumbers.milliseconds(rule.second, true) != null, !busy)
+                DurationSetting(
+                    value = rule.second,
+                    unit = rewardUnit,
+                    onValueChange = { rules = rules + (item to (rule.first to it)); message = null },
+                    onUnitChange = { nextUnit ->
+                        val milliseconds = DurationInput.parse(rule.second, rewardUnit, positive = true)
+                        if (milliseconds != null && milliseconds % nextUnit.milliseconds == 0L) {
+                            val converted = (milliseconds / nextUnit.milliseconds).toString()
+                            rules = rules + (item to (rule.first to converted))
+                            rewardUnits = rewardUnits + (item to nextUnit.name)
+                            message = null
+                        }
+                    },
+                    label = R.string.product_reward_seconds,
+                    positive = true,
+                    enabled = !busy,
+                )
             }
             Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(speech, enabled = !busy, role = Role.Switch,
                 onValueChange = { speech = it; speechDirty = true; message = null }), verticalAlignment = Alignment.CenterVertically,
@@ -90,9 +117,10 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
             } }
             if (!valid) Text(stringResource(R.string.product_correct_fields), color = MaterialTheme.colorScheme.error)
             Button(enabled = !busy && valid, onClick = {
-                val savedRules = rules.mapValues { (_, value) -> RewardRule(
+                val savedRules = rules.mapValues { (item, value) -> RewardRule(
                     requireNotNull(SettingNumbers.positiveInt(value.first)),
-                    requireNotNull(SettingNumbers.milliseconds(value.second, true)) / 1000) }
+                    requireNotNull(DurationInput.parse(value.second,
+                        DurationUnit.valueOf(rewardUnits.getValue(item)), true)) / 1000) }
                 val changedRules = savedRules.filter { (item, rule) -> originalRules[item] != rule }
                 val savedCamera = camera; val savedExercise = exercise; val savedSpeech = speech
                 val changeCamera = cameraDirty; val changeExercise = exerciseDirty; val changeSpeech = speechDirty

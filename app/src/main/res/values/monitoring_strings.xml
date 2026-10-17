@@ -18,8 +18,8 @@
     <string name="monitor_reboot_notice">بعد از راه‌اندازی مجدد، ادامهٔ پایش به اتصال سرویس توسط اندروید وابسته است. اگر وضعیت «آماده نیست» باقی ماند، دسترس‌پذیری را بررسی کنید. بازهٔ قطع سرویس محاسبه نمی‌شود.</string>
     <string name="monitor_usage_settings">تنظیمات دسترسی به مصرف برنامه‌ها</string>
     <string name="monitor_accessibility_settings">تنظیمات دسترس‌پذیری</string>
-    <string name="monitor_ceiling_seconds">سقف مصرف مجموع برنامه‌ها در روز (ثانیه، بیشتر از صفر)</string>
-    <string name="monitor_allowance_seconds">سهمیهٔ روزانهٔ این برنامه (ثانیه، صفر مجاز است)</string>
+    <string name="monitor_ceiling_seconds">سقف مصرف مشترک روزانه (بیشتر از صفر)</string>
+    <string name="monitor_allowance_seconds">سهمیهٔ روزانهٔ این برنامه (صفر مجاز است)</string>
     <string name="monitor_zero_base">شروع روز بدون سهمیهٔ رایگان</string>
     <string name="monitor_select_apps">برنامه‌های موردنظر را انتخاب کنید؛ برنامه‌های سیستمی و حیاتی در این فهرست نیستند.</string>
     <string name="monitor_no_apps">برنامهٔ قابل انتخاب پیدا نشد.</string>

@@ -1,8 +1,8 @@
 package com.example.scrollfit.core.settings
 
-/** Whole seconds/rep input from ASCII, Persian or Arabic keyboards; invalid edits never throw. */
+/** Parses whole-number input from ASCII, Persian or Arabic keyboards; invalid edits never throw. */
 object SettingNumbers {
-    private fun whole(text: String): Long? {
+    internal fun wholeNumber(text: String): Long? {
         val digits = text.trim()
         if (digits.isEmpty()) return null
         val normalized = buildString {
@@ -19,9 +19,9 @@ object SettingNumbers {
         return normalized.toLongOrNull()
     }
     fun milliseconds(text: String, positive: Boolean): Long? {
-        val seconds = whole(text) ?: return null
+        val seconds = wholeNumber(text) ?: return null
         if (positive && seconds == 0L || seconds > Long.MAX_VALUE / 1000) return null
         return seconds * 1000
     }
-    fun positiveInt(text: String): Int? = whole(text)?.takeIf { it in 1..Int.MAX_VALUE.toLong() }?.toInt()
+    fun positiveInt(text: String): Int? = wholeNumber(text)?.takeIf { it in 1..Int.MAX_VALUE.toLong() }?.toInt()
 }

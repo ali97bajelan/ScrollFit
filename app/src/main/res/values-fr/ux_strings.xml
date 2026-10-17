@@ -14,4 +14,9 @@
     </plurals>
     <string name="ux_duration_pair">%1$s %2$s</string>
     <string name="ux_duration_triple">%1$s %2$s %3$s</string>
+    <string name="ux_duration_unit_minutes">Minutes</string>
+    <string name="ux_duration_unit_seconds">Secondes</string>
+    <string name="ux_duration_hint">Valeur actuelle : %1$s</string>
+    <string name="ux_duration_preserved">Valeur enregistrée : %1$s. Saisissez un nombre entier pour la modifier.</string>
+    <string name="ux_duration_unit_error">Cette valeur ne peut pas être représentée par un nombre entier dans l’unité choisie.</string>
 </resources>

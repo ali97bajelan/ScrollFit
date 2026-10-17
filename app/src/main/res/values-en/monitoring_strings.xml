@@ -18,8 +18,8 @@
     <string name="monitor_reboot_notice">After a restart, Android must reconnect the service for monitoring to continue. If the status remains “Not ready,” check Accessibility settings. Time while the service is disconnected is not counted.</string>
     <string name="monitor_usage_settings">App usage access settings</string>
     <string name="monitor_accessibility_settings">Accessibility settings</string>
-    <string name="monitor_ceiling_seconds">Combined daily app usage cap (seconds, greater than zero)</string>
-    <string name="monitor_allowance_seconds">Daily allowance for this app (seconds, zero is allowed)</string>
+    <string name="monitor_ceiling_seconds">Combined daily app usage cap (greater than zero)</string>
+    <string name="monitor_allowance_seconds">Daily allowance for this app (zero allowed)</string>
     <string name="monitor_zero_base">Start the day with no free allowance</string>
     <string name="monitor_select_apps">Select the apps to monitor. System and essential apps are not listed.</string>
     <string name="monitor_no_apps">No selectable apps were found.</string>

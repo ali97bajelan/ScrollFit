@@ -5,9 +5,11 @@ import android.provider.Settings
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.Role
-import com.example.scrollfit.ui.NumberSetting
+import com.example.scrollfit.ui.DurationDraft
+import com.example.scrollfit.ui.DurationSetting
+import com.example.scrollfit.ui.durationDraftMapSaver
+import com.example.scrollfit.ui.durationDraftSaver
 import com.example.scrollfit.ui.duration
-import com.example.scrollfit.core.settings.SettingNumbers
 import com.example.scrollfit.core.settings.TargetSettings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -32,13 +34,6 @@ import kotlinx.coroutines.flow.collect
 private val stringSetSaver: Saver<Set<String>, ArrayList<String>> = Saver(
     save = { ArrayList(it) }, restore = { it.toSet() }
 )
-private val stringMapSaver: Saver<Map<String, String>, ArrayList<String>> = Saver(
-    save = { values -> ArrayList(values.flatMap { listOf(it.key, it.value) }) },
-    restore = { values -> values.chunked(2).mapNotNull { pair ->
-        if (pair.size == 2) pair[0] to pair[1] else null
-    }.toMap() }
-)
-
 /** Editable production setup; counters and sessions stay in the transactional repository. */
 @Composable
 fun MonitoringSetup() {
@@ -52,8 +47,8 @@ fun MonitoringSetup() {
     var apps by remember { mutableStateOf(emptyList<TargetApp>()) }
     var configs by remember { mutableStateOf(emptyList<TargetConfig>()) }
     var selected by rememberSaveable(saver = stringSetSaver) { mutableStateOf<Set<String>>(emptySet()) }
-    var allowances by rememberSaveable(saver = stringMapSaver) { mutableStateOf<Map<String, String>>(emptyMap()) }
-    var caps by rememberSaveable(saver = stringMapSaver) { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var allowances by rememberSaveable(saver = durationDraftMapSaver) { mutableStateOf<Map<String, DurationDraft>>(emptyMap()) }
+    var caps by rememberSaveable(saver = durationDraftMapSaver) { mutableStateOf<Map<String, DurationDraft>>(emptyMap()) }
     var query by rememberSaveable { mutableStateOf("") }
     var draftsInitialized by rememberSaveable { mutableStateOf(false) }
     var loadRetry by remember { mutableStateOf(0) }
@@ -67,8 +62,12 @@ fun MonitoringSetup() {
         owner.lifecycle.addObserver(observer)
         onDispose { owner.lifecycle.removeObserver(observer) }
     }
-    var ceiling by rememberSaveable { mutableStateOf("3600") }
-    var sessionBoundary by rememberSaveable { mutableStateOf("300") }
+    var ceiling by rememberSaveable(stateSaver = durationDraftSaver) {
+        mutableStateOf(DurationDraft.fromMilliseconds(3_600_000L))
+    }
+    var sessionBoundary by rememberSaveable(stateSaver = durationDraftSaver) {
+        mutableStateOf(DurationDraft.fromMilliseconds(300_000L))
+    }
     var zeroBase by rememberSaveable { mutableStateOf(false) }
     var budgets by remember { mutableStateOf(emptyMap<String, Budget>()) }
     var loading by remember { mutableStateOf(true) }
@@ -95,13 +94,13 @@ fun MonitoringSetup() {
             configs = persistence.repository().targets()
             if (!draftsInitialized) {
                 selected = configs.filter { it.selected }.map { it.packageName }.toSet()
-                allowances = apps.associate { app -> app.packageName to
-                    ((configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) / 1000).toString() }
-                caps = apps.associate { app -> app.packageName to
-                    ((configs.find { it.packageName == app.packageName }?.dailyAwardCapMs ?: 1_200_000L) / 1000).toString() }
-                ceiling = (current.combinedCeilingMs / 1000).toString()
+                allowances = apps.associate { app -> app.packageName to DurationDraft.fromMilliseconds(
+                    configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) }
+                caps = apps.associate { app -> app.packageName to DurationDraft.fromMilliseconds(
+                    configs.find { it.packageName == app.packageName }?.dailyAwardCapMs ?: 1_200_000L) }
+                ceiling = DurationDraft.fromMilliseconds(current.combinedCeilingMs)
                 zeroBase = current.zeroBaseEnabled
-                sessionBoundary = (current.sessionBoundaryMs / 1000).toString()
+                sessionBoundary = DurationDraft.fromMilliseconds(current.sessionBoundaryMs)
                 draftsInitialized = true
             }
             refreshBudgets()
@@ -120,10 +119,10 @@ fun MonitoringSetup() {
         if (!loading) try {
             val refreshed = withContext(Dispatchers.IO) { TargetApps.list(context) }
             // Keep drafts; seed only fields for newly available apps.
-            allowances = refreshed.associate { app -> app.packageName to
-                ((configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) / 1000).toString() } + allowances
-            caps = refreshed.associate { app -> app.packageName to
-                ((configs.find { it.packageName == app.packageName }?.dailyAwardCapMs ?: 1_200_000L) / 1000).toString() } + caps
+            allowances = refreshed.associate { app -> app.packageName to DurationDraft.fromMilliseconds(
+                configs.find { it.packageName == app.packageName }?.baseAllowanceMs ?: 1_800_000L) } + allowances
+            caps = refreshed.associate { app -> app.packageName to DurationDraft.fromMilliseconds(
+                configs.find { it.packageName == app.packageName }?.dailyAwardCapMs ?: 1_200_000L) } + caps
             apps = refreshed
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { error = R.string.monitor_action_failed }
@@ -140,11 +139,18 @@ fun MonitoringSetup() {
         }
     }
     suspend fun save() {
-        val ceilingMs = secondsToMs(ceiling, positive = true)
-        val sessionBoundaryMs = secondsToMs(sessionBoundary, positive = true)
+        val ceilingMs = requireNotNull(ceiling.milliseconds(positive = true))
+        val sessionBoundaryMs = requireNotNull(sessionBoundary.milliseconds(positive = true))
         val available = withContext(Dispatchers.IO) { TargetApps.list(context).map { it.packageName }.toSet() }
         val repository = persistence.repository()
-        val edits = TargetSettings.edits(repository.targets(), selected, available, allowances, caps)
+        val selectedAvailable = selected.filter { it in available }
+        val allowanceValues = selectedAvailable.associateWith {
+            requireNotNull(allowances[it]?.milliseconds(positive = false))
+        }
+        val capValues = selectedAvailable.associateWith {
+            requireNotNull(caps[it]?.milliseconds(positive = false))
+        }
+        val edits = TargetSettings.editsInMilliseconds(repository.targets(), selected, available, allowanceValues, capValues)
         try {
             for (name in edits.removed) repository.removeTarget(name)
             for (config in edits.saved) repository.saveTarget(config)
@@ -156,11 +162,11 @@ fun MonitoringSetup() {
             MonitorRuntime.configurationChanged()
         }
     }
-    val fieldsValid = SettingNumbers.milliseconds(ceiling, true) != null &&
-        SettingNumbers.milliseconds(sessionBoundary, true) != null &&
+    val fieldsValid = ceiling.milliseconds(positive = true) != null &&
+        sessionBoundary.milliseconds(positive = true) != null &&
         selected.all { name -> apps.any { it.packageName == name } || configs.any { it.packageName == name && it.selected } } && selected.filter { name -> apps.any { it.packageName == name } }.all {
-            SettingNumbers.milliseconds(allowances[it] ?: "", false) != null &&
-                SettingNumbers.milliseconds(caps[it] ?: "", false) != null
+            allowances[it]?.milliseconds(positive = false) != null &&
+                caps[it]?.milliseconds(positive = false) != null
         }
     // Resume changes are observed so returning from Android permission settings updates this state.
     val usageReady = MonitorAccess.usage(context)
@@ -199,12 +205,26 @@ fun MonitoringSetup() {
         }) { Text(stringResource(R.string.monitor_retry)) }
         if (loading) CircularProgressIndicator()
         if (loadFailed) Button(onClick = { loadRetry++; preferenceRetry++ }) { Text(stringResource(R.string.camera_retry)) }
-        NumberSetting(ceiling, { ceiling = it; saved = false }, R.string.monitor_ceiling_seconds,
-            SettingNumbers.milliseconds(ceiling, true) != null, editable)
-        Text(stringResource(R.string.product_seconds_hint), style = MaterialTheme.typography.bodySmall)
-        NumberSetting(sessionBoundary, { sessionBoundary = it; saved = false }, R.string.session_boundary_seconds,
-            SettingNumbers.milliseconds(sessionBoundary, true) != null, editable)
-        Text(stringResource(R.string.product_seconds_hint), style = MaterialTheme.typography.bodySmall)
+        DurationSetting(
+            value = ceiling.value,
+            unit = ceiling.unit,
+            onValueChange = { ceiling = ceiling.copy(value = it, preservedMilliseconds = null); saved = false },
+            onUnitChange = { unit -> ceiling.convertedTo(unit, positive = true)?.let { ceiling = it; saved = false } },
+            label = R.string.monitor_ceiling_seconds,
+            positive = true,
+            enabled = editable,
+            preservedMilliseconds = ceiling.preservedMilliseconds,
+        )
+        DurationSetting(
+            value = sessionBoundary.value,
+            unit = sessionBoundary.unit,
+            onValueChange = { sessionBoundary = sessionBoundary.copy(value = it, preservedMilliseconds = null); saved = false },
+            onUnitChange = { unit -> sessionBoundary.convertedTo(unit, positive = true)?.let { sessionBoundary = it; saved = false } },
+            label = R.string.session_boundary_seconds,
+            positive = true,
+            enabled = editable,
+            preservedMilliseconds = sessionBoundary.preservedMilliseconds,
+        )
         Text(stringResource(R.string.session_settings_explanation))
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(zeroBase, enabled = editable, role = Role.Checkbox,
             onValueChange = { zeroBase = it; saved = false }), verticalAlignment = Alignment.CenterVertically) {
@@ -240,16 +260,34 @@ fun MonitoringSetup() {
                         Text(app.label)
                     }
                     if (app.packageName in selected) {
-                        NumberSetting(allowances[app.packageName] ?: "1800",
-                            { allowances = allowances + (app.packageName to it); saved = false },
-                            R.string.monitor_allowance_seconds, SettingNumbers.milliseconds(allowances[app.packageName] ?: "", false) != null,
-                            editable, positive = false)
-                        Text(stringResource(R.string.product_seconds_hint), style = MaterialTheme.typography.bodySmall)
-                        NumberSetting(caps[app.packageName] ?: "1200",
-                            { caps = caps + (app.packageName to it); saved = false },
-                            R.string.product_cap_seconds, SettingNumbers.milliseconds(caps[app.packageName] ?: "", false) != null,
-                            editable, positive = false)
-                        Text(stringResource(R.string.product_seconds_hint), style = MaterialTheme.typography.bodySmall)
+                        val allowance = allowances[app.packageName] ?: DurationDraft.fromMilliseconds(1_800_000L)
+                        DurationSetting(
+                            value = allowance.value,
+                            unit = allowance.unit,
+                            onValueChange = { value -> allowances = allowances + (app.packageName to
+                                allowance.copy(value = value, preservedMilliseconds = null)); saved = false },
+                            onUnitChange = { unit -> allowance.convertedTo(unit, positive = false)?.let {
+                                allowances = allowances + (app.packageName to it); saved = false
+                            } },
+                            label = R.string.monitor_allowance_seconds,
+                            positive = false,
+                            enabled = editable,
+                            preservedMilliseconds = allowance.preservedMilliseconds,
+                        )
+                        val cap = caps[app.packageName] ?: DurationDraft.fromMilliseconds(1_200_000L)
+                        DurationSetting(
+                            value = cap.value,
+                            unit = cap.unit,
+                            onValueChange = { value -> caps = caps + (app.packageName to
+                                cap.copy(value = value, preservedMilliseconds = null)); saved = false },
+                            onUnitChange = { unit -> cap.convertedTo(unit, positive = false)?.let {
+                                caps = caps + (app.packageName to it); saved = false
+                            } },
+                            label = R.string.product_cap_seconds,
+                            positive = false,
+                            enabled = editable,
+                            preservedMilliseconds = cap.preservedMilliseconds,
+                        )
                     }
                     budgets[app.packageName]?.let { budget -> Text(stringResource(R.string.monitor_budget,
                         duration(budget.baseRemainingMs), duration(budget.earnedRemainingMs), duration(budget.combinedRemainingMs))) }
@@ -301,9 +339,6 @@ private fun ReadinessLine(@androidx.annotation.StringRes label: Int, ready: Bool
     Text(stringResource(R.string.monitor_readiness_line, stringResource(label),
         stringResource(if (ready) R.string.monitor_ready else R.string.monitor_not_ready)))
 }
-
-private fun secondsToMs(text: String, positive: Boolean): Long =
-    requireNotNull(SettingNumbers.milliseconds(text, positive))
 
 internal fun MonitorFailure.message(): Int = when (this) {
     MonitorFailure.NONE, MonitorFailure.STARTING -> R.string.monitor_starting

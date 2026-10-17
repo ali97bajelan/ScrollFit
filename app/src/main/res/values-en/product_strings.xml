@@ -7,7 +7,6 @@
     <string name="product_combined_summary">Daily combined limit</string>
     <string name="product_show_awards">Show reward details</string>
     <string name="product_hide_awards">Hide reward details</string>
-    <string name="product_seconds_hint">Enter values in seconds; for example, 300 seconds (5 minutes).</string>
     <string name="product_positive_error">Enter a whole number greater than zero within the supported range.</string>
     <string name="product_nonnegative_error">Enter zero or a positive whole number within the supported range.</string>
     <string name="product_correct_fields">Correct the highlighted values to save.</string>
@@ -35,7 +34,7 @@
     <string name="product_active">Observed active exercise time</string>
     <string name="product_onboarding_limits">Editable defaults: 30 minutes daily per app, a 60-minute combined ceiling, a 20-minute daily award cap per app and 5-minute sessions. Monitoring starts only when you explicitly enable it.</string>
     <string name="product_repetitions">Complete repetitions (greater than zero)</string>
-    <string name="product_reward_seconds">Reward (seconds, greater than zero)</string>
+    <string name="product_reward_seconds">Reward (greater than zero)</string>
     <string name="product_camera">Preferred camera</string>
     <string name="product_last_exercise">Exercise preselected for next time</string>
     <string name="product_delete_explanation">Delete exercise activity and hide usage history. Today’s usage, credit, sessions and duplicate-award protection remain. This cannot be undone.</string>
@@ -45,7 +44,7 @@
     <string name="product_about">Setup and privacy information</string>
     <string name="product_search">Search apps</string>
     <string name="product_no_matches">No apps match this search.</string>
-    <string name="product_cap_seconds">Daily award cap for this app (seconds, zero allowed)</string>
+    <string name="product_cap_seconds">Daily award cap for this app (zero allowed)</string>
     <string name="product_cap_notice">The award cap counts all time awarded today, including spent credit. Lowering it preserves existing credit. A zero cap stops new awards.</string>
     <string name="product_enable_access">To enable monitoring, grant Usage Access and connect the Accessibility service, then return here.</string>
     <string name="product_back">Back</string>
