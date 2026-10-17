@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -17,9 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalTextStyle
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
@@ -107,14 +107,12 @@ internal fun DurationSetting(
     var unitError by remember(value, unit, preservedMilliseconds) { mutableStateOf(false) }
     val milliseconds = preservedMilliseconds?.takeIf { !positive || it > 0L }
         ?: if (preservedMilliseconds == null) DurationInput.parse(value, unit, positive) else null
-    val valid = milliseconds != null
-
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         OutlinedTextField(
             value = value,
-            onValueChange = {
+            onValueChange = { nextValue ->
                 unitError = false
-                onValueChange(it)
+                onValueChange(nextValue)
             },
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(label)) },
@@ -122,14 +120,14 @@ internal fun DurationSetting(
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             textStyle = LocalTextStyle.current.copy(textDirection = TextDirection.Ltr),
-            isError = !valid || unitError,
+            isError = milliseconds == null || unitError,
             supportingText = {
                 when {
-                    !valid -> Text(stringResource(if (positive) R.string.product_positive_error else R.string.product_nonnegative_error))
+                    milliseconds == null -> Text(stringResource(if (positive) R.string.product_positive_error else R.string.product_nonnegative_error))
                     unitError -> Text(stringResource(R.string.ux_duration_unit_error), color = MaterialTheme.colorScheme.error)
                     preservedMilliseconds != null && value.isEmpty() -> Text(
                         stringResource(R.string.ux_duration_preserved, duration(preservedMilliseconds)))
-                    milliseconds != null -> Text(stringResource(R.string.ux_duration_hint, duration(milliseconds)))
+                    else -> Text(stringResource(R.string.ux_duration_hint, duration(milliseconds)))
                 }
             },
         )

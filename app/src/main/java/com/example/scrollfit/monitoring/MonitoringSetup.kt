@@ -46,9 +46,9 @@ fun MonitoringSetup() {
     var preferenceError by remember { mutableStateOf(false) }
     var apps by remember { mutableStateOf(emptyList<TargetApp>()) }
     var configs by remember { mutableStateOf(emptyList<TargetConfig>()) }
-    var selected by rememberSaveable(saver = stringSetSaver) { mutableStateOf<Set<String>>(emptySet()) }
-    var allowances by rememberSaveable(saver = durationDraftMapSaver) { mutableStateOf<Map<String, DurationDraft>>(emptyMap()) }
-    var caps by rememberSaveable(saver = durationDraftMapSaver) { mutableStateOf<Map<String, DurationDraft>>(emptyMap()) }
+    var selected by rememberSaveable(stateSaver = stringSetSaver) { mutableStateOf<Set<String>>(emptySet()) }
+    var allowances by rememberSaveable(stateSaver = durationDraftMapSaver) { mutableStateOf<Map<String, DurationDraft>>(emptyMap()) }
+    var caps by rememberSaveable(stateSaver = durationDraftMapSaver) { mutableStateOf<Map<String, DurationDraft>>(emptyMap()) }
     var query by rememberSaveable { mutableStateOf("") }
     var draftsInitialized by rememberSaveable { mutableStateOf(false) }
     var loadRetry by remember { mutableStateOf(0) }
