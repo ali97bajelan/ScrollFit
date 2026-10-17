@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="camera_title">پیش‌نمایش حرکت</string>
+    <string name="camera_trial_disclosure">آزمایشی؛ بدون زمان یا پاداش.</string>
+    <string name="camera_choose_lens">انتخاب دوربین</string>
     <string name="camera_open">باز کردن دوربین</string>
     <string name="camera_privacy">تصویر فقط روی گوشی پردازش می‌شود؛ عکس و فیلم ذخیره یا ارسال نمی‌شوند. دوربین هنگام خروج یا رفتن به پس‌زمینه متوقف می‌شود.</string>
     <string name="camera_grant">اجازهٔ استفاده از دوربین</string>

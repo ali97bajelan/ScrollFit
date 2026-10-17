@@ -6,12 +6,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.scrollfit.core.data.ChallengeMode
@@ -34,11 +38,13 @@ class ChallengeActivity : ComponentActivity() {
                 LayoutDirection.Rtl else LayoutDirection.Ltr
             CompositionLocalProvider(LocalLayoutDirection provides direction) {
                 ScrollFitTheme {
-                    request?.let { selected ->
-                        key(selected.version) {
-                            ChallengeScreen(if (selected.only) ChallengeMode.EXERCISE_ONLY else ChallengeMode.JUST_IN_TIME,
-                                selected.target, selected.exercise, onClose = { finish() },
-                                registerCancellation = { cancelCurrent = it })
+                    Box(Modifier.fillMaxSize().systemBarsPadding()) {
+                        request?.let { selected ->
+                            key(selected.version) {
+                                ChallengeScreen(if (selected.only) ChallengeMode.EXERCISE_ONLY else ChallengeMode.JUST_IN_TIME,
+                                    selected.target, selected.exercise, onClose = { finish() },
+                                    registerCancellation = { cancelCurrent = it })
+                            }
                         }
                     }
                 }

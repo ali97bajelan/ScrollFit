@@ -29,4 +29,9 @@
     <string name="challenge_incomplete">تکرارهای چالش هنوز کامل نشده است.</string>
     <string name="challenge_launch_error">باز کردن صفحه ممکن نشد. از داشبورد برای این برنامه زمان کسب کنید.</string>
     <string name="challenge_loading">در حال خواندن شرایط…</string>
+    <string name="workout_help">راهنما</string>
+    <string name="workout_help_close">بستن راهنما</string>
+    <string name="workout_end">پایان تمرین</string>
+    <string name="workout_tracking_ready">تمام بدن در تصویر دیده می‌شود.</string>
+    <string name="workout_tracking_lost">بدن دیده نمی‌شود؛ در کادر قرار بگیرید.</string>
 </resources>

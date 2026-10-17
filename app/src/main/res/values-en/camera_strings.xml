@@ -1,5 +1,7 @@
 <resources>
     <string name="camera_title">Movement preview</string>
+    <string name="camera_trial_disclosure">Trial only: no time or reward.</string>
+    <string name="camera_choose_lens">Choose camera</string>
     <string name="camera_open">Open camera</string>
     <string name="camera_privacy">Images are processed only on this phone. Photos and videos are not saved or sent. The camera stops when you leave or send the app to the background.</string>
     <string name="camera_grant">Allow camera access</string>

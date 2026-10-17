@@ -10,6 +10,9 @@ import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.feedback.ChallengeAudio
+import com.example.scrollfit.core.feedback.FeedbackAccessibility
+import com.example.scrollfit.platform.pose.CameraPoseState
+import com.example.scrollfit.platform.pose.CameraPoseStatus
 import com.example.scrollfit.monitoring.MonitorRuntime
 import com.example.scrollfit.monitoring.TargetApp
 import com.example.scrollfit.monitoring.TargetApps
@@ -23,11 +26,14 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     private val persistence = app.persistence
     private val scope = app.challengeScope
     val audio = ChallengeAudio(app)
+    private val feedbackAccessibility = FeedbackAccessibility(audio::setAudioEnabled)
     private var speechWrite: Job? = null
     private var speechRevision = 0L
+    private val touchExplorationState = mutableStateOf(false)
     var speechEnabled by mutableStateOf(false); private set
     var speechLoaded by mutableStateOf(false); private set
     var speechError by mutableStateOf(false); private set
+    val touchExplorationEnabled by touchExplorationState
     private var engine: BudgetEngine? = null
     private var generation = 0L
     private var refreshOnResume = false
@@ -65,7 +71,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
                 engine = policy; targets = available; camera = prefs.camera
                 if (!speechLoaded) {
                     speechEnabled = prefs.speechEnabled; speechLoaded = true
-                    audio.setAudioEnabled(speechEnabled)
+                    feedbackAccessibility.update(speechEnabled, touchExplorationEnabled)
                 }
                 if (!initialized) exercise = initialExercise ?: prefs.lastExercise
                 target = (target ?: initialTarget)?.takeIf { wanted -> available.any { it.packageName == wanted } }
@@ -79,7 +85,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     fun updateSpeechEnabled(value: Boolean) {
         if (!speechLoaded) return
         speechEnabled = value
-        audio.setAudioEnabled(value) // Muting takes effect before any storage suspension.
+        feedbackAccessibility.update(value, touchExplorationEnabled) // Muting takes effect before storage suspension.
         speechError = false
         val ticket = ++speechRevision
         speechWrite?.cancel()
@@ -88,6 +94,11 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { if (ticket == speechRevision) speechError = true }
         }
+    }
+
+    fun setTouchExplorationEnabled(value: Boolean) {
+        touchExplorationState.value = value
+        if (speechLoaded) feedbackAccessibility.update(speechEnabled, value)
     }
 
     fun chooseTarget(value: String) { target = value; updateOffer() }
@@ -150,6 +161,25 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     fun trackingChanged(available: Boolean) {
         tracking = available
         audio.controller.progress(session?.repetitions ?: 0, available)
+    }
+
+    /** Routes one state from the current camera generation into challenge progress and recovery. */
+    fun cameraStateChanged(runKey: String, state: CameraPoseState) {
+        val active = session ?: return
+        if (active.challenge.id != runKey) return
+        if (state.status == CameraPoseStatus.MODEL_ERROR) recordCameraModelError()
+        if (phase != ChallengePhase.RUNNING) return
+
+        trackingChanged(state.status == CameraPoseStatus.TRACKING && state.progress?.trackingAvailable == true)
+        state.progress?.let { progress ->
+            state.timestampMs?.let { active.accept(progress, it) }
+            progressChanged()
+        }
+        if (state.status in setOf(CameraPoseStatus.PAUSED, CameraPoseStatus.PERMISSION_REQUIRED,
+                CameraPoseStatus.CAMERA_UNAVAILABLE, CameraPoseStatus.CAMERA_ERROR,
+                CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {
+            interrupt()
+        }
     }
 
     fun progressChanged() {

@@ -1,5 +1,7 @@
 <resources>
     <string name="camera_title">Aperçu du mouvement</string>
+    <string name="camera_trial_disclosure">Essai : aucun temps ni aucune récompense.</string>
+    <string name="camera_choose_lens">Choisir la caméra</string>
     <string name="camera_open">Ouvrir la caméra</string>
     <string name="camera_privacy">Les images sont traitées uniquement sur ce téléphone. Aucune photo ni vidéo n’est enregistrée ou envoyée. La caméra s’arrête lorsque vous quittez l’écran ou placez l’application en arrière-plan.</string>
     <string name="camera_grant">Autoriser l’accès à la caméra</string>

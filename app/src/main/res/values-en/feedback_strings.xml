@@ -11,4 +11,5 @@
     <string name="feedback_reward">Challenge complete. Time saved: %1$s.</string>
     <string name="feedback_save_error">Could not save the audio setting. Try again.</string>
     <string name="feedback_retry">Retry saving the audio setting</string>
+    <string name="feedback_screen_reader">The screen reader announces changes; app audio is paused.</string>
 </resources>

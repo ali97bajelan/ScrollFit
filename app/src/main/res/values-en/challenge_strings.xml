@@ -29,4 +29,9 @@
     <string name="challenge_incomplete">The repetition target is not complete yet.</string>
     <string name="challenge_launch_error">The screen could not open. Earn time for this app from the dashboard.</string>
     <string name="challenge_loading">Loading terms…</string>
+    <string name="workout_help">Help</string>
+    <string name="workout_help_close">Close help</string>
+    <string name="workout_end">End workout</string>
+    <string name="workout_tracking_ready">Your body is in view.</string>
+    <string name="workout_tracking_lost">Your body is out of view. Move into the frame.</string>
 </resources>

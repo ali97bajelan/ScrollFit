@@ -2,6 +2,7 @@ package com.example.scrollfit.challenge
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,19 +18,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
-import com.example.scrollfit.camera.CameraScreen
+import com.example.scrollfit.camera.CameraViewport
 import com.example.scrollfit.core.budget.*
 import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.platform.pose.CameraPoseState
+import com.example.scrollfit.platform.pose.CameraPoseStatus
+import androidx.lifecycle.LifecycleEventObserver
 import com.example.scrollfit.feedback.AudioStatus
+import androidx.compose.ui.platform.testTag
 import com.example.scrollfit.ui.ProductFormatters
 import kotlinx.coroutines.delay
 
@@ -38,6 +44,7 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
     onClose: () -> Unit, registerCancellation: ((() -> Unit)?) -> Unit = {}) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
+    val accessibility = remember(context) { context.getSystemService(AccessibilityManager::class.java) }
     val flow = remember(mode, target, initialExercise) {
         ChallengeFlow(context.applicationContext as ScrollFitApplication, mode, target, initialExercise)
     }
@@ -50,6 +57,32 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) { delay(250); flow.checkDay(); flow.audio.controller.tick() }
         }
+    }
+    DisposableEffect(owner, accessibility, flow) {
+        var listening = false
+        val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled ->
+            flow.setTouchExplorationEnabled(enabled)
+        }
+        fun startListening() {
+            if (accessibility != null && !listening) {
+                accessibility.addTouchExplorationStateChangeListener(listener)
+                listening = true
+                flow.setTouchExplorationEnabled(accessibility.isTouchExplorationEnabled)
+            }
+        }
+        fun stopListening() {
+            if (accessibility != null && listening) {
+                accessibility.removeTouchExplorationStateChangeListener(listener)
+                listening = false
+            }
+        }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) startListening()
+            if (event == Lifecycle.Event.ON_PAUSE) stopListening()
+        }
+        owner.lifecycle.addObserver(observer)
+        if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) startListening()
+        onDispose { stopListening(); owner.lifecycle.removeObserver(observer) }
     }
     DisposableEffect(owner, flow) {
         registerCancellation(flow::interrupt)
@@ -66,18 +99,41 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
     fun close() { flow.interrupt(); onClose() }
     BackHandler { close() }
     val session = flow.session
-    if (session != null && flow.phase == ChallengePhase.RUNNING) {
-        Column(Modifier.fillMaxSize().systemBarsPadding()) {
-            FeedbackControls(flow)
-            Text(stringResource(R.string.challenge_progress, flow.repetitions, session.challenge.repetitionsRequired),
-                modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.headlineSmall)
-            CameraScreen(session.challenge.exercise, onCancel = { close() }, challenge = session,
-                onProgress = flow::progressChanged, onInterrupted = flow::interrupt, onTracking = flow::trackingChanged,
-                onModelError = flow::recordCameraModelError)
+    if (session != null && flow.phase in setOf(ChallengePhase.RUNNING, ChallengePhase.SAVING)) {
+        val activeSession = session
+        var cameraState by remember(activeSession.challenge.id) {
+            mutableStateOf(CameraPoseState(CameraPoseStatus.INITIALIZING))
         }
+        val instruction = when (activeSession.challenge.exercise) {
+            Exercise.PUSH_UP -> R.string.push_up_counter_guidance
+            Exercise.SQUAT -> R.string.squat_counter_guidance
+            Exercise.JUMPING_JACK -> R.string.jumping_jack_counter_guidance
+            Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise_counter_guidance
+        }
+        WorkoutContent(
+            modifier = Modifier.fillMaxSize(),
+            state = WorkoutUiState(activeSession.challenge.id, flow.repetitions,
+                activeSession.challenge.repetitionsRequired, R.string.challenge_progress, cameraState.status),
+            speechEnabled = flow.speechEnabled, speechLoaded = flow.speechLoaded,
+            audioStatus = flow.audio.status, touchExplorationEnabled = flow.touchExplorationEnabled,
+            speechError = flow.speechError, onSpeechChanged = flow::updateSpeechEnabled,
+            onSpeechRetry = { flow.updateSpeechEnabled(flow.speechEnabled) }, onEnd = { close() },
+            helpContent = {
+                Text(stringResource(R.string.camera_privacy))
+                Text(stringResource(instruction))
+                Text(stringResource(R.string.challenge_active_notice))
+            },
+            preview = { previewModifier ->
+                CameraViewport(exercise = activeSession.challenge.exercise, camera = flow.camera,
+                    runKey = activeSession.challenge.id, modifier = previewModifier) { next ->
+                    cameraState = next
+                    flow.cameraStateChanged(activeSession.challenge.id, next)
+                }
+            },
+        )
         return
     }
-    Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp),
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(if (mode == ChallengeMode.EXERCISE_ONLY) R.string.challenge_only else R.string.challenge_advance),
             style = MaterialTheme.typography.headlineMedium)
@@ -86,7 +142,8 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         if (result is CompletionResult.Awarded || result == CompletionResult.ExerciseOnlyCompleted) {
             Text(if (result is CompletionResult.Awarded) stringResource(R.string.feedback_reward,
                 ProductFormatters.duration(context, result.award.amountMs))
-                else stringResource(R.string.challenge_only_success))
+                else stringResource(R.string.challenge_only_success),
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive }.testTag("challenge_completion"))
             if (session != null) Text(stringResource(R.string.challenge_activity, session.repetitions,
                 ProductFormatters.duration(context, session.activeDurationMs)))
             if (result is CompletionResult.Awarded) {

@@ -11,4 +11,5 @@
     <string name="feedback_reward">چالش کامل شد. زمان ذخیره‌شده: %1$s.</string>
     <string name="feedback_save_error">تنظیم صدا ذخیره نشد. دوباره تلاش کنید.</string>
     <string name="feedback_retry">تلاش دوباره برای ذخیره تنظیم صدا</string>
+    <string name="feedback_screen_reader">اعلان‌ها را صفحه‌خوان می‌خواند؛ صدای برنامه موقتاً متوقف است.</string>
 </resources>

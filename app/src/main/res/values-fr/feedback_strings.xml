@@ -11,4 +11,5 @@
     <string name="feedback_reward">Défi terminé. Temps enregistré : %1$s.</string>
     <string name="feedback_save_error">Impossible d’enregistrer le réglage audio. Réessayez.</string>
     <string name="feedback_retry">Réessayer d’enregistrer le réglage audio</string>
+    <string name="feedback_screen_reader">Le lecteur d’écran annonce les changements ; le son de l’application est en pause.</string>
 </resources>
