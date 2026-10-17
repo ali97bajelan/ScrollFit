@@ -15,13 +15,9 @@ import androidx.compose.runtime.setValue
 import com.example.scrollfit.R
 import com.example.scrollfit.core.feedback.*
 import com.example.scrollfit.core.time.MonotonicClock
+import com.example.scrollfit.ui.ProductFormatters
 import java.text.NumberFormat
-import java.math.BigDecimal
 import java.util.Locale
-
-internal fun formatRewardSeconds(amountMs: Long, locale: Locale): String =
-    NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 3 }
-        .format(BigDecimal.valueOf(amountMs, 3))
 
 enum class AudioStatus { CHECKING, VOICE, SOUNDS, VISUAL, MUTED }
 
@@ -112,7 +108,7 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
         is FeedbackMessage.Count -> NumberFormat.getIntegerInstance(locale).format(message.repetitions)
         FeedbackMessage.Position -> context.getString(R.string.feedback_position)
         is FeedbackMessage.Completed -> if (message.awardedMs == null) context.getString(R.string.challenge_only_success)
-            else context.getString(R.string.feedback_reward, formatRewardSeconds(message.awardedMs, locale))
+            else context.getString(R.string.feedback_reward, ProductFormatters.duration(context, message.awardedMs))
     }
 
     private fun fallback() {

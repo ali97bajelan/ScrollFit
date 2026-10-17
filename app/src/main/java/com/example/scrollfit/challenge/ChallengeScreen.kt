@@ -30,8 +30,7 @@ import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.feedback.AudioStatus
-import com.example.scrollfit.feedback.formatRewardSeconds
-import java.util.Locale
+import com.example.scrollfit.ui.ProductFormatters
 import kotlinx.coroutines.delay
 
 @Composable
@@ -84,9 +83,11 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         FeedbackControls(flow)
         val result = flow.result
         if (result is CompletionResult.Awarded || result == CompletionResult.ExerciseOnlyCompleted) {
-            Text(if (result is CompletionResult.Awarded) stringResource(R.string.feedback_reward, formatRewardSeconds(result.award.amountMs, Locale.forLanguageTag(stringResource(R.string.feedback_language))))
+            Text(if (result is CompletionResult.Awarded) stringResource(R.string.feedback_reward,
+                ProductFormatters.duration(context, result.award.amountMs))
                 else stringResource(R.string.challenge_only_success))
-            if (session != null) Text(stringResource(R.string.challenge_activity, session.repetitions, session.activeDurationMs / 1000))
+            if (session != null) Text(stringResource(R.string.challenge_activity, session.repetitions,
+                ProductFormatters.duration(context, session.activeDurationMs)))
             if (result is CompletionResult.Awarded) {
                 Button(onClick = {
                     try {

@@ -12,7 +12,7 @@
     <string name="challenge_saving">Enregistrement du résultat…</string>
     <string name="challenge_success">%1$d secondes ont été enregistrées et ajoutées à l’application choisie.</string>
     <string name="challenge_only_success">Exercice enregistré. Aucun temps ni crédit ajouté.</string>
-    <string name="challenge_activity">%1$d répétitions ; durée active observée : %2$d secondes</string>
+    <string name="challenge_activity">%1$d répétitions ; durée active observée : %2$s</string>
     <string name="challenge_interrupted">Le défi inachevé est terminé. Aucune récompense n’a été enregistrée pour ce défi.</string>
     <string name="challenge_return">Revenir à l’application choisie</string>
     <string name="challenge_return_error">Impossible d’ouvrir l’application. Le résultat enregistré est conservé.</string>

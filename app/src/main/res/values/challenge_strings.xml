@@ -12,7 +12,7 @@
     <string name="challenge_saving">در حال ثبت نتیجه…</string>
     <string name="challenge_success">%1$d ثانیه زمان ثبت و به برنامهٔ انتخاب‌شده اضافه شد.</string>
     <string name="challenge_only_success">ورزش ثبت شد؛ هیچ زمان یا اعتباری اضافه نشد.</string>
-    <string name="challenge_activity">%1$d تکرار؛ مدت مشاهده‌شدهٔ فعال: %2$d ثانیه</string>
+    <string name="challenge_activity">%1$d تکرار؛ مدت مشاهده‌شدهٔ فعال: %2$s</string>
     <string name="challenge_interrupted">چالش ناتمام پایان یافت؛ پاداشی برای آن ثبت نشد.</string>
     <string name="challenge_return">بازگشت به برنامهٔ انتخاب‌شده</string>
     <string name="challenge_return_error">برنامه باز نشد؛ نتیجهٔ ثبت‌شده محفوظ است.</string>

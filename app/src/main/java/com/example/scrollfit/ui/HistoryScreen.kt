@@ -1,11 +1,10 @@
 package com.example.scrollfit.ui
 
-import android.text.format.DateUtils
-import android.text.BidiFormatter
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -15,9 +14,6 @@ import com.example.scrollfit.challenge.label
 import com.example.scrollfit.core.outcomes.*
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.util.Locale
 
 @Composable
 internal fun HistoryScreen() {
@@ -60,7 +56,7 @@ internal fun HistoryScreen() {
 
 @Composable
 private fun DayCard(day: DayOutcome, history: com.example.scrollfit.core.data.VisibleHistory, appNames: Map<String, String>) {
-    val label = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(Locale.getDefault()).format(day.day)
+    val label = ProductFormatters.date(LocalContext.current, day.day, full = true)
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(label, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
@@ -118,5 +114,3 @@ private fun Comparison(value: UsageComparison, title: Int) {
         }))
     }
 }
-
-private fun duration(ms: Long): String = BidiFormatter.getInstance().unicodeWrap(DateUtils.formatElapsedTime(ms / 1000))

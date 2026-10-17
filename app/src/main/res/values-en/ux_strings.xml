@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="ux_duration_hours">
+        <item quantity="one">%1$s hr</item>
+        <item quantity="other">%1$s hr</item>
+    </plurals>
+    <plurals name="ux_duration_minutes">
+        <item quantity="one">%1$s min</item>
+        <item quantity="other">%1$s min</item>
+    </plurals>
+    <plurals name="ux_duration_seconds">
+        <item quantity="one">%1$s sec</item>
+        <item quantity="other">%1$s sec</item>
+    </plurals>
+    <string name="ux_duration_pair">%1$s %2$s</string>
+    <string name="ux_duration_triple">%1$s %2$s %3$s</string>
+</resources>

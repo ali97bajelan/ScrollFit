@@ -12,7 +12,7 @@
     <string name="challenge_saving">Saving result…</string>
     <string name="challenge_success">%1$d seconds were saved and added to the selected app.</string>
     <string name="challenge_only_success">Exercise saved. No time or credit was added.</string>
-    <string name="challenge_activity">%1$d repetitions; observed active time: %2$d seconds</string>
+    <string name="challenge_activity">%1$d repetitions; observed active time: %2$s</string>
     <string name="challenge_interrupted">The unfinished challenge ended. No reward was saved for it.</string>
     <string name="challenge_return">Return to the selected app</string>
     <string name="challenge_return_error">The app could not open. Your saved result is preserved.</string>

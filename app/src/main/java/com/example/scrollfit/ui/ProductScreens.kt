@@ -16,6 +16,7 @@ import com.example.scrollfit.monitoring.MonitorRuntime
 import com.example.scrollfit.ScrollFitApplication
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @Composable
 internal fun DashboardScreen(onSetup: () -> Unit, onEarn: (String?) -> Unit, onOnly: () -> Unit) {
@@ -25,7 +26,7 @@ internal fun DashboardScreen(onSetup: () -> Unit, onEarn: (String?) -> Unit, onO
     ProductPage(R.string.dashboard) {
         ProductContent(data) { snapshot ->
             MonitoringHealthInfo(snapshot.preferences.monitoringEnabled)
-            Text(snapshot.day)
+            Text(ProductFormatters.date(context, LocalDate.parse(snapshot.day)))
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.product_combined_summary), style = MaterialTheme.typography.titleLarge)

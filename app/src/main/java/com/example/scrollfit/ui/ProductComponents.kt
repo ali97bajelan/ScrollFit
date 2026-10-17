@@ -52,12 +52,7 @@ internal fun DurationMetric(@StringRes label: Int, milliseconds: Long) {
 
 @Composable
 internal fun duration(milliseconds: Long): String {
-    val absolute = milliseconds.coerceAtLeast(0)
-    val hours = absolute / 3_600_000
-    val minutes = absolute / 60_000 % 60
-    val seconds = (absolute % 60_000) / 1000.0
-    return stringResource(R.string.product_duration,
-        number(hours), number(minutes), number(seconds))
+    return ProductFormatters.duration(LocalContext.current, milliseconds)
 }
 
 @Composable

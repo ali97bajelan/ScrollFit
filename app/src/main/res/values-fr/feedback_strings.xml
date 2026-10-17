@@ -8,7 +8,7 @@
     <string name="feedback_visual">Audio indisponible ; suivez le compteur et les messages à l’écran.</string>
     <string name="feedback_muted">Audio coupé ; le compteur et les messages restent visibles.</string>
     <string name="feedback_position">Placez tout votre corps dans le cadre de la caméra.</string>
-    <string name="feedback_reward">Défi terminé. %1$s secondes de temps enregistrées.</string>
+    <string name="feedback_reward">Défi terminé. Temps enregistré : %1$s.</string>
     <string name="feedback_save_error">Impossible d’enregistrer le réglage audio. Réessayez.</string>
     <string name="feedback_retry">Réessayer d’enregistrer le réglage audio</string>
 </resources>
