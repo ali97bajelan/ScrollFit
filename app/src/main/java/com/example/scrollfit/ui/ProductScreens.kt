@@ -60,7 +60,8 @@ internal fun DashboardScreen(onSetup: () -> Unit, onEarn: (String?) -> Unit, onO
                             DurationMetric(R.string.product_award_limit, config.dailyAwardCapMs)
                             DurationMetric(R.string.product_award_left, budget.awardCapacityMs)
                         }
-                        if (budget.blockedBy != null) Text(stringResource(when (budget.blockedBy) {
+                        val blockedBy = budget.blockedBy
+                        if (blockedBy != null) Text(stringResource(when (blockedBy) {
                             BudgetBlock.COMBINED_CEILING -> R.string.monitor_combined_exhausted
                             BudgetBlock.APP_BUDGET -> R.string.product_app_exhausted
                             BudgetBlock.TARGET_UNAVAILABLE -> R.string.challenge_unavailable

@@ -40,7 +40,7 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
     var enabled by mutableStateOf(false); private set
     val status get() = if (enabled) transport else AudioStatus.MUTED
 
-    fun setEnabled(value: Boolean) {
+    fun setAudioEnabled(value: Boolean) {
         if (closed) return
         enabled = value
         controller.setEnabled(value)
@@ -107,8 +107,11 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
     private fun text(message: FeedbackMessage): String = when (message) {
         is FeedbackMessage.Count -> NumberFormat.getIntegerInstance(locale).format(message.repetitions)
         FeedbackMessage.Position -> context.getString(R.string.feedback_position)
-        is FeedbackMessage.Completed -> if (message.awardedMs == null) context.getString(R.string.challenge_only_success)
-            else context.getString(R.string.feedback_reward, ProductFormatters.duration(context, message.awardedMs))
+        is FeedbackMessage.Completed -> {
+            val awardedMs = message.awardedMs
+            if (awardedMs == null) context.getString(R.string.challenge_only_success)
+            else context.getString(R.string.feedback_reward, ProductFormatters.duration(context, awardedMs))
+        }
     }
 
     private fun fallback() {

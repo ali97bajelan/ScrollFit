@@ -65,7 +65,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
                 engine = policy; targets = available; camera = prefs.camera
                 if (!speechLoaded) {
                     speechEnabled = prefs.speechEnabled; speechLoaded = true
-                    audio.setEnabled(speechEnabled)
+                    audio.setAudioEnabled(speechEnabled)
                 }
                 if (!initialized) exercise = initialExercise ?: prefs.lastExercise
                 target = (target ?: initialTarget)?.takeIf { wanted -> available.any { it.packageName == wanted } }
@@ -76,10 +76,10 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
         }
     }
 
-    fun setSpeechEnabled(value: Boolean) {
+    fun updateSpeechEnabled(value: Boolean) {
         if (!speechLoaded) return
         speechEnabled = value
-        audio.setEnabled(value) // Muting takes effect before any storage suspension.
+        audio.setAudioEnabled(value) // Muting takes effect before any storage suspension.
         speechError = false
         val ticket = ++speechRevision
         speechWrite?.cancel()

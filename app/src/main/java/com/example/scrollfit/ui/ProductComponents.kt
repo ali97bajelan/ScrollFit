@@ -37,7 +37,10 @@ internal fun ProductContent(data: ProductData, content: @Composable (ProductSnap
     if (data.failed) {
         Text(stringResource(R.string.product_read_error), color = MaterialTheme.colorScheme.error)
         Button(onClick = data::refresh, enabled = !data.loading) { Text(stringResource(R.string.camera_retry)) }
-    } else data.snapshot?.let(content)
+    } else {
+        val snapshot = data.snapshot
+        if (snapshot != null) content(snapshot)
+    }
 }
 
 @Composable

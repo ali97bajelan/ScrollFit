@@ -185,7 +185,7 @@ private fun FeedbackControls(flow: ChallengeFlow) {
     val feedbackLabel = stringResource(R.string.feedback_enabled)
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Switch(checked = flow.speechEnabled, onCheckedChange = flow::setSpeechEnabled,
+            Switch(checked = flow.speechEnabled, onCheckedChange = flow::updateSpeechEnabled,
                 enabled = flow.speechLoaded, modifier = Modifier.semantics {
                     contentDescription = feedbackLabel
                 })
@@ -200,7 +200,7 @@ private fun FeedbackControls(flow: ChallengeFlow) {
         }))
         if (flow.speechError) {
             Text(stringResource(R.string.feedback_save_error))
-            OutlinedButton(onClick = { flow.setSpeechEnabled(flow.speechEnabled) }) {
+            OutlinedButton(onClick = { flow.updateSpeechEnabled(flow.speechEnabled) }) {
                 Text(stringResource(R.string.feedback_retry))
             }
         }

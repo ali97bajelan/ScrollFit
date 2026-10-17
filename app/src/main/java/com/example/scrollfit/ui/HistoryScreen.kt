@@ -94,16 +94,17 @@ private fun DayCard(day: DayOutcome, history: com.example.scrollfit.core.data.Vi
 @Composable
 private fun Comparison(value: UsageComparison, title: Int) {
     Text(stringResource(title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-    if (value.blockedBy == null && value.deltaMs != null) {
+    val deltaMs = value.deltaMs
+    if (value.blockedBy == null && deltaMs != null) {
         val change = when {
-            value.deltaMs > 0 -> R.string.outcome_change_more
-            value.deltaMs < 0 -> R.string.outcome_change_less
+            deltaMs > 0 -> R.string.outcome_change_more
+            deltaMs < 0 -> R.string.outcome_change_less
             else -> R.string.outcome_change_same
         }
         Text(stringResource(R.string.outcome_comparison_values,
             stringResource(R.string.outcome_previous), duration(value.previousMs!!),
             stringResource(R.string.outcome_current), duration(value.currentMs!!),
-            stringResource(change, duration(kotlin.math.abs(value.deltaMs)))))
+            stringResource(change, duration(kotlin.math.abs(deltaMs)))))
     } else {
         Text(stringResource(when (value.blockedBy) {
             ComparisonBlock.SCOPE_CHANGED -> R.string.outcome_scope_changed
