@@ -34,7 +34,7 @@ Budget/award/session durations use signed 64-bit integer **milliseconds**. Exist
 
 ## Migration behavior
 
-This is the first production database; there is no previous Room schema to migrate. The T02 SharedPreferences 30-second experiment remains separate and is never imported as a daily allowance or award. Room exports v1 into `platform/schemas` via KSP. **The schema JSON is not yet generated**, because Android configuration fails before KSP executes; do not invent it. The first successful build must retain the generated v1 JSON in version control.
+This was the first production database; there was no previous Room schema to migrate. The T02 SharedPreferences 30-second experiment remains separate and is never imported as a daily allowance or award. At initial T03 delivery, Android configuration failed before KSP and the v1 JSON was not generated. Later schema files `2.json` and `3.json` are present under `platform/schemas`, but the v1 export remains absent; do not invent it.
 
 There is no destructive migration or downgrade fallback. An unsupported version fails visibly at repository access, retaining the file rather than resetting budgets. Every future schema version must include an explicit data-preserving migration and tests using the generated old/new schemas. Keep award identities, current and retained day counters, configuration and session state through migrations. Changing stable enum names or preference keys also requires an explicit preferences/database conversion.
 
@@ -60,15 +60,19 @@ env JAVA_HOME=/tmp/scrollfit-toolchain/jdk-21.0.12.1+1 \
     --offline --console=plain
 ```
 
-Exit **1**, `BUILD FAILED in 3s`: AGP 9.4.0 could not resolve from the offline cache during root-project configuration. Compilation, KSP/schema export, Android lint and instrumentation did not execute. No APK was produced. Earlier SDK/Google Maven download blockers remain documented; this offline attempt does not establish current server reachability. One automatic permission-review attempt timed out before execution; the authorized retry ran and produced [this build log](verification/T03-build.log).
+At the original T03 delivery this command exited **1**, `BUILD FAILED in 3s`: AGP 9.4.0 could not resolve from the offline cache during root-project configuration. Compilation, KSP/schema export, Android lint and instrumentation did not execute then. The API 36.1 emulator rerun is recorded below and supersedes that result for current Room/DataStore tests. One automatic permission-review attempt timed out before execution; the authorized retry ran and produced [this original build log](verification/T03-build.log).
 
-Pending tests: **7 Room tests**, covering file reopen, 24 simultaneous completion callbacks, transactional rollback, settings/re-addition/history retention, duplicate challenge identity, startup cancellation and unsupported-version failure without deletion; **1 DataStore test**, covering all preferences, concurrent edits, invalid values and file reopen. On a configured SDK/device with dependencies reachable:
+The original T03 delivery had **7 Room tests** covering file reopen, concurrent completion callbacks, transactional rollback, settings/re-addition/history retention, duplicate challenge identity, startup cancellation and unsupported-version failure without deletion, plus **1 DataStore test** covering preferences, concurrent edits, invalid values and file reopen. All eight passed on the API 36.1 emulator on 2026-10-23, as recorded below. The broader project command from the original plan is:
 
 ```bash
 ./gradlew :app:assembleDebug :app:lintDebug :core:test \
   :platform:assembleDebugAndroidTest :platform:connectedDebugAndroidTest --console=plain
 ```
 
-Inspect and retain generated v1 schema, fix any KSP/Android compilation failures, and require the eight instrumentation tests to pass before changing T03 to verified. No intended-device or emulator persistence result is claimed.
+Retain the authentic v1 schema if available and validate its migration path before marking the historical schema requirement complete. No intended Xiaomi device result is claimed.
 
-Official references checked on 2026-10-12: [Room](https://developer.android.com/training/data-storage/room), [data-preserving migrations](https://developer.android.com/training/data-storage/room/migrating-db-versions), [Room database tests](https://developer.android.com/training/data-storage/room/testing-db), [atomic DataStore edits](https://developer.android.com/topic/libraries/architecture/datastore), [KSP 2.3.12 release](https://github.com/google/ksp/releases/tag/2.3.12), [AndroidX Test 1.7.0](https://developer.android.com/jetpack/androidx/releases/test). Compatibility of the Android artifacts is pending actual resolution/compilation.
+Official references checked on 2026-10-12: [Room](https://developer.android.com/training/data-storage/room), [data-preserving migrations](https://developer.android.com/training/data-storage/room/migrating-db-versions), [Room database tests](https://developer.android.com/training/data-storage/room/testing-db), [atomic DataStore edits](https://developer.android.com/topic/libraries/architecture/datastore), [KSP 2.3.12 release](https://github.com/google/ksp/releases/tag/2.3.12), [AndroidX Test 1.7.0](https://developer.android.com/jetpack/androidx/releases/test). Android compilation now succeeds for the app/platform debug and Android-test sources in the 2026-10-23 rerun.
+
+## Emulator rerun (2026-10-23)
+
+Device: `Medium_Phone_API_36.1`, Android 16 (API 36.1), x86_64. Targeted `:platform:connectedDebugAndroidTest` runs passed `PersistenceTest` 7/7 and `PreferencesTest` 1/1 (8/8 total). The unsupported-version fixture was corrected from `user_version = 3` to `4`, since the current database version is 3. After that correction, the full platform instrumentation run executed 22 tests: 21 passed and one failed, `OfflinePoseTest.blankImageRunsPackagedNativeInferenceWithoutAPose`, with a native MediaPipe bitmap crash. All eight T03 persistence checks passed.

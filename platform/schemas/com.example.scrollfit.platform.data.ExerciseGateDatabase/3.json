@@ -1,0 +1,662 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "d025e3c684ab076c30c8b623fda0aae6",
+    "entities": [
+      {
+        "tableName": "targets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `selected` INTEGER NOT NULL, `baseAllowanceMs` INTEGER NOT NULL, `dailyAwardCapMs` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
+        "fields": [
+          {
+            "fieldPath": "value.packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.selected",
+            "columnName": "selected",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.baseAllowanceMs",
+            "columnName": "baseAllowanceMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.dailyAwardCapMs",
+            "columnName": "dailyAwardCapMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName"
+          ]
+        }
+      },
+      {
+        "tableName": "daily_usage",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `day` TEXT NOT NULL, `baseConsumedMs` INTEGER NOT NULL, `earnedConsumedMs` INTEGER NOT NULL, `awardedMs` INTEGER NOT NULL, `historyVisible` INTEGER NOT NULL, PRIMARY KEY(`packageName`, `day`), FOREIGN KEY(`packageName`) REFERENCES `targets`(`packageName`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "value.packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.baseConsumedMs",
+            "columnName": "baseConsumedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.earnedConsumedMs",
+            "columnName": "earnedConsumedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.awardedMs",
+            "columnName": "awardedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.historyVisible",
+            "columnName": "historyVisible",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName",
+            "day"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_daily_usage_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_daily_usage_day` ON `${TABLE_NAME}` (`day`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "targets",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "packageName"
+            ],
+            "referencedColumns": [
+              "packageName"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "combined_usage",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`day` TEXT NOT NULL, `consumedMs` INTEGER NOT NULL, `historyVisible` INTEGER NOT NULL, PRIMARY KEY(`day`))",
+        "fields": [
+          {
+            "fieldPath": "value.day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.consumedMs",
+            "columnName": "consumedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.historyVisible",
+            "columnName": "historyVisible",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "day"
+          ]
+        }
+      },
+      {
+        "tableName": "challenges",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `packageName` TEXT, `day` TEXT NOT NULL, `exercise` TEXT NOT NULL, `mode` TEXT NOT NULL, `repetitionsRequired` INTEGER NOT NULL, `rewardMs` INTEGER NOT NULL, `startedAtEpochMs` INTEGER NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`packageName`) REFERENCES `targets`(`packageName`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "value.id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "value.day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.exercise",
+            "columnName": "exercise",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.mode",
+            "columnName": "mode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.repetitionsRequired",
+            "columnName": "repetitionsRequired",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.rewardMs",
+            "columnName": "rewardMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.startedAtEpochMs",
+            "columnName": "startedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_challenges_packageName",
+            "unique": false,
+            "columnNames": [
+              "packageName"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_challenges_packageName` ON `${TABLE_NAME}` (`packageName`)"
+          },
+          {
+            "name": "index_challenges_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_challenges_day` ON `${TABLE_NAME}` (`day`)"
+          },
+          {
+            "name": "index_challenges_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_challenges_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "targets",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "packageName"
+            ],
+            "referencedColumns": [
+              "packageName"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "award_ledger",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`challengeId` TEXT NOT NULL, `packageName` TEXT NOT NULL, `day` TEXT NOT NULL, `amountMs` INTEGER NOT NULL, `awardedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`challengeId`), FOREIGN KEY(`challengeId`) REFERENCES `challenges`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`packageName`) REFERENCES `targets`(`packageName`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "value.challengeId",
+            "columnName": "challengeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.amountMs",
+            "columnName": "amountMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.awardedAtEpochMs",
+            "columnName": "awardedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "challengeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_award_ledger_packageName_day",
+            "unique": false,
+            "columnNames": [
+              "packageName",
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_award_ledger_packageName_day` ON `${TABLE_NAME}` (`packageName`, `day`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "challenges",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "challengeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "targets",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "packageName"
+            ],
+            "referencedColumns": [
+              "packageName"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "exercise_activity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `challengeId` TEXT, `day` TEXT NOT NULL, `exercise` TEXT NOT NULL, `repetitions` INTEGER NOT NULL, `activeDurationMs` INTEGER NOT NULL, `recordedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`challengeId`) REFERENCES `challenges`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "value.id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.challengeId",
+            "columnName": "challengeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "value.day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.exercise",
+            "columnName": "exercise",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.repetitions",
+            "columnName": "repetitions",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.activeDurationMs",
+            "columnName": "activeDurationMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.recordedAtEpochMs",
+            "columnName": "recordedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_exercise_activity_challengeId",
+            "unique": false,
+            "columnNames": [
+              "challengeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_exercise_activity_challengeId` ON `${TABLE_NAME}` (`challengeId`)"
+          },
+          {
+            "name": "index_exercise_activity_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_exercise_activity_day` ON `${TABLE_NAME}` (`day`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "challenges",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "challengeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `day` TEXT NOT NULL, `consumedMs` INTEGER NOT NULL, `promptPending` INTEGER NOT NULL, PRIMARY KEY(`packageName`, `day`), FOREIGN KEY(`packageName`) REFERENCES `targets`(`packageName`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "value.packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.consumedMs",
+            "columnName": "consumedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.promptPending",
+            "columnName": "promptPending",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packageName",
+            "day"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "targets",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "packageName"
+            ],
+            "referencedColumns": [
+              "packageName"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "usage_cursors",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timelineId` TEXT NOT NULL, `throughElapsedMs` INTEGER NOT NULL, PRIMARY KEY(`timelineId`))",
+        "fields": [
+          {
+            "fieldPath": "value.timelineId",
+            "columnName": "timelineId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value.throughElapsedMs",
+            "columnName": "throughElapsedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timelineId"
+          ]
+        }
+      },
+      {
+        "tableName": "monitoring_coverage",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `recordingSessionId` TEXT NOT NULL, `timelineId` TEXT NOT NULL, `day` TEXT NOT NULL, `zoneId` TEXT NOT NULL, `startElapsedMs` INTEGER NOT NULL, `endElapsedMs` INTEGER NOT NULL, `startEpochMs` INTEGER NOT NULL, `endEpochMs` INTEGER NOT NULL, `historyVisible` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordingSessionId",
+            "columnName": "recordingSessionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timelineId",
+            "columnName": "timelineId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneId",
+            "columnName": "zoneId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startElapsedMs",
+            "columnName": "startElapsedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endElapsedMs",
+            "columnName": "endElapsedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startEpochMs",
+            "columnName": "startEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endEpochMs",
+            "columnName": "endEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "historyVisible",
+            "columnName": "historyVisible",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_monitoring_coverage_recordingSessionId_day",
+            "unique": false,
+            "columnNames": [
+              "recordingSessionId",
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_monitoring_coverage_recordingSessionId_day` ON `${TABLE_NAME}` (`recordingSessionId`, `day`)"
+          },
+          {
+            "name": "index_monitoring_coverage_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_monitoring_coverage_day` ON `${TABLE_NAME}` (`day`)"
+          }
+        ]
+      },
+      {
+        "tableName": "monitoring_coverage_targets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coverageId` TEXT NOT NULL, `packageName` TEXT NOT NULL, PRIMARY KEY(`coverageId`, `packageName`), FOREIGN KEY(`coverageId`) REFERENCES `monitoring_coverage`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "coverageId",
+            "columnName": "coverageId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "coverageId",
+            "packageName"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_monitoring_coverage_targets_coverageId",
+            "unique": false,
+            "columnNames": [
+              "coverageId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_monitoring_coverage_targets_coverageId` ON `${TABLE_NAME}` (`coverageId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "monitoring_coverage",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "coverageId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "history_visibility",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `coverageHiddenThroughDay` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coverageHiddenThroughDay",
+            "columnName": "coverageHiddenThroughDay",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd025e3c684ab076c30c8b623fda0aae6')"
+    ]
+  }
+}
