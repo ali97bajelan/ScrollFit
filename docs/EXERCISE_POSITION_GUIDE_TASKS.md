@@ -1,6 +1,6 @@
 # Exercise position guides — tasks, specifications, plans and QA
 
-Created: 2026-10-24. Status: **proposed; documentation only**. All implementation and QA are pending. These are recommended product decisions for review, not previously approved behavior or measured camera performance.
+Created: 2026-10-24. Status: **PG01 implemented; QA not run. PG02–PG06 remain pending.** PG01 follows the proposed content and artwork requirements below; camera behavior and usability have not been qualified.
 
 ## Objective
 
@@ -13,6 +13,7 @@ Entry point: [project README](../README.md). This package supplements T06–T12 
 Source inspected on 2026-10-24:
 
 - `core/.../exercise/Exercise.kt` defines push-ups, squats, jumping jacks and alternating knee raises. The four counters own repetition validation; guide illustrations must match their complete cycles.
+- `core/.../exercise/ExerciseGuide.kt` now defines one viewpoint, complete required landmark groups and static demonstration sequence per exercise. `app/.../guide/` provides localized resource mappings and bundled Compose illustrations.
 - `app/.../challenge/ChallengeScreen.kt` shows preparation and starts a persisted challenge before opening the live camera. `ChallengeFlow.start()` owns terms and challenge identity. There is no dedicated positioning stage in these sources.
 - `WorkoutContent.kt` already provides a bounded preview, count, one status message, Help, audio and End. Preserve its portrait/landscape and large-text behavior.
 - `CameraViewport.kt` owns fresh counters by run key. Its point overlay is debug-only. `CameraPoseSession.kt` runs raw inference/counters on one worker; UI delivery can coalesce. Its `CameraPoseState.sample` is filtered and may be null when required joints disappear.
@@ -54,7 +55,7 @@ Journey: **Prepare terms → Learn → Position → Start → 3–2–1 → Exer
 
 | ID | Deliverable | Depends on | Priority | Spec | Plan | QA | Status |
 |---|---|---|---|---|---|---|---|
-| PG01 | Four exercise guide definitions and movement illustrations | — | P0 | [Spec](superpowers/specs/2026-10-24-pg01-guide-content-design.md) | [Plan](superpowers/plans/2026-10-24-pg01-guide-content.md) | [Scenarios](qa/position-guide/PG01.md) | TODO |
+| PG01 | Four exercise guide definitions and movement illustrations | — | P0 | [Spec](superpowers/specs/2026-10-24-pg01-guide-content-design.md) | [Plan](superpowers/plans/2026-10-24-pg01-guide-content.md) | [Scenarios](qa/position-guide/PG01.md) | IMPLEMENTED — QA NOT RUN |
 | PG02 | Deterministic framing evidence and stable readiness | PG01 | P0 | [Spec](superpowers/specs/2026-10-24-pg02-framing-design.md) | [Plan](superpowers/plans/2026-10-24-pg02-framing.md) | [Scenarios](qa/position-guide/PG02.md) | TODO |
 | PG03 | Learn screen, Position screen and correctly aligned overlay | PG01, PG02 | P0 | [Spec](superpowers/specs/2026-10-24-pg03-guide-ui-design.md) | [Plan](superpowers/plans/2026-10-24-pg03-guide-ui.md) | [Scenarios](qa/position-guide/PG03.md) | TODO |
 | PG04 | Explicit start, countdown and isolated camera/challenge runs | PG02, PG03 | P0 | [Spec](superpowers/specs/2026-10-24-pg04-workout-flow-design.md) | [Plan](superpowers/plans/2026-10-24-pg04-workout-flow.md) | [Scenarios](qa/position-guide/PG04.md) | TODO |
@@ -78,6 +79,6 @@ Journey: **Prepare terms → Learn → Position → Start → 3–2–1 → Exer
 
 Every task's QA document contains reproducible scenario IDs, conditions, actions and expected outcomes. All scenarios begin **NOT RUN**. During implementation record result, commit, device/API, locale/camera, actual versus expected, issue link and evidence path for each ID. Use synthetic landmarks/fakes for automated tests; use consenting manual participants for physical trials. Do not retain camera images for evidence; record UI-only fixtures, test reports and aggregate observations.
 
-No product code, dependencies, counters, budgets or existing task statuses are changed by this documentation package. Implementers should read this file, then the task spec, plan and QA together. Source changes since this review require reconciling the affected file/interface descriptions before implementation.
+PG01 adds the guide catalog, localized copy and local vector illustrations without changing counters, budgets or dependencies. Read the task spec, plan and QA together before continuing with PG02. Source changes since this review require reconciling the affected file/interface descriptions.
 
-Suggested commit text: [EXERCISE_POSITION_GUIDE_COMMIT_MESSAGE.txt](EXERCISE_POSITION_GUIDE_COMMIT_MESSAGE.txt).
+Suggested PG01 commit message: `feat: add offline exercise positioning guides`.

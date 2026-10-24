@@ -1,6 +1,6 @@
 # PG01 — Exercise guide content and local illustrations
 
-Status: proposed / not implemented. Parent requirements and task register: [position-guide tasks](../../EXERCISE_POSITION_GUIDE_TASKS.md).
+Status: implemented; QA not run. Parent requirements and task register: [position-guide tasks](../../EXERCISE_POSITION_GUIDE_TASKS.md).
 
 ## Outcome
 
