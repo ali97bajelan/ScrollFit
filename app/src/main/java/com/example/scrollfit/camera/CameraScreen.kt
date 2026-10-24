@@ -14,9 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -215,7 +212,9 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
                 status = positionState.status, startAllowed = permission && loaded && !saving &&
                     !trialJourney.cancellationPending && !trialJourney.startInFlight,
                 controlsEnabled = trialJourney.stage == GuideStage.POSITION && loaded && !saving,
-                countdownText = countdownText),
+                countdownText = countdownText,
+                trackingAvailable = positionState.progress?.trackingAvailable == true,
+                runKey = positionRunKey),
             onStart = { trialJourney.requestStart(permission && loaded && !saving) },
             onCameraChanged = { choice -> trialJourney.resetPosition(); selectCamera(choice) },
             onHelp = { showingPositionHelp = true }, onClose = ::end,
@@ -241,6 +240,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
                 Text(stringResource(R.string.camera_trial_disclosure), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             },
+            helpOpen = showingPositionHelp,
             preview = { previewModifier ->
                 Box(previewModifier, contentAlignment = Alignment.Center) {
                     CameraViewport(exercise, camera, positionRunKey, modifier = Modifier.fillMaxSize(), enabled = loaded,
@@ -255,8 +255,7 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
                         Surface(shape = MaterialTheme.shapes.large,
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)) {
                             Text(number, style = MaterialTheme.typography.displayLarge,
-                                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp)
-                                    .semantics { liveRegion = LiveRegionMode.Assertive })
+                                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp))
                         }
                     }
                 }
@@ -297,7 +296,9 @@ fun CameraScreen(exercise: Exercise, onCancel: () -> Unit, challenge: ChallengeS
 
     WorkoutContent(
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        state = WorkoutUiState(runKey, repetitions, null, countLabel, state.status),
+        state = WorkoutUiState(runKey, repetitions, null, countLabel, state.status,
+            exercise = exercise, framingIssue = state.framing?.issue,
+            trackingAvailable = state.progress?.trackingAvailable == true),
         speechEnabled = false, speechLoaded = false, audioStatus = AudioStatus.MUTED,
         touchExplorationEnabled = false, speechError = false,
         onSpeechChanged = {}, onSpeechRetry = {}, onEnd = ::end,

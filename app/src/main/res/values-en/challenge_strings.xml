@@ -33,5 +33,5 @@
     <string name="workout_help_close">Close help</string>
     <string name="workout_end">End workout</string>
     <string name="workout_tracking_ready">Your body is in view.</string>
-    <string name="workout_tracking_lost">Your body is out of view. Move into the frame.</string>
+    <string name="workout_tracking_lost">Tracking paused. Keep the required body parts visible.</string>
 </resources>

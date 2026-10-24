@@ -14,7 +14,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.scrollfit.R
 import com.example.scrollfit.core.feedback.*
+import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.time.MonotonicClock
+import com.example.scrollfit.guide.guideResources
 import com.example.scrollfit.ui.ProductFormatters
 import java.text.NumberFormat
 import java.util.Locale
@@ -36,9 +38,12 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
     private var closed = false
     private var initialization = 0L
     private var playing: Pair<Long, FeedbackMessage>? = null
+    private var exercise = Exercise.PUSH_UP
     private var transport by mutableStateOf(AudioStatus.CHECKING)
     var enabled by mutableStateOf(false); private set
     val status get() = if (enabled) transport else AudioStatus.MUTED
+
+    fun setExercise(value: Exercise) { exercise = value }
 
     fun setAudioEnabled(value: Boolean) {
         if (closed) return
@@ -78,7 +83,10 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
             tts.setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                override fun onStart(utteranceId: String?) = Unit
+                override fun onStart(utteranceId: String?) {
+                    val token = utteranceId?.toLongOrNull() ?: return
+                    main.post { controller.playbackStarted(token) }
+                }
                 override fun onDone(utteranceId: String?) { main.post { finish(utteranceId?.toLongOrNull()) } }
                 @Deprecated("Android callback")
                 override fun onError(utteranceId: String?) { main.post { fail(utteranceId?.toLongOrNull()) } }
@@ -107,6 +115,8 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
     private fun text(message: FeedbackMessage): String = when (message) {
         is FeedbackMessage.Count -> NumberFormat.getIntegerInstance(locale).format(message.repetitions)
         FeedbackMessage.Position -> context.getString(R.string.feedback_position)
+        is FeedbackMessage.Guide -> guideText(message.prompt)
+        is FeedbackMessage.Countdown -> NumberFormat.getIntegerInstance(locale).format(message.remaining)
         is FeedbackMessage.Completed -> {
             val awardedMs = message.awardedMs
             if (awardedMs == null) context.getString(R.string.challenge_only_success)
@@ -125,6 +135,8 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
         val duration = when (message) {
             is FeedbackMessage.Count -> 80
             FeedbackMessage.Position -> 180
+            is FeedbackMessage.Guide -> 220
+            is FeedbackMessage.Countdown -> 120
             is FeedbackMessage.Completed -> 260
         }
         try {
@@ -132,11 +144,30 @@ internal class ChallengeAudio(context: Context) : FeedbackOutput {
             val type = when (message) {
                 is FeedbackMessage.Count -> ToneGenerator.TONE_PROP_BEEP
                 FeedbackMessage.Position -> ToneGenerator.TONE_PROP_NACK
+                is FeedbackMessage.Guide -> if (message.prompt.recovered) ToneGenerator.TONE_PROP_ACK
+                    else ToneGenerator.TONE_PROP_NACK
+                is FeedbackMessage.Countdown -> ToneGenerator.TONE_PROP_BEEP
                 is FeedbackMessage.Completed -> ToneGenerator.TONE_PROP_ACK
             }
-            if (!generator.startTone(type, duration)) transport = AudioStatus.VISUAL
+            if (generator.startTone(type, duration)) controller.playbackStarted(token)
+            else transport = AudioStatus.VISUAL
         } catch (_: RuntimeException) { transport = AudioStatus.VISUAL }
         main.postDelayed({ finish(token) }, duration.toLong())
+    }
+
+    private fun guideText(prompt: GuidePrompt): String {
+        if (prompt.recovered) return context.getString(guideResources(exercise).trackingRestored)
+        return when (prompt.issue) {
+            com.example.scrollfit.core.pose.FramingIssue.NO_RELIABLE_POSE ->
+                context.getString(R.string.position_uncertain)
+            com.example.scrollfit.core.pose.FramingIssue.SHOW_REQUIRED_PARTS ->
+                context.getString(guideResources(exercise).coverage)
+            com.example.scrollfit.core.pose.FramingIssue.MOVE_BACK -> context.getString(R.string.position_move_back)
+            com.example.scrollfit.core.pose.FramingIssue.MOVE_CLOSER -> context.getString(R.string.position_move_closer)
+            com.example.scrollfit.core.pose.FramingIssue.CENTER_BODY -> context.getString(R.string.position_center_body)
+            com.example.scrollfit.core.pose.FramingIssue.FRAMED, null ->
+                context.getString(guideResources(exercise).trackingRestored)
+        }
     }
 
     private fun finish(token: Long?) {

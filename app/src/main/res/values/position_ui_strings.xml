@@ -15,7 +15,7 @@
     <string name="position_starting">در حال آماده‌سازی تمرین…</string>
     <string name="position_ready">جای‌گیری پایدار است. هر وقت آماده‌اید شروع کنید.</string>
     <string name="position_hold_still">در این حالت بمانید تا دوربین جای‌گیری را تأیید کند.</string>
-    <string name="position_uncertain">حرکت واضح دیده نمی‌شود. نور یا جای گوشی را کمی تغییر دهید و دوباره تلاش کنید.</string>
+    <string name="position_uncertain">شما واضح دیده نمی‌شوید. کمی نور یا جای گوشی را تغییر دهید و دوباره تلاش کنید.</string>
     <string name="position_show_parts">بخش‌های لازم بدن را هم‌زمان در کادر نگه دارید.</string>
     <string name="position_move_back">کمی دورتر بروید تا تمام حرکت در تصویر جا شود.</string>
     <string name="position_move_closer">کمی به دوربین نزدیک‌تر شوید تا بدن فضای بیشتری از تصویر را بگیرد.</string>

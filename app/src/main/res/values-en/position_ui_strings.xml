@@ -15,7 +15,7 @@
     <string name="position_starting">Preparing your workout…</string>
     <string name="position_ready">Your framing is stable. Start when you are ready.</string>
     <string name="position_hold_still">Hold this position while the camera confirms your framing.</string>
-    <string name="position_uncertain">Movement is not clear yet. Try adjusting the lighting or phone position.</string>
+    <string name="position_uncertain">Cannot see you clearly. Try adjusting the lighting or phone position.</string>
     <string name="position_show_parts">Keep the required body parts in view together.</string>
     <string name="position_move_back">Move farther away so the full movement fits in the preview.</string>
     <string name="position_move_closer">Move closer so your body fills more of the preview.</string>

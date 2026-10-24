@@ -15,7 +15,7 @@
     <string name="position_starting">Préparation de l’exercice…</string>
     <string name="position_ready">Le cadrage est stable. Commencez quand vous êtes prêt.</string>
     <string name="position_hold_still">Restez dans cette position pendant la vérification du cadrage.</string>
-    <string name="position_uncertain">Le mouvement n’est pas encore clair. Essayez d’ajuster la lumière ou la position du téléphone.</string>
+    <string name="position_uncertain">Je ne vous vois pas clairement. Essayez d’ajuster l’éclairage ou la position du téléphone.</string>
     <string name="position_show_parts">Gardez ensemble les parties requises du corps visibles.</string>
     <string name="position_move_back">Éloignez-vous pour que tout le mouvement tienne dans l’aperçu.</string>
     <string name="position_move_closer">Rapprochez-vous pour occuper davantage l’aperçu.</string>

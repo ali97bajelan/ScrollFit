@@ -33,5 +33,5 @@
     <string name="workout_help_close">Fermer l’aide</string>
     <string name="workout_end">Terminer l’exercice</string>
     <string name="workout_tracking_ready">Votre corps est visible.</string>
-    <string name="workout_tracking_lost">Corps hors champ. Replacez-vous dans le cadre.</string>
+    <string name="workout_tracking_lost">Suivi en pause. Gardez visibles les parties du corps requises.</string>
 </resources>

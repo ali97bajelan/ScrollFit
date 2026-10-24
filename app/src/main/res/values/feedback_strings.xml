@@ -7,7 +7,7 @@
     <string name="feedback_sounds">گفتار آفلاین در دسترس نیست. بوق‌های کوتاه و شمارش روی صفحه فعال است؛ دانلود لازم نیست.</string>
     <string name="feedback_visual">صدا در دسترس نیست؛ شمارش و پیام‌ها را روی صفحه دنبال کنید.</string>
     <string name="feedback_muted">صدا خاموش است؛ شمارش و پیام‌ها روی صفحه نمایش داده می‌شود.</string>
-    <string name="feedback_position">تمام بدن را در کادر دوربین قرار دهید.</string>
+    <string name="feedback_position">ردیابی مکث کرده است. بخش‌های لازم بدن برای این حرکت را در کادر نگه دارید.</string>
     <string name="feedback_reward">چالش کامل شد. زمان ذخیره‌شده: %1$s.</string>
     <string name="feedback_save_error">تنظیم صدا ذخیره نشد. دوباره تلاش کنید.</string>
     <string name="feedback_retry">تلاش دوباره برای ذخیره تنظیم صدا</string>

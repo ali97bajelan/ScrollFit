@@ -18,6 +18,7 @@ data class ExerciseGuideResources(
     @StringRes val oneRepetition: Int,
     @StringRes val coverage: Int,
     @StringRes val recovery: Int,
+    @StringRes val trackingRestored: Int,
     @StringRes val formDisclaimer: Int,
     val placementArtwork: GuidePlacementArtwork,
 )
@@ -32,6 +33,7 @@ fun guideResources(exercise: Exercise): ExerciseGuideResources = when (exercise)
         oneRepetition = R.string.guide_push_up_one_rep,
         coverage = R.string.guide_push_up_coverage,
         recovery = R.string.guide_push_up_recovery,
+        trackingRestored = R.string.guide_push_up_tracking_restored,
         formDisclaimer = R.string.guide_no_form_scoring,
         placementArtwork = GuidePlacementArtwork.SIDE_PROFILE,
     )
@@ -43,6 +45,7 @@ fun guideResources(exercise: Exercise): ExerciseGuideResources = when (exercise)
         oneRepetition = R.string.guide_squat_one_rep,
         coverage = R.string.guide_squat_coverage,
         recovery = R.string.guide_squat_recovery,
+        trackingRestored = R.string.guide_squat_tracking_restored,
         formDisclaimer = R.string.guide_no_form_scoring,
         placementArtwork = GuidePlacementArtwork.FRONT_VIEW,
     )
@@ -54,6 +57,7 @@ fun guideResources(exercise: Exercise): ExerciseGuideResources = when (exercise)
         oneRepetition = R.string.guide_jack_one_rep,
         coverage = R.string.guide_jack_coverage,
         recovery = R.string.guide_jack_recovery,
+        trackingRestored = R.string.guide_jack_tracking_restored,
         formDisclaimer = R.string.guide_no_form_scoring,
         placementArtwork = GuidePlacementArtwork.FRONT_VIEW,
     )
@@ -65,6 +69,7 @@ fun guideResources(exercise: Exercise): ExerciseGuideResources = when (exercise)
         oneRepetition = R.string.guide_knee_raise_one_rep,
         coverage = R.string.guide_knee_raise_coverage,
         recovery = R.string.guide_knee_raise_recovery,
+        trackingRestored = R.string.guide_knee_raise_tracking_restored,
         formDisclaimer = R.string.guide_no_form_scoring,
         placementArtwork = GuidePlacementArtwork.FRONT_VIEW,
     )

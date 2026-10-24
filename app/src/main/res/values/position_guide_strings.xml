@@ -13,24 +13,28 @@
     <string name="guide_push_up_one_rep">از حالت بالا پایین بروید و دوباره به حالت بالا برگردید؛ این یک تکرار است.</string>
     <string name="guide_push_up_coverage">شانه، آرنج، مچ دست و لگنِ یک سمت باید هم‌زمان دیده شوند. هر یک از دو سمت قابل استفاده است.</string>
     <string name="guide_push_up_recovery">اگر ردیابی قطع شد، به حالت بالای شنا برگردید و شانه تا مچ دستِ همان سمت و لگن را در کادر نگه دارید.</string>
+    <string name="guide_push_up_tracking_restored">ردیابی برگشته است. به بالای حرکت شنا برگردید و شانه، آرنج، مچ و لگن یک سمت را در کادر نگه دارید.</string>
 
     <string name="guide_squat_placement">گوشی را محکم روبروی خود یا کمی مایل بگذارید؛ جای ایستاده و پایین‌رفته باید در تصویر جا شود.</string>
     <string name="guide_squat_start">صاف بایستید و کمی مکث کنید؛ شانه‌ها، لگن، زانوها و مچ پاها را در کادر نگه دارید.</string>
     <string name="guide_squat_one_rep">از حالت ایستاده پایین بروید و دوباره بایستید؛ برگشت به ایستادن یک تکرار را کامل می‌کند.</string>
     <string name="guide_squat_coverage">هر دو شانه، لگن، هر دو زانو و هر دو مچ پا باید دیده شوند؛ سر و پاها هم در تصویر راهنما آمده‌اند.</string>
     <string name="guide_squat_recovery">برای تلاش دوباره صاف بایستید و کمی مکث کنید؛ هر دو پا را در کادر نگه دارید.</string>
+    <string name="guide_squat_tracking_restored">ردیابی برگشته است. صاف بایستید و هر دو شانه، لگن، زانو و مچ پا را در کادر نگه دارید.</string>
 
     <string name="guide_jack_placement">گوشی را محکم روبرو بگذارید و بالای سر و دو طرف بدن فضای کافی برای باز شدن دست‌ها و پاها بگذارید.</string>
     <string name="guide_jack_start">پاها را کنار هم و دست‌ها را پایین نگه دارید؛ بدن کامل و دست‌های بالای سر در حالت باز باید دیده شوند.</string>
     <string name="guide_jack_one_rep">هر دو دست را بالا ببرید و پاها را باز کنید، سپس به حالت بسته برگردید؛ این یک تکرار است.</string>
     <string name="guide_jack_coverage">هر دو شانه، مچ دست، لگن و مچ پا باید در تمام حرکت دیده شوند؛ برای دست‌های بالای سر جا بگذارید.</string>
     <string name="guide_jack_recovery">دست‌ها را پایین بیاورید، پاها را کنار هم بگذارید و برای دست‌های بالای سر فضای خالی حفظ کنید.</string>
+    <string name="guide_jack_tracking_restored">ردیابی برگشته است. پاها را کنار هم بگذارید و دست‌ها را پایین بیاورید؛ تمام بدن در کادر باشد.</string>
 
     <string name="guide_knee_raise_placement">گوشی را محکم روبرو بگذارید تا بدن ایستاده و زانویی که بالا می‌آورید در تصویر باشد.</string>
     <string name="guide_knee_raise_start">با هر دو پا روی زمین بایستید؛ شانه‌ها، لگن، زانوها و مچ پاها را در کادر نگه دارید.</string>
     <string name="guide_knee_raise_one_rep">یک زانو را بالا بیاورید، پا را پایین بگذارید و به حالت ایستاده برگردید؛ هر بار کامل، یک تکرار است. می‌توانید پاها را یکی‌درمیان عوض کنید، اما لازم نیست؛ بالا آوردن‌های کاملِ همان پا هم جداگانه شمرده می‌شوند.</string>
     <string name="guide_knee_raise_coverage">هر دو شانه، لگن، زانوها و مچ پاها باید دیده شوند، از جمله زانوی بالا آمده.</string>
     <string name="guide_knee_raise_recovery">هر دو پا را پایین بگذارید و پیش از بالا آوردن بعدی کمی مکث کنید.</string>
+    <string name="guide_knee_raise_tracking_restored">ردیابی برگشته است. هر دو پا را پایین بگذارید و شانه‌ها، لگن، زانوها و مچ پا را در کادر نگه دارید.</string>
 
     <string name="guide_no_form_scoring">این راهنما جایگاه دوربین و شمارش حرکت را توضیح می‌دهد و فرم ورزشی را ارزیابی نمی‌کند.</string>
     <string name="guide_pose_push_up_top">حالت بالای شنا</string>
@@ -41,4 +45,10 @@
     <string name="guide_pose_jack_open">دست‌ها بالا، پاها باز</string>
     <string name="guide_pose_knee_left_up">زانوی چپ بالا</string>
     <string name="guide_pose_knee_right_up">زانوی راست بالا</string>
+
+    <string name="position_tracking_paused">ردیابی مکث کرده است. بخش‌های لازم بدن را در کادر نگه دارید.</string>
+    <string name="position_countdown_started">شمارش معکوس شروع شد. در حالت شروع حرکت قرار بگیرید.</string>
+    <string name="position_exercise_started">تمرین شروع شد.</string>
+    <string name="position_start_unavailable">شروع تا تکمیل آماده‌سازی در دسترس نیست.</string>
+    <string name="position_start_disabled">شروع در دسترس نیست. %1$s</string>
 </resources>

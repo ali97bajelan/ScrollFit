@@ -79,6 +79,17 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
     var showingPositionHelp by remember(flow) { mutableStateOf(false) }
     LaunchedEffect(flow) { flow.load() }
     LaunchedEffect(permission, journey) { journey.permissionChanged(permission) }
+    LaunchedEffect(journey.stage, journey.positionRunKey, journey.exercise) {
+        if (journey.stage == GuideStage.POSITION && journey.positionRunKey != null) {
+            flow.audio.setExercise(journey.exercise ?: flow.exercise)
+            flow.audio.controller.beginGuidance()
+        }
+    }
+    LaunchedEffect(journey.stage, journey.countdownRemaining) {
+        if (journey.stage == GuideStage.COUNTDOWN) {
+            journey.countdownRemaining?.let(flow.audio.controller::countdown)
+        }
+    }
     LaunchedEffect(owner, flow) {
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) { delay(100); flow.checkDay(); flow.audio.controller.tick(); journey.tick() }
@@ -173,7 +184,9 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
                 starting = journey.stage == GuideStage.STARTING || journey.cancellationPending,
                 status = cameraState.status, startAllowed = startAllowed,
                 controlsEnabled = journey.stage == GuideStage.POSITION && !flow.busy && !journey.cancellationPending,
-                countdownText = countdownText),
+                countdownText = countdownText,
+                trackingAvailable = cameraState.progress?.trackingAvailable == true,
+                runKey = positionRunKey),
             onStart = { journey.requestStart(startAllowed) },
             onCameraChanged = { choice -> journey.resetPosition(); flow.chooseCamera(choice) },
             onHelp = { showingPositionHelp = true }, onClose = { requestClose() },
@@ -196,6 +209,7 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
                     }
                 }
             },
+            helpOpen = showingPositionHelp,
             preview = { previewModifier ->
                 Box(previewModifier, contentAlignment = Alignment.Center) {
                     CameraViewport(exercise = journey.exercise ?: flow.exercise, camera = flow.camera,
@@ -207,13 +221,15 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
                         }) { next ->
                         cameraState = next
                         journey.observePosition(positionRunKey, next)
+                        if (journey.stage in setOf(GuideStage.POSITION, GuideStage.STARTING)) {
+                            flow.audio.controller.updateGuide(next.framing?.issue, journey.ready, activeWorkout = false)
+                        }
                     }
                     countdownText?.let { number ->
                         Surface(shape = MaterialTheme.shapes.large,
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)) {
                             Text(number, style = MaterialTheme.typography.displayLarge,
-                                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp)
-                                    .semantics { liveRegion = LiveRegionMode.Assertive })
+                                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp))
                         }
                     }
                 }
@@ -267,7 +283,9 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         WorkoutContent(
             modifier = Modifier.fillMaxSize(),
             state = WorkoutUiState(activeSession.challenge.id, flow.repetitions,
-                activeSession.challenge.repetitionsRequired, R.string.challenge_progress, cameraState.status),
+                activeSession.challenge.repetitionsRequired, R.string.challenge_progress, cameraState.status,
+                exercise = activeSession.challenge.exercise, framingIssue = cameraState.framing?.issue,
+                trackingAvailable = cameraState.progress?.trackingAvailable == true),
             speechEnabled = flow.speechEnabled, speechLoaded = flow.speechLoaded,
             audioStatus = flow.audio.status, touchExplorationEnabled = flow.touchExplorationEnabled,
             speechError = flow.speechError, onSpeechChanged = flow::updateSpeechEnabled,

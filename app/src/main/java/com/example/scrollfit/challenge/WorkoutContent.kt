@@ -26,9 +26,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.scrollfit.R
 import com.example.scrollfit.feedback.AudioStatus
+import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.core.pose.FramingIssue
 import com.example.scrollfit.platform.pose.CameraPoseState
 import com.example.scrollfit.platform.pose.CameraPoseStatus
-import com.example.scrollfit.camera.message
 import com.example.scrollfit.camera.rememberWorkoutStatusMessage
 import kotlinx.coroutines.delay
 
@@ -38,6 +39,9 @@ internal data class WorkoutUiState(
     val required: Int?,
     @StringRes val countLabel: Int,
     val status: CameraPoseStatus,
+    val exercise: Exercise = Exercise.PUSH_UP,
+    val framingIssue: FramingIssue? = null,
+    val trackingAvailable: Boolean = status == CameraPoseStatus.TRACKING,
 )
 
 /** Bounded workout/trial layout: the preview flexes while the count, status and actions stay visible. */
@@ -64,7 +68,8 @@ internal fun WorkoutContent(
     extraControls: @Composable ColumnScope.() -> Unit = {},
     scrollExtraControls: Boolean = false,
 ) {
-    val statusMessage = rememberWorkoutStatusMessage(state.runKey, state.status, monotonicNowMs)
+    val statusMessage = rememberWorkoutStatusMessage(state.runKey, state.status, state.exercise,
+        state.framingIssue, state.trackingAvailable, monotonicNowMs)
 
     var showingHelp by rememberSaveable(state.runKey) { mutableStateOf(false) }
     val helpFocusRequester = remember(state.runKey) { FocusRequester() }

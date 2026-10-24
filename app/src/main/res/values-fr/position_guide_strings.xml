@@ -13,24 +13,28 @@
     <string name="guide_push_up_one_rep">Descendez depuis le haut, puis revenez en haut ; cela compte pour une répétition.</string>
     <string name="guide_push_up_coverage">Gardez visibles ensemble l’épaule, le coude, le poignet et la hanche du même côté. L’un ou l’autre côté convient.</string>
     <string name="guide_push_up_recovery">Si le suivi s’arrête, revenez en haut et gardez dans le cadre cette épaule, le poignet du même côté et la hanche.</string>
+    <string name="guide_push_up_tracking_restored">Suivi rétabli. Revenez en haut du mouvement et gardez dans le cadre l’épaule, le coude, le poignet et la hanche du même côté.</string>
 
     <string name="guide_squat_placement">Placez le téléphone de façon stable devant vous ou légèrement de biais. Cadrez vos positions debout et basse.</string>
     <string name="guide_squat_start">Tenez-vous droit et marquez une courte pause. Gardez les deux épaules, hanches, genoux et chevilles dans le cadre.</string>
     <string name="guide_squat_one_rep">Descendez depuis la position debout, puis relevez-vous ; le retour debout termine une répétition.</string>
     <string name="guide_squat_coverage">Gardez visibles les deux épaules, hanches, genoux et chevilles. L’illustration montre aussi la tête et les pieds.</string>
     <string name="guide_squat_recovery">Avant de réessayer, tenez-vous droit un instant avec les deux jambes dans le cadre.</string>
+    <string name="guide_squat_tracking_restored">Suivi rétabli. Tenez-vous droit et gardez les deux épaules, hanches, genoux et chevilles dans le cadre.</string>
 
     <string name="guide_jack_placement">Placez le téléphone de façon stable devant vous. Laissez de la place au-dessus de la tête et des deux côtés pour ouvrir les bras et les jambes.</string>
     <string name="guide_jack_start">Commencez pieds joints et bras le long du corps. Gardez tout le corps dans le cadre, y compris les mains levées.</string>
     <string name="guide_jack_one_rep">Levez les deux bras et écartez les deux jambes, puis revenez en position fermée ; cela compte pour une répétition.</string>
     <string name="guide_jack_coverage">Gardez les deux épaules, poignets, hanches et chevilles visibles pendant tout le mouvement, avec de la place pour les mains levées.</string>
     <string name="guide_jack_recovery">Revenez bras le long du corps et pieds joints, en gardant de la place au-dessus de la tête.</string>
+    <string name="guide_jack_tracking_restored">Suivi rétabli. Rapprochez les pieds et baissez les bras en gardant tout le corps dans le cadre.</string>
 
     <string name="guide_knee_raise_placement">Placez le téléphone de façon stable devant vous afin que votre corps debout et le genou levé tiennent dans le cadre.</string>
     <string name="guide_knee_raise_start">Tenez-vous debout, les deux pieds au sol. Gardez les deux épaules, hanches, genoux et chevilles dans le cadre.</string>
     <string name="guide_knee_raise_one_rep">Levez un genou, reposez le pied et revenez debout ; chaque montée complète compte pour une répétition. Vous pouvez alterner, mais ce n’est pas obligatoire : les montées complètes du même côté comptent aussi séparément.</string>
     <string name="guide_knee_raise_coverage">Gardez visibles les deux épaules, hanches, genoux et chevilles, y compris le genou levé.</string>
     <string name="guide_knee_raise_recovery">Reposez les deux pieds et marquez une courte pause avant la montée suivante.</string>
+    <string name="guide_knee_raise_tracking_restored">Suivi rétabli. Reposez les deux pieds et gardez épaules, hanches, genoux et chevilles dans le cadre.</string>
 
     <string name="guide_no_form_scoring">Ce guide explique le placement du téléphone et le comptage ; il n’évalue pas la qualité du mouvement.</string>
     <string name="guide_pose_push_up_top">Haut de la pompe</string>
@@ -41,4 +45,10 @@
     <string name="guide_pose_jack_open">Bras levés, pieds écartés</string>
     <string name="guide_pose_knee_left_up">Genou gauche levé</string>
     <string name="guide_pose_knee_right_up">Genou droit levé</string>
+
+    <string name="position_tracking_paused">Suivi en pause. Gardez visibles les parties du corps requises.</string>
+    <string name="position_countdown_started">Compte à rebours commencé. Prenez votre position de départ.</string>
+    <string name="position_exercise_started">L’exercice a commencé.</string>
+    <string name="position_start_unavailable">Le démarrage sera disponible une fois la préparation terminée.</string>
+    <string name="position_start_disabled">Démarrage indisponible. %1$s</string>
 </resources>

@@ -33,5 +33,5 @@
     <string name="workout_help_close">بستن راهنما</string>
     <string name="workout_end">پایان تمرین</string>
     <string name="workout_tracking_ready">تمام بدن در تصویر دیده می‌شود.</string>
-    <string name="workout_tracking_lost">بدن دیده نمی‌شود؛ در کادر قرار بگیرید.</string>
+    <string name="workout_tracking_lost">ردیابی مکث کرده است. بخش‌های لازم بدن را در کادر نگه دارید.</string>
 </resources>

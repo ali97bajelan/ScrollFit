@@ -1,6 +1,6 @@
 # PG05 — Accessible, localized positioning feedback
 
-Status: proposed / not implemented. Depends on PG02–PG04. Shared requirements: [task register](../../EXERCISE_POSITION_GUIDE_TASKS.md).
+Status: implemented; QA not run. Depends on PG02–PG04. Shared requirements: [task register](../../EXERCISE_POSITION_GUIDE_TASKS.md).
 
 ## Outcome / copy contract
 

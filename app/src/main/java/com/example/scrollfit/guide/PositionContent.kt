@@ -7,14 +7,22 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.scrollfit.R
-import com.example.scrollfit.camera.message
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.pose.FramingIssue
@@ -30,6 +38,8 @@ data class PositionUiState(
     val startAllowed: Boolean = true,
     val controlsEnabled: Boolean = true,
     val countdownText: String? = null,
+    val trackingAvailable: Boolean = status == CameraPoseStatus.TRACKING,
+    val runKey: String = "position",
 )
 
 /** Position camera content. The caller owns the camera session and its image-aligned overlay. */
@@ -46,8 +56,30 @@ fun PositionContent(
     onRetryCamera: (() -> Unit)? = null,
     recoveryContent: @Composable ColumnScope.() -> Unit = {},
     headerContent: @Composable ColumnScope.() -> Unit = {},
+    helpOpen: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val guideStatus = GuideStatusState(
+        runKey = state.runKey,
+        exercise = state.exercise,
+        status = state.status,
+        issue = state.issue,
+        ready = state.ready,
+        trackingAvailable = state.trackingAvailable,
+        stage = if (state.countdownText != null) GuideStatusStage.COUNTDOWN else GuideStatusStage.POSITION,
+        startAllowed = state.startAllowed,
+        starting = state.starting,
+    )
+    val statusMessageId = rememberGuideStatusMessage(guideStatus)
+    val helpFocusRequester = remember { FocusRequester() }
+    val helpWasOpen = remember { androidx.compose.runtime.mutableStateOf(false) }
+    LaunchedEffect(helpOpen) {
+        if (!helpOpen && helpWasOpen.value) {
+            androidx.compose.runtime.withFrameNanos { }
+            helpFocusRequester.requestFocus()
+        }
+        helpWasOpen.value = helpOpen
+    }
     BoxWithConstraints(modifier.fillMaxSize()) {
         val shortLandscape = maxWidth >= 560.dp && maxHeight < 420.dp
         if (shortLandscape) {
@@ -56,12 +88,13 @@ fun PositionContent(
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     PositionHeading(state.exercise)
                     headerContent()
-                    PositionInformation(state, Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                    PositionInformation(state, statusMessageId,
+                        Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                         PositionRecovery(state, onRequestPermission, onOpenSettings, onRetryCamera)
                         recoveryContent()
                     }
                     PositionCameraChoices(state.camera, onCameraChanged, state.controlsEnabled)
-                    PositionActions(state, onStart, onHelp, onClose)
+                    PositionActions(state, onStart, onHelp, onClose, helpFocusRequester, statusMessageId)
                 }
             }
         } else {
@@ -69,14 +102,14 @@ fun PositionContent(
                 PositionHeading(state.exercise)
                 headerContent()
                 PositionPreview(Modifier.weight(0.9f).fillMaxWidth(), preview)
-                PositionInformation(state,
+                PositionInformation(state, statusMessageId,
                     Modifier.weight(0.8f, fill = false).fillMaxWidth().heightIn(max = 180.dp)
                         .verticalScroll(rememberScrollState())) {
                     PositionRecovery(state, onRequestPermission, onOpenSettings, onRetryCamera)
                     recoveryContent()
                 }
                 PositionCameraChoices(state.camera, onCameraChanged, state.controlsEnabled)
-                PositionActions(state, onStart, onHelp, onClose)
+                PositionActions(state, onStart, onHelp, onClose, helpFocusRequester, statusMessageId)
             }
         }
     }
@@ -137,32 +170,27 @@ private fun PositionPreview(modifier: Modifier, preview: @Composable (Modifier) 
 @Composable
 private fun PositionInformation(
     state: PositionUiState,
+    statusMessageId: Int,
     modifier: Modifier = Modifier,
     recoveryContent: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        PositionStatus(state)
+        PositionStatus(state, statusMessageId)
         val resources = guideResources(state.exercise)
         Text(stringResource(resources.placement), style = MaterialTheme.typography.bodySmall)
-        Text(stringResource(resources.coverage), style = MaterialTheme.typography.bodySmall)
+        if (state.issue != FramingIssue.SHOW_REQUIRED_PARTS) {
+            Text(stringResource(resources.coverage), style = MaterialTheme.typography.bodySmall)
+        }
         if (state.countdownText != null) {
             Text(stringResource(R.string.position_countdown_hint, state.countdownText),
                 style = MaterialTheme.typography.titleMedium)
-        } else if (state.starting) {
-            Text(stringResource(R.string.position_starting), style = MaterialTheme.typography.bodySmall)
-        } else if (state.isFramedReady) {
-            Text(stringResource(R.string.position_ready), style = MaterialTheme.typography.bodySmall)
-        } else {
-            Text(stringResource(R.string.position_start_hint), style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         recoveryContent()
     }
 }
 
 @Composable
-private fun PositionStatus(state: PositionUiState) {
-    val messageId = positionMessage(state)
+private fun PositionStatus(state: PositionUiState, messageId: Int) {
     val message = stringResource(messageId)
     val error = state.status in setOf(CameraPoseStatus.PERMISSION_REQUIRED, CameraPoseStatus.CAMERA_UNAVAILABLE,
         CameraPoseStatus.CAMERA_ERROR, CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)
@@ -173,25 +201,9 @@ private fun PositionStatus(state: PositionUiState) {
             verticalAlignment = Alignment.Top) {
             Text(if (state.isFramedReady) "✓" else if (error) "!" else "•", color = color,
                 style = MaterialTheme.typography.titleMedium, modifier = Modifier.clearAndSetSemantics {})
-            Text(message, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text(message, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)
+                .semantics { liveRegion = LiveRegionMode.Polite }.testTag("position_status"))
         }
-    }
-}
-
-@StringRes
-private fun positionMessage(state: PositionUiState): Int {
-    if (state.status in setOf(CameraPoseStatus.INITIALIZING, CameraPoseStatus.PAUSED,
-            CameraPoseStatus.PERMISSION_REQUIRED, CameraPoseStatus.CAMERA_UNAVAILABLE,
-            CameraPoseStatus.CAMERA_ERROR, CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {
-        return state.status.message()
-    }
-    return when (state.issue) {
-        FramingIssue.NO_RELIABLE_POSE, null -> R.string.position_uncertain
-        FramingIssue.SHOW_REQUIRED_PARTS -> R.string.position_show_parts
-        FramingIssue.MOVE_BACK -> R.string.position_move_back
-        FramingIssue.MOVE_CLOSER -> R.string.position_move_closer
-        FramingIssue.CENTER_BODY -> R.string.position_center_body
-        FramingIssue.FRAMED -> if (state.isFramedReady) R.string.position_ready else R.string.position_hold_still
     }
 }
 
@@ -235,9 +247,14 @@ private fun PositionActions(
     onStart: () -> Unit,
     onHelp: () -> Unit,
     onClose: () -> Unit,
+    helpFocusRequester: FocusRequester,
+    statusMessageId: Int,
 ) {
+    val statusMessage = stringResource(statusMessageId)
+    val disabledDescription = stringResource(R.string.position_start_disabled, statusMessage)
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        TextButton(onClick = onHelp, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        TextButton(onClick = onHelp, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+            .focusRequester(helpFocusRequester)) {
             Text(stringResource(R.string.workout_help))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -245,8 +262,11 @@ private fun PositionActions(
                 OutlinedButton(onClick = onClose, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.challenge_close))
                 }
-                Button(onClick = onStart, enabled = state.canStart && !state.starting,
-                    modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+                val enabled = state.canStart && !state.starting
+                Button(onClick = onStart, enabled = enabled,
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp).semantics {
+                        if (!enabled) stateDescription = disabledDescription
+                    }) {
                     Text(stringResource(R.string.position_start))
                 }
             } else {
@@ -262,7 +282,7 @@ private val PositionUiState.canStart: Boolean
     get() = startAllowed && isFramedReady
 
 private val PositionUiState.isFramedReady: Boolean
-    get() = ready && issue == FramingIssue.FRAMED && status == CameraPoseStatus.TRACKING
+    get() = ready && trackingAvailable && issue == FramingIssue.FRAMED && status == CameraPoseStatus.TRACKING
 
 private val cameraErrors = setOf(CameraPoseStatus.CAMERA_UNAVAILABLE, CameraPoseStatus.CAMERA_ERROR,
     CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)

@@ -208,6 +208,24 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
             state.timestampMs?.let { active.accept(progress, it) }
             progressChanged()
         }
+        if (phase != ChallengePhase.RUNNING) return
+        if (state.status in setOf(CameraPoseStatus.TRACKING, CameraPoseStatus.SEARCHING, CameraPoseStatus.TRACKING_LOST)) {
+            val trackingAvailable = state.status == CameraPoseStatus.TRACKING &&
+                state.progress?.trackingAvailable == true
+            val framingIssue = if (trackingAvailable) {
+                state.framing?.issue ?: com.example.scrollfit.core.pose.FramingIssue.FRAMED
+            } else {
+                state.framing?.issue?.takeUnless { it == com.example.scrollfit.core.pose.FramingIssue.FRAMED }
+                    ?: com.example.scrollfit.core.pose.FramingIssue.NO_RELIABLE_POSE
+            }
+            if (state.framing?.issue == com.example.scrollfit.core.pose.FramingIssue.FRAMED && !trackingAvailable) {
+                audio.controller.updateGuide(framingIssue, ready = false, activeWorkout = true, allowPrompt = false)
+            } else {
+                audio.controller.updateGuide(framingIssue, ready = false, activeWorkout = true)
+            }
+        } else {
+            audio.controller.clearGuide()
+        }
         if (state.status in setOf(CameraPoseStatus.PAUSED, CameraPoseStatus.PERMISSION_REQUIRED,
                 CameraPoseStatus.CAMERA_UNAVAILABLE, CameraPoseStatus.CAMERA_ERROR,
                 CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR)) {

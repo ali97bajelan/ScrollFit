@@ -13,24 +13,28 @@
     <string name="guide_push_up_one_rep">Lower from the top and return to the top; that is one repetition.</string>
     <string name="guide_push_up_coverage">Keep the shoulder, elbow, wrist, and hip from the same side visible together. Either side can be used.</string>
     <string name="guide_push_up_recovery">If tracking stops, return to the top and keep that same shoulder-to-wrist line and hip in frame.</string>
+    <string name="guide_push_up_tracking_restored">Tracking restored. Return to the top of the push-up and keep that same shoulder, elbow, wrist, and hip in frame.</string>
 
     <string name="guide_squat_placement">Secure the phone in front of you or at a slight angle. Frame both your standing and lowered positions.</string>
     <string name="guide_squat_start">Stand upright and pause briefly. Keep both shoulders, hips, knees, and ankles in frame.</string>
     <string name="guide_squat_one_rep">Lower from standing, then stand again; returning upright completes one repetition.</string>
     <string name="guide_squat_coverage">Keep both shoulders, hips, knees, and ankles visible. The illustration also shows your head and feet.</string>
     <string name="guide_squat_recovery">Before trying again, stand upright briefly with both legs in frame.</string>
+    <string name="guide_squat_tracking_restored">Tracking restored. Stand upright and keep both shoulders, hips, knees, and ankles in frame.</string>
 
     <string name="guide_jack_placement">Secure the phone in front of you. Leave room above your head and on both sides for your arms and legs to open.</string>
     <string name="guide_jack_start">Begin with feet together and arms down. Keep your whole body in frame, including your hands overhead when open.</string>
     <string name="guide_jack_one_rep">Raise both arms and spread both legs, then return to the closed position; that is one repetition.</string>
     <string name="guide_jack_coverage">Keep both shoulders, wrists, hips, and ankles visible throughout, with room for raised hands.</string>
     <string name="guide_jack_recovery">Return to arms down and feet together, leaving space for both hands above your head.</string>
+    <string name="guide_jack_tracking_restored">Tracking restored. Bring your feet together and lower your arms, with your whole body in frame.</string>
 
     <string name="guide_knee_raise_placement">Secure the phone in front of you so your standing body and lifted knee fit in frame.</string>
     <string name="guide_knee_raise_start">Stand with both feet on the ground. Keep both shoulders, hips, knees, and ankles in frame.</string>
     <string name="guide_knee_raise_one_rep">Raise one knee, lower your foot, and return to standing; each complete lift and return is one repetition. You may alternate sides, but you do not have to; repeated lifts on the same side count separately too.</string>
     <string name="guide_knee_raise_coverage">Keep both shoulders, hips, knees, and ankles visible, including the raised knee.</string>
     <string name="guide_knee_raise_recovery">Put both feet down and pause briefly before the next lift.</string>
+    <string name="guide_knee_raise_tracking_restored">Tracking restored. Put both feet down and keep your shoulders, hips, knees, and ankles in frame.</string>
 
     <string name="guide_no_form_scoring">This guide explains camera placement and repetition counting; it does not assess exercise form.</string>
     <string name="guide_pose_push_up_top">Top of push-up</string>
@@ -41,4 +45,10 @@
     <string name="guide_pose_jack_open">Arms up, feet apart</string>
     <string name="guide_pose_knee_left_up">Left knee raised</string>
     <string name="guide_pose_knee_right_up">Right knee raised</string>
+
+    <string name="position_tracking_paused">Tracking paused. Keep the required body parts visible.</string>
+    <string name="position_countdown_started">Countdown started. Get into your starting position.</string>
+    <string name="position_exercise_started">Exercise started.</string>
+    <string name="position_start_unavailable">Start is unavailable until setup is complete.</string>
+    <string name="position_start_disabled">Start unavailable. %1$s</string>
 </resources>
