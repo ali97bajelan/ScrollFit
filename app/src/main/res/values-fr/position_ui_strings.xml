@@ -1,0 +1,20 @@
+<resources>
+    <string name="position_learn_title">Guide de l’exercice</string>
+    <string name="position_movement_steps">Étapes du mouvement</string>
+    <string name="position_step_number">Étape %1$d</string>
+    <string name="position_starting_position">Position de départ</string>
+    <string name="position_one_repetition">Une répétition</string>
+    <string name="position_body_coverage">Parties du corps à garder visibles</string>
+    <string name="position_continue">Continuer vers le placement</string>
+    <string name="position_title">Positionnez la caméra</string>
+    <string name="position_start">Commencer l’exercice</string>
+    <string name="position_start_hint">Le démarrage sera disponible quand la caméra gardera les parties requises dans le cadre un instant.</string>
+    <string name="position_starting">Préparation de l’exercice…</string>
+    <string name="position_ready">Le cadrage est stable. Commencez quand vous êtes prêt.</string>
+    <string name="position_hold_still">Restez dans cette position pendant la vérification du cadrage.</string>
+    <string name="position_uncertain">Le mouvement n’est pas encore clair. Essayez d’ajuster la lumière ou la position du téléphone.</string>
+    <string name="position_show_parts">Gardez ensemble les parties requises du corps visibles.</string>
+    <string name="position_move_back">Éloignez-vous pour que tout le mouvement tienne dans l’aperçu.</string>
+    <string name="position_move_closer">Rapprochez-vous pour occuper davantage l’aperçu.</string>
+    <string name="position_center_body">Placez-vous vers le centre de l’aperçu.</string>
+</resources>

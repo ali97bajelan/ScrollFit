@@ -27,6 +27,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.camera.CameraViewport
+import com.example.scrollfit.guide.ExerciseGuideDetails
+import com.example.scrollfit.guide.GuideOverlay
 import com.example.scrollfit.core.budget.*
 import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
@@ -104,12 +106,6 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         var cameraState by remember(activeSession.challenge.id) {
             mutableStateOf(CameraPoseState(CameraPoseStatus.INITIALIZING))
         }
-        val instruction = when (activeSession.challenge.exercise) {
-            Exercise.PUSH_UP -> R.string.push_up_counter_guidance
-            Exercise.SQUAT -> R.string.squat_counter_guidance
-            Exercise.JUMPING_JACK -> R.string.jumping_jack_counter_guidance
-            Exercise.ALTERNATING_KNEE_RAISE -> R.string.knee_raise_counter_guidance
-        }
         WorkoutContent(
             modifier = Modifier.fillMaxSize(),
             state = WorkoutUiState(activeSession.challenge.id, flow.repetitions,
@@ -120,12 +116,20 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
             onSpeechRetry = { flow.updateSpeechEnabled(flow.speechEnabled) }, onEnd = { close() },
             helpContent = {
                 Text(stringResource(R.string.camera_privacy))
-                Text(stringResource(instruction))
+                ExerciseGuideDetails(activeSession.challenge.exercise)
                 Text(stringResource(R.string.challenge_active_notice))
             },
             preview = { previewModifier ->
                 CameraViewport(exercise = activeSession.challenge.exercise, camera = flow.camera,
-                    runKey = activeSession.challenge.id, modifier = previewModifier) { next ->
+                    runKey = activeSession.challenge.id, modifier = previewModifier,
+                    overlay = { overlayState ->
+                        GuideOverlay(exercise = activeSession.challenge.exercise,
+                            imageWidth = overlayState.imageWidth, imageHeight = overlayState.imageHeight,
+                            mirrored = overlayState.mirrored,
+                            visible = overlayState.status != CameraPoseStatus.TRACKING ||
+                                overlayState.progress?.trackingAvailable != true,
+                            modifier = Modifier.fillMaxSize())
+                    }) { next ->
                     cameraState = next
                     flow.cameraStateChanged(activeSession.challenge.id, next)
                 }

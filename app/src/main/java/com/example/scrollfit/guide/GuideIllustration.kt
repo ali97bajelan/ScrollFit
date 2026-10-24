@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ fun GuideMovementIllustration(
     pose: GuidePose,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    decorative: Boolean = false,
 ) {
     val background = MaterialTheme.colorScheme.surfaceContainerLow
     val figure = MaterialTheme.colorScheme.primary
@@ -35,7 +37,9 @@ fun GuideMovementIllustration(
             .fillMaxWidth()
             .aspectRatio(1.65f)
             .clip(RoundedCornerShape(16.dp))
-            .semantics { this.contentDescription = contentDescription },
+            .then(if (decorative) Modifier.clearAndSetSemantics {} else Modifier.semantics {
+                this.contentDescription = contentDescription
+            }),
     ) {
         drawRect(background)
         when (pose) {
@@ -63,6 +67,7 @@ fun GuidePhonePlacementIllustration(
     artwork: GuidePlacementArtwork,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    decorative: Boolean = false,
 ) {
     val background = MaterialTheme.colorScheme.surfaceContainerLow
     val figure = MaterialTheme.colorScheme.primary
@@ -73,7 +78,9 @@ fun GuidePhonePlacementIllustration(
             .fillMaxWidth()
             .aspectRatio(1.7f)
             .clip(RoundedCornerShape(16.dp))
-            .semantics { this.contentDescription = contentDescription },
+            .then(if (decorative) Modifier.clearAndSetSemantics {} else Modifier.semantics {
+                this.contentDescription = contentDescription
+            }),
     ) {
         drawRect(background)
         if (artwork == GuidePlacementArtwork.SIDE_PROFILE) {

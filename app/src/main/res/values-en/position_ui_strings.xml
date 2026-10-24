@@ -1,0 +1,20 @@
+<resources>
+    <string name="position_learn_title">Exercise guide</string>
+    <string name="position_movement_steps">Movement steps</string>
+    <string name="position_step_number">Step %1$d</string>
+    <string name="position_starting_position">Starting position</string>
+    <string name="position_one_repetition">One repetition</string>
+    <string name="position_body_coverage">Body parts to keep in view</string>
+    <string name="position_continue">Continue to positioning</string>
+    <string name="position_title">Position your camera</string>
+    <string name="position_start">Start workout</string>
+    <string name="position_start_hint">Start becomes available after the camera confirms the required body parts stay in frame.</string>
+    <string name="position_starting">Preparing your workout…</string>
+    <string name="position_ready">Your framing is stable. Start when you are ready.</string>
+    <string name="position_hold_still">Hold this position while the camera confirms your framing.</string>
+    <string name="position_uncertain">Movement is not clear yet. Try adjusting the lighting or phone position.</string>
+    <string name="position_show_parts">Keep the required body parts in view together.</string>
+    <string name="position_move_back">Move farther away so the full movement fits in the preview.</string>
+    <string name="position_move_closer">Move closer so your body fills more of the preview.</string>
+    <string name="position_center_body">Move toward the center of the preview.</string>
+</resources>

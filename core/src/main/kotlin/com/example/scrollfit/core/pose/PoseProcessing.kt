@@ -110,14 +110,22 @@ class PoseSessionGate(private val maxFrameAgeMs: Long = 250) {
 }
 
 /** FIT_CENTER pixel projection; front mirroring never changes body landmark indices. */
+data class PreviewImageRect(val left: Float, val top: Float, val width: Float, val height: Float)
+
 object PreviewProjection {
-    fun point(x: Float, y: Float, imageWidth: Int, imageHeight: Int,
-              viewWidth: Float, viewHeight: Float, mirrored: Boolean): Pair<Float, Float> {
+    /** The actual camera image area inside a FIT_CENTER preview, excluding letterbox bars. */
+    fun imageRect(imageWidth: Int, imageHeight: Int, viewWidth: Float, viewHeight: Float): PreviewImageRect {
         require(imageWidth > 0 && imageHeight > 0 && viewWidth > 0 && viewHeight > 0)
         val scale = minOf(viewWidth / imageWidth, viewHeight / imageHeight)
         val width = imageWidth * scale
         val height = imageHeight * scale
-        return (viewWidth - width) / 2 + (if (mirrored) 1 - x else x) * width to
-            (viewHeight - height) / 2 + y * height
+        return PreviewImageRect((viewWidth - width) / 2f, (viewHeight - height) / 2f, width, height)
+    }
+
+    fun point(x: Float, y: Float, imageWidth: Int, imageHeight: Int,
+              viewWidth: Float, viewHeight: Float, mirrored: Boolean): Pair<Float, Float> {
+        val image = imageRect(imageWidth, imageHeight, viewWidth, viewHeight)
+        return image.left + (if (mirrored) 1 - x else x) * image.width to
+            image.top + y * image.height
     }
 }

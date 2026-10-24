@@ -40,6 +40,8 @@ internal fun interface CameraRunFactory {
         camera: CameraChoice, onState: (CameraPoseState) -> Unit): AutoCloseable
 }
 
+private data class PreviewGeometry(val width: Int, val height: Int, val mirrored: Boolean)
+
 private object ProductionCameraRunFactory : CameraRunFactory {
     override fun open(context: Context, owner: LifecycleOwner, preview: PreviewView, exercise: Exercise,
         camera: CameraChoice, onState: (CameraPoseState) -> Unit): AutoCloseable {
@@ -61,6 +63,7 @@ internal fun CameraViewport(
     enabled: Boolean = true,
     debugOverlay: Boolean = false,
     runFactory: CameraRunFactory = ProductionCameraRunFactory,
+    overlay: @Composable (CameraPoseState) -> Unit = {},
     onState: (CameraPoseState) -> Unit,
 ) {
     val context = LocalContext.current
@@ -88,7 +91,7 @@ internal fun CameraViewport(
     }
 
     CameraViewportSurface(context, owner, preview, exercise, camera, runKey, modifier, enabled,
-        permission, resumed, debugOverlay, runFactory, onState)
+        permission, resumed, debugOverlay, runFactory, overlay, onState)
 }
 
 /** Session-owning surface with lifecycle inputs explicit for focused fake-camera tests. */
@@ -106,14 +109,19 @@ internal fun CameraViewportSurface(
     resumed: Boolean,
     debugOverlay: Boolean,
     runFactory: CameraRunFactory,
+    overlay: @Composable (CameraPoseState) -> Unit = {},
     onState: (CameraPoseState) -> Unit,
 ) {
     val currentCallback by rememberUpdatedState(onState)
-    var state by remember(runKey) { mutableStateOf(CameraPoseState(CameraPoseStatus.INITIALIZING)) }
+    var state by remember(runKey, exercise, camera) { mutableStateOf(CameraPoseState(CameraPoseStatus.INITIALIZING)) }
+    var lastGeometry by remember(runKey, exercise, camera) { mutableStateOf<PreviewGeometry?>(null) }
     DisposableEffect(owner, preview, exercise, camera, runKey, enabled, permission, resumed, runFactory) {
         var active = true
         val deliver: (CameraPoseState) -> Unit = { next ->
             if (active) {
+                if (next.imageWidth > 0 && next.imageHeight > 0) {
+                    lastGeometry = PreviewGeometry(next.imageWidth, next.imageHeight, next.mirrored)
+                }
                 state = next
                 currentCallback(next)
             }
@@ -139,6 +147,13 @@ internal fun CameraViewportSurface(
         if (enabled && resumed && permission) {
             AndroidView(factory = { preview }, modifier = Modifier.fillMaxSize())
             if (BuildConfig.DEBUG && debugOverlay && state.sample != null) PoseOverlay(state, Modifier.fillMaxSize())
+            val overlayState = if (state.imageWidth <= 0 || state.imageHeight <= 0) {
+                val geometry = lastGeometry
+                if (geometry != null && state.status in setOf(CameraPoseStatus.SEARCHING, CameraPoseStatus.TRACKING_LOST)) {
+                    state.copy(imageWidth = geometry.width, imageHeight = geometry.height, mirrored = geometry.mirrored)
+                } else state
+            } else state
+            overlay(overlayState)
         }
     }
 }

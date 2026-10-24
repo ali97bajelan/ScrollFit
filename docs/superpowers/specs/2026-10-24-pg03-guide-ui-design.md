@@ -1,6 +1,6 @@
 # PG03 — Learn, Position and camera overlay UI
 
-Status: proposed / not implemented. Depends on PG01–PG02. Shared requirements: [task register](../../EXERCISE_POSITION_GUIDE_TASKS.md).
+Status: implemented; automated and device QA not run. Depends on PG01–PG02. Shared requirements: [task register](../../EXERCISE_POSITION_GUIDE_TASKS.md).
 
 ## Outcome and layout
 
