@@ -1,6 +1,6 @@
 # PG01 — Exercise guide content and local illustrations
 
-Status: implemented; QA not run. Parent requirements and task register: [position-guide tasks](../../EXERCISE_POSITION_GUIDE_TASKS.md).
+Status: implemented; QA run on 2026-10-24 with 7 PASS and 2 FAIL. The remaining failures are documented in [PG01 QA](../../qa/position-guide/PG01.md). Parent requirements and task register: [position-guide tasks](../../EXERCISE_POSITION_GUIDE_TASKS.md).
 
 ## Outcome
 

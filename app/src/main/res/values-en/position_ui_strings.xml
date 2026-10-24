@@ -2,9 +2,15 @@
     <string name="position_learn_title">Exercise guide</string>
     <string name="position_movement_steps">Movement steps</string>
     <string name="position_step_number">Step %1$d</string>
+    <string name="position_demo_play">Play</string>
+    <string name="position_demo_pause">Pause</string>
+    <string name="position_demo_previous">Previous</string>
+    <string name="position_demo_next">Next</string>
+    <string name="position_demo_step_position">Step %1$d of %2$d</string>
     <string name="position_starting_position">Starting position</string>
     <string name="position_one_repetition">One repetition</string>
     <string name="position_body_coverage">Body parts to keep in view</string>
+    <string name="position_recovery">If counting stops</string>
     <string name="position_continue">Continue to positioning</string>
     <string name="position_review_guide">Review exercise guide</string>
     <string name="position_countdown_hint">Starting in %1$s. Repetitions are not counted during the countdown.</string>

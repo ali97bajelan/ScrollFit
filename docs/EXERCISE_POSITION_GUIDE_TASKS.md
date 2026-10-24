@@ -1,6 +1,6 @@
 # Exercise position guides — tasks, specifications, plans and QA
 
-Created: 2026-10-24. Status: **PG01–PG05 implemented; QA not run. PG06 remains pending.** PG01 follows the proposed content and artwork requirements below; PG01–PG05 have not been qualified on devices or with assistive technology.
+Created: 2026-10-24. Status: **PG01–PG05 implemented; PG01 QA run with 7 PASS and 2 FAIL; PG02–PG05 QA not run. PG06 remains pending.** PG01 follows the proposed content and artwork requirements below; its remaining QA failures are recorded in the [PG01 report](qa/position-guide/PG01.md).
 
 ## Objective
 
@@ -55,7 +55,7 @@ Journey: **Prepare terms → Learn → Position → Start → 3–2–1 → Exer
 
 | ID | Deliverable | Depends on | Priority | Spec | Plan | QA | Status |
 |---|---|---|---|---|---|---|---|
-| PG01 | Four exercise guide definitions and movement illustrations | — | P0 | [Spec](superpowers/specs/2026-10-24-pg01-guide-content-design.md) | [Plan](superpowers/plans/2026-10-24-pg01-guide-content.md) | [Scenarios](qa/position-guide/PG01.md) | IMPLEMENTED — QA NOT RUN |
+| PG01 | Four exercise guide definitions and movement illustrations | — | P0 | [Spec](superpowers/specs/2026-10-24-pg01-guide-content-design.md) | [Plan](superpowers/plans/2026-10-24-pg01-guide-content.md) | [Scenarios](qa/position-guide/PG01.md) | IMPLEMENTED — QA FAILED (7 PASS, 2 FAIL); follow-up required |
 | PG02 | Deterministic framing evidence and stable readiness | PG01 | P0 | [Spec](superpowers/specs/2026-10-24-pg02-framing-design.md) | [Plan](superpowers/plans/2026-10-24-pg02-framing.md) | [Scenarios](qa/position-guide/PG02.md) | IMPLEMENTED — QA NOT RUN |
 | PG03 | Learn screen, Position screen and correctly aligned overlay | PG01, PG02 | P0 | [Spec](superpowers/specs/2026-10-24-pg03-guide-ui-design.md) | [Plan](superpowers/plans/2026-10-24-pg03-guide-ui.md) | [Scenarios](qa/position-guide/PG03.md) | IMPLEMENTED — QA NOT RUN |
 | PG04 | Explicit start, countdown and isolated camera/challenge runs | PG02, PG03 | P0 | [Spec](superpowers/specs/2026-10-24-pg04-workout-flow-design.md) | [Plan](superpowers/plans/2026-10-24-pg04-workout-flow.md) | [Scenarios](qa/position-guide/PG04.md) | IMPLEMENTED — QA NOT RUN |

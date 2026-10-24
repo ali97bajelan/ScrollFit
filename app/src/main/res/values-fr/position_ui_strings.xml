@@ -2,9 +2,15 @@
     <string name="position_learn_title">Guide de l’exercice</string>
     <string name="position_movement_steps">Étapes du mouvement</string>
     <string name="position_step_number">Étape %1$d</string>
+    <string name="position_demo_play">Lire</string>
+    <string name="position_demo_pause">Pause</string>
+    <string name="position_demo_previous">Précédent</string>
+    <string name="position_demo_next">Suivant</string>
+    <string name="position_demo_step_position">Étape %1$d sur %2$d</string>
     <string name="position_starting_position">Position de départ</string>
     <string name="position_one_repetition">Une répétition</string>
     <string name="position_body_coverage">Parties du corps à garder visibles</string>
+    <string name="position_recovery">Si le comptage s’arrête</string>
     <string name="position_continue">Continuer vers le placement</string>
     <string name="position_review_guide">Consulter le guide de l’exercice</string>
     <string name="position_countdown_hint">Début dans %1$s. Les répétitions ne sont pas comptées pendant le compte à rebours.</string>

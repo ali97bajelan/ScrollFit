@@ -2,9 +2,15 @@
     <string name="position_learn_title">راهنمای حرکت</string>
     <string name="position_movement_steps">مراحل حرکت</string>
     <string name="position_step_number">مرحلهٔ %1$d</string>
+    <string name="position_demo_play">پخش</string>
+    <string name="position_demo_pause">مکث</string>
+    <string name="position_demo_previous">قبلی</string>
+    <string name="position_demo_next">بعدی</string>
+    <string name="position_demo_step_position">مرحلهٔ %1$d از %2$d</string>
     <string name="position_starting_position">شروع حرکت</string>
     <string name="position_one_repetition">یک تکرار</string>
     <string name="position_body_coverage">بخش‌های لازم در تصویر</string>
+    <string name="position_recovery">اگر شمارش متوقف شد</string>
     <string name="position_continue">ادامه به جای‌گیری</string>
     <string name="position_review_guide">دیدن راهنمای حرکت</string>
     <string name="position_countdown_hint">شروع تا %1$s؛ تکرارهای شمارش معکوس حساب نمی‌شوند.</string>
