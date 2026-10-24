@@ -28,12 +28,15 @@ import androidx.lifecycle.Observer
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.pose.CountingProgress
 import com.example.scrollfit.core.pose.ExerciseCounter
+import com.example.scrollfit.core.pose.FramingContinuityTracker
+import com.example.scrollfit.core.pose.FramingObservation
 import com.example.scrollfit.core.pose.PoseFilter
 import com.example.scrollfit.core.pose.PoseSample
 import com.example.scrollfit.core.pose.PoseSessionGate
 import com.example.scrollfit.core.pose.TrackingState
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 enum class CameraPoseStatus {
@@ -49,6 +52,8 @@ data class CameraPoseState(
     val mirrored: Boolean = false,
     val progress: CountingProgress? = null,
     val timestampMs: Long? = null,
+    val framing: FramingObservation? = null,
+    val framingResetSerial: Long = 0,
 )
 
 /** Main-thread owner. Each instance is confined to one visible screen/lens choice. */
@@ -61,6 +66,8 @@ class CameraPoseSession(
     alternativeRequiredLandmarks: Set<Int> = emptySet(),
     /** Each owned camera run has a fresh counter; the challenge owner invalidates on restart. */
     private val counter: ExerciseCounter? = null,
+    /** Evaluates raw samples before filtering; null preserves existing callers. */
+    private val framingEvaluator: ((PoseSample?, Long) -> FramingObservation)? = null,
     private val onState: (CameraPoseState) -> Unit,
 ) : LifecycleEventObserver, AutoCloseable {
     private val context = context.applicationContext
@@ -68,6 +75,8 @@ class CameraPoseSession(
     private val worker = Executors.newSingleThreadExecutor()
     private val gate = PoseSessionGate()
     private val filter = PoseFilter(requiredLandmarks, alternativeRequiredLandmarks = alternativeRequiredLandmarks)
+    private val framingContinuity = FramingContinuityTracker()
+    private val latestFramingResetSerial = AtomicLong(0)
     private data class Delivery(val token: Long, val timestampMs: Long, val state: CameraPoseState)
     private val pending = AtomicReference<Delivery?>(null)
     private val deliveryPosted = AtomicBoolean(false)
@@ -108,7 +117,7 @@ class CameraPoseSession(
                 lastDeliveryMs = SystemClock.elapsedRealtime()
                 val state = if (gate.isFresh(update.token, update.timestampMs, lastDeliveryMs)) update.state
                     else update.state.copy(status = CameraPoseStatus.TRACKING_LOST, sample = null,
-                        progress = update.state.progress?.copy(trackingAvailable = false))
+                        progress = update.state.progress?.copy(trackingAvailable = false), framing = null)
                 emit(state.copy(timestampMs = update.timestampMs))
             }
             if (pending.get() != null && deliveryPosted.compareAndSet(false, true)) main.post(this)
@@ -180,6 +189,7 @@ class CameraPoseSession(
                     try {
                         model = MediaPipePoseEstimator(context)
                         filter.reset()
+                        latestFramingResetSerial.set(framingContinuity.reset())
                         main.post { if (gate.isCurrent(current)) bindWhenLaidOut(current, available) }
                     } catch (_: Exception) {
                         main.post { fail(current, CameraPoseStatus.MODEL_ERROR) }
@@ -257,17 +267,27 @@ class CameraPoseSession(
             cropped = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height())
             upright = uprightBitmap(cropped, image.imageInfo.rotationDegrees)
             val sample = model?.estimate(upright, timestamp)
+            val framing = framingEvaluator?.invoke(sample, timestamp)
             val filtered = filter.accept(sample, timestamp)
             if (SystemClock.elapsedRealtime() - timestamp > 250) {
                 filter.reset()
                 val progress = counter?.accept(null, timestamp)
-                publish(current, timestamp, CameraPoseState(CameraPoseStatus.TRACKING_LOST, progress = progress))
+                val serial = framingContinuity.observe(framing, trackingAvailable = false,
+                    nowMs = SystemClock.elapsedRealtime())
+                latestFramingResetSerial.set(serial)
+                publish(current, timestamp, CameraPoseState(CameraPoseStatus.TRACKING_LOST,
+                    progress = progress, framingResetSerial = serial))
                 return
             }
             if (!gate.isCurrent(current)) return
             // Each fresh raw inference reaches the detector on this serial worker.
             // UI delivery below may coalesce; do not run counting from that stream.
             val progress = counter?.accept(sample, timestamp)
+            val trackingAvailable = filtered.tracking == TrackingState.TRACKING &&
+                (progress?.trackingAvailable ?: true)
+            val serial = framingContinuity.observe(framing, trackingAvailable,
+                nowMs = SystemClock.elapsedRealtime())
+            latestFramingResetSerial.set(serial)
             val status = if (progress != null && !progress.trackingAvailable) {
                 if (filtered.tracking == TrackingState.SEARCHING) CameraPoseStatus.SEARCHING
                 else CameraPoseStatus.TRACKING_LOST
@@ -277,7 +297,7 @@ class CameraPoseSession(
                 TrackingState.SEARCHING -> CameraPoseStatus.SEARCHING
             }
             publish(current, timestamp, CameraPoseState(status, filtered.sample, upright.width, upright.height,
-                choice == CameraChoice.FRONT, progress))
+                choice == CameraChoice.FRONT, progress, framing = framing, framingResetSerial = serial))
         } catch (_: Exception) {
             main.post { fail(current, CameraPoseStatus.INFERENCE_ERROR) }
         } finally {
@@ -297,7 +317,15 @@ class CameraPoseSession(
 
     private fun emit(state: CameraPoseState) {
         lastStatus = state.status
-        onState(state)
+        val clearsFraming = when (state.status) {
+            CameraPoseStatus.INITIALIZING, CameraPoseStatus.PAUSED, CameraPoseStatus.PERMISSION_REQUIRED,
+            CameraPoseStatus.CAMERA_UNAVAILABLE, CameraPoseStatus.CAMERA_ERROR,
+            CameraPoseStatus.MODEL_ERROR, CameraPoseStatus.INFERENCE_ERROR -> true
+            CameraPoseStatus.SEARCHING, CameraPoseStatus.TRACKING,
+            CameraPoseStatus.TRACKING_LOST -> false
+        }
+        onState(state.copy(framing = if (clearsFraming) null else state.framing,
+            framingResetSerial = maxOf(state.framingResetSerial, latestFramingResetSerial.get())))
     }
 
     private fun fail(current: Long, status: CameraPoseStatus) {
@@ -328,10 +356,12 @@ class CameraPoseSession(
             try { model?.close() } finally {
                 model = null
                 filter.reset()
+                latestFramingResetSerial.set(framingContinuity.reset())
                 counter?.reset()
             }
         }
-        emit(CameraPoseState(CameraPoseStatus.PAUSED))
+        emit(CameraPoseState(CameraPoseStatus.PAUSED,
+            framingResetSerial = latestFramingResetSerial.get()))
     }
 
     override fun close() {

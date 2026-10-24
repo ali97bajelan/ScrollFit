@@ -23,9 +23,11 @@ import com.example.scrollfit.BuildConfig
 import com.example.scrollfit.core.data.CameraChoice
 import com.example.scrollfit.core.exercise.AlternatingKneeRaiseCounter
 import com.example.scrollfit.core.exercise.Exercise
+import com.example.scrollfit.core.exercise.ExerciseGuides
 import com.example.scrollfit.core.exercise.JumpingJackCounter
 import com.example.scrollfit.core.exercise.PushUpCounter
 import com.example.scrollfit.core.exercise.SquatCounter
+import com.example.scrollfit.core.pose.FramingEvaluator
 import com.example.scrollfit.core.pose.PreviewProjection
 import com.example.scrollfit.platform.pose.CameraPoseSession
 import com.example.scrollfit.platform.pose.CameraPoseState
@@ -40,10 +42,13 @@ internal fun interface CameraRunFactory {
 
 private object ProductionCameraRunFactory : CameraRunFactory {
     override fun open(context: Context, owner: LifecycleOwner, preview: PreviewView, exercise: Exercise,
-        camera: CameraChoice, onState: (CameraPoseState) -> Unit): AutoCloseable =
-        CameraPoseSession(context, owner, preview, camera, requiredFor(exercise),
-            alternativeRequiredLandmarks = if (exercise == Exercise.PUSH_UP) setOf(12, 14, 16, 24) else emptySet(),
+        camera: CameraChoice, onState: (CameraPoseState) -> Unit): AutoCloseable {
+        val groups = ExerciseGuides.forExercise(exercise).requiredLandmarkGroups
+        return CameraPoseSession(context, owner, preview, camera, groups.first(),
+            alternativeRequiredLandmarks = groups.drop(1).firstOrNull().orEmpty(),
+            framingEvaluator = { sample, timestamp -> FramingEvaluator.evaluate(exercise, sample, timestamp) },
             counter = counterFor(exercise), onState = onState)
+    }
 }
 
 /** Owns one preview and one fresh exercise counter for the lifetime of [runKey]. */
@@ -143,13 +148,6 @@ private fun counterFor(exercise: Exercise) = when (exercise) {
     Exercise.SQUAT -> SquatCounter()
     Exercise.JUMPING_JACK -> JumpingJackCounter()
     Exercise.ALTERNATING_KNEE_RAISE -> AlternatingKneeRaiseCounter()
-}
-
-private fun requiredFor(exercise: Exercise): Set<Int> = when (exercise) {
-    Exercise.PUSH_UP -> setOf(11, 13, 15, 23)
-    Exercise.SQUAT -> setOf(11, 12, 23, 24, 25, 26, 27, 28)
-    Exercise.JUMPING_JACK -> setOf(11, 12, 15, 16, 23, 24, 27, 28)
-    Exercise.ALTERNATING_KNEE_RAISE -> setOf(11, 12, 23, 24, 25, 26, 27, 28)
 }
 
 private fun hasCameraPermission(context: Context) =

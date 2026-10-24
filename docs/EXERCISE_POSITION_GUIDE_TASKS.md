@@ -1,6 +1,6 @@
 # Exercise position guides — tasks, specifications, plans and QA
 
-Created: 2026-10-24. Status: **PG01 implemented; QA not run. PG02–PG06 remain pending.** PG01 follows the proposed content and artwork requirements below; camera behavior and usability have not been qualified.
+Created: 2026-10-24. Status: **PG01–PG02 implemented; QA not run. PG03–PG06 remain pending.** PG01 follows the proposed content and artwork requirements below; PG02 framing behavior and usability have not been qualified.
 
 ## Objective
 
@@ -56,7 +56,7 @@ Journey: **Prepare terms → Learn → Position → Start → 3–2–1 → Exer
 | ID | Deliverable | Depends on | Priority | Spec | Plan | QA | Status |
 |---|---|---|---|---|---|---|---|
 | PG01 | Four exercise guide definitions and movement illustrations | — | P0 | [Spec](superpowers/specs/2026-10-24-pg01-guide-content-design.md) | [Plan](superpowers/plans/2026-10-24-pg01-guide-content.md) | [Scenarios](qa/position-guide/PG01.md) | IMPLEMENTED — QA NOT RUN |
-| PG02 | Deterministic framing evidence and stable readiness | PG01 | P0 | [Spec](superpowers/specs/2026-10-24-pg02-framing-design.md) | [Plan](superpowers/plans/2026-10-24-pg02-framing.md) | [Scenarios](qa/position-guide/PG02.md) | TODO |
+| PG02 | Deterministic framing evidence and stable readiness | PG01 | P0 | [Spec](superpowers/specs/2026-10-24-pg02-framing-design.md) | [Plan](superpowers/plans/2026-10-24-pg02-framing.md) | [Scenarios](qa/position-guide/PG02.md) | IMPLEMENTED — QA NOT RUN |
 | PG03 | Learn screen, Position screen and correctly aligned overlay | PG01, PG02 | P0 | [Spec](superpowers/specs/2026-10-24-pg03-guide-ui-design.md) | [Plan](superpowers/plans/2026-10-24-pg03-guide-ui.md) | [Scenarios](qa/position-guide/PG03.md) | TODO |
 | PG04 | Explicit start, countdown and isolated camera/challenge runs | PG02, PG03 | P0 | [Spec](superpowers/specs/2026-10-24-pg04-workout-flow-design.md) | [Plan](superpowers/plans/2026-10-24-pg04-workout-flow.md) | [Scenarios](qa/position-guide/PG04.md) | TODO |
 | PG05 | Localized accessible prompts and offline audio arbitration | PG02–PG04 | P0 | [Spec](superpowers/specs/2026-10-24-pg05-accessible-feedback-design.md) | [Plan](superpowers/plans/2026-10-24-pg05-accessible-feedback.md) | [Scenarios](qa/position-guide/PG05.md) | TODO |

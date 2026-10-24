@@ -1,6 +1,6 @@
 # PG02 — Framing evidence and readiness
 
-Status: proposed / not implemented. Depends on PG01. Shared constraints: [task register](../../EXERCISE_POSITION_GUIDE_TASKS.md).
+Status: implemented; automated and device QA not run. Depends on PG01. Shared constraints: [task register](../../EXERCISE_POSITION_GUIDE_TASKS.md).
 
 ## Outcome
 
