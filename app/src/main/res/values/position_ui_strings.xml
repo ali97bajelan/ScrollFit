@@ -6,6 +6,9 @@
     <string name="position_one_repetition">یک تکرار</string>
     <string name="position_body_coverage">بخش‌های لازم در تصویر</string>
     <string name="position_continue">ادامه به جای‌گیری</string>
+    <string name="position_review_guide">دیدن راهنمای حرکت</string>
+    <string name="position_countdown_hint">شروع تا %1$s؛ تکرارهای شمارش معکوس حساب نمی‌شوند.</string>
+    <string name="position_changed_retry">جای شما تغییر کرد. دوباره در کادر قرار بگیرید و تمرین را شروع کنید.</string>
     <string name="position_title">جای‌گیری دوربین</string>
     <string name="position_start">شروع تمرین</string>
     <string name="position_start_hint">شروع وقتی فعال می‌شود که دوربین بخش‌های لازم را برای مدتی در کادر ببیند.</string>

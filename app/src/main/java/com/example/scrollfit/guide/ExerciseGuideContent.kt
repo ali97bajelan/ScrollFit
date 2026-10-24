@@ -20,6 +20,7 @@ fun ExerciseGuideContent(
     exercise: Exercise,
     onContinue: () -> Unit,
     onClose: () -> Unit,
+    headerContent: @Composable ColumnScope.() -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
@@ -27,6 +28,7 @@ fun ExerciseGuideContent(
         val shortLandscape = maxWidth >= 560.dp && maxHeight < 420.dp
         Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             GuideScreenHeader(exercise)
+            headerContent()
             if (shortLandscape) {
                 Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(Modifier.weight(0.9f).fillMaxHeight().verticalScroll(rememberScrollState()),

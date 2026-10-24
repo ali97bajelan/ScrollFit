@@ -6,6 +6,9 @@
     <string name="position_one_repetition">One repetition</string>
     <string name="position_body_coverage">Body parts to keep in view</string>
     <string name="position_continue">Continue to positioning</string>
+    <string name="position_review_guide">Review exercise guide</string>
+    <string name="position_countdown_hint">Starting in %1$s. Repetitions are not counted during the countdown.</string>
+    <string name="position_changed_retry">Position changed. Get into view and start again.</string>
     <string name="position_title">Position your camera</string>
     <string name="position_start">Start workout</string>
     <string name="position_start_hint">Start becomes available after the camera confirms the required body parts stay in frame.</string>

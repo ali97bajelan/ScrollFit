@@ -13,7 +13,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.semantics
@@ -28,7 +30,10 @@ import com.example.scrollfit.R
 import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.camera.CameraViewport
 import com.example.scrollfit.guide.ExerciseGuideDetails
+import com.example.scrollfit.guide.ExerciseGuideContent
 import com.example.scrollfit.guide.GuideOverlay
+import com.example.scrollfit.guide.PositionContent
+import com.example.scrollfit.guide.PositionUiState
 import com.example.scrollfit.core.budget.*
 import com.example.scrollfit.core.challenge.ChallengePhase
 import com.example.scrollfit.core.data.*
@@ -40,11 +45,14 @@ import com.example.scrollfit.feedback.AudioStatus
 import androidx.compose.ui.platform.testTag
 import com.example.scrollfit.ui.ProductFormatters
 import kotlinx.coroutines.delay
+import java.text.NumberFormat
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise: Exercise? = null,
     onClose: () -> Unit, registerCancellation: ((() -> Unit)?) -> Unit = {}) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val owner = LocalLifecycleOwner.current
     val accessibility = remember(context) { context.getSystemService(AccessibilityManager::class.java) }
     val flow = remember(mode, target, initialExercise) {
@@ -52,12 +60,39 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
     }
     var permission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context,
         Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) }
-    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permission = it }
+    var permissionRequestInFlight by remember { mutableStateOf(false) }
+    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        permissionRequestInFlight = false
+        permission = it
+    }
+    fun requestCameraPermission() {
+        permissionRequestInFlight = true
+        request.launch(Manifest.permission.CAMERA)
+    }
     var returnError by remember { mutableStateOf(false) }
+    val journey = remember(flow) {
+        GuideJourney(flow.scope, flow.monotonicClock, flow::startForGuide, flow::cancelStartedChallenge,
+            flow::activateStartedChallenge, flow::challengeIsCurrent, onChallengeExpired = flow::load,
+            initiallyPermissionGranted = permission)
+    }
+    var exitAfterCancellation by remember(flow) { mutableStateOf(false) }
+    var showingPositionHelp by remember(flow) { mutableStateOf(false) }
     LaunchedEffect(flow) { flow.load() }
+    LaunchedEffect(permission, journey) { journey.permissionChanged(permission) }
     LaunchedEffect(owner, flow) {
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            while (true) { delay(250); flow.checkDay(); flow.audio.controller.tick() }
+            while (true) { delay(100); flow.checkDay(); flow.audio.controller.tick(); journey.tick() }
+        }
+    }
+    LaunchedEffect(flow.result) { if (flow.result != null) journey.showResult() }
+    LaunchedEffect(exitAfterCancellation, journey.cancellationPending, journey.cancellationError,
+        journey.startInFlight, flow.cancellationPending, flow.error, flow.interrupted) {
+        val flowCancellationFailed = flow.interrupted && flow.error
+        if (exitAfterCancellation && !journey.cancellationPending && !journey.cancellationError &&
+            !journey.startInFlight && !flow.cancellationPending && !flowCancellationFailed) {
+            exitAfterCancellation = false
+            flow.audio.close()
+            onClose()
         }
     }
     DisposableEffect(owner, accessibility, flow) {
@@ -87,21 +122,144 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
         onDispose { stopListening(); owner.lifecycle.removeObserver(observer) }
     }
     DisposableEffect(owner, flow) {
-        registerCancellation(flow::interrupt)
+        fun interrupt() { journey.interrupt(); flow.interrupt() }
+        registerCancellation(::interrupt)
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE) flow.interrupt()
+            if (event == Lifecycle.Event.ON_PAUSE && !permissionRequestInFlight) interrupt()
             if (event == Lifecycle.Event.ON_RESUME) {
                 flow.resume()
                 permission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
             }
         }
         owner.lifecycle.addObserver(observer)
-        onDispose { flow.interrupt(); flow.audio.close(); registerCancellation(null); owner.lifecycle.removeObserver(observer) }
+        onDispose { interrupt(); flow.audio.close(); registerCancellation(null); owner.lifecycle.removeObserver(observer) }
     }
-    fun close() { flow.interrupt(); onClose() }
-    BackHandler { close() }
+    fun close() { journey.interrupt(); flow.interrupt(); onClose() }
+    fun requestClose() {
+        val journeyCancellation = journey.stage in setOf(GuideStage.STARTING, GuideStage.COUNTDOWN) ||
+            journey.startInFlight || journey.cancellationPending || journey.cancellationError
+        val flowCancellation = flow.interrupted && (flow.cancellationPending || flow.error)
+        if (journeyCancellation || flowCancellation) {
+            exitAfterCancellation = true
+            if (!journey.cancellationError && !flow.error) {
+                journey.interrupt()
+                flow.interrupt()
+            }
+        } else close()
+    }
+    BackHandler { requestClose() }
     val session = flow.session
-    if (session != null && flow.phase in setOf(ChallengePhase.RUNNING, ChallengePhase.SAVING)) {
+    if (journey.stage == GuideStage.LEARN) {
+        ExerciseGuideContent(exercise = journey.exercise ?: flow.exercise,
+            onContinue = {
+                journey.continueToPosition()
+                if (!permission) requestCameraPermission()
+            }, onClose = { close() }, modifier = Modifier.fillMaxSize())
+        return
+    }
+    if (journey.stage in setOf(GuideStage.POSITION, GuideStage.STARTING, GuideStage.COUNTDOWN)) {
+        val positionRunKey = journey.positionRunKey ?: return
+        var cameraState by remember(positionRunKey) {
+            mutableStateOf(CameraPoseState(CameraPoseStatus.INITIALIZING))
+        }
+        val countdownText = journey.countdownRemaining?.let { remaining ->
+            NumberFormat.getIntegerInstance(configuration.locales[0]).format(remaining)
+        }
+        val startAllowed = permission && flow.offer is OfferResult.Available && !flow.busy &&
+            !flow.cancellationPending && !journey.cancellationPending && !journey.startInFlight
+        PositionContent(
+            state = PositionUiState(exercise = journey.exercise ?: flow.exercise, camera = flow.camera,
+                issue = cameraState.framing?.issue, ready = journey.ready,
+                starting = journey.stage == GuideStage.STARTING || journey.cancellationPending,
+                status = cameraState.status, startAllowed = startAllowed,
+                controlsEnabled = journey.stage == GuideStage.POSITION && !flow.busy && !journey.cancellationPending,
+                countdownText = countdownText),
+            onStart = { journey.requestStart(startAllowed) },
+            onCameraChanged = { choice -> journey.resetPosition(); flow.chooseCamera(choice) },
+            onHelp = { showingPositionHelp = true }, onClose = { requestClose() },
+            onRequestPermission = { requestCameraPermission() },
+            onOpenSettings = {
+                context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    android.net.Uri.parse("package:${context.packageName}")))
+            }, onRetryCamera = { journey.resetPosition() },
+            recoveryContent = {
+                if (journey.positionChanged) Text(stringResource(R.string.position_changed_retry),
+                    color = MaterialTheme.colorScheme.primary)
+                if (journey.startError || flow.error) Text(stringResource(R.string.challenge_storage_error),
+                    color = MaterialTheme.colorScheme.error)
+                if (journey.cancellationPending) Text(stringResource(R.string.challenge_cancel_pending))
+                if (journey.cancellationError) {
+                    Text(stringResource(R.string.challenge_storage_error), color = MaterialTheme.colorScheme.error)
+                    OutlinedButton(onClick = journey::retryCancellation,
+                        enabled = !journey.cancellationPending, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.camera_retry))
+                    }
+                }
+            },
+            preview = { previewModifier ->
+                Box(previewModifier, contentAlignment = Alignment.Center) {
+                    CameraViewport(exercise = journey.exercise ?: flow.exercise, camera = flow.camera,
+                        runKey = positionRunKey, modifier = Modifier.fillMaxSize(),
+                        overlay = { overlayState ->
+                            GuideOverlay(exercise = journey.exercise ?: flow.exercise,
+                                imageWidth = overlayState.imageWidth, imageHeight = overlayState.imageHeight,
+                                mirrored = overlayState.mirrored, visible = true, modifier = Modifier.fillMaxSize())
+                        }) { next ->
+                        cameraState = next
+                        journey.observePosition(positionRunKey, next)
+                    }
+                    countdownText?.let { number ->
+                        Surface(shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)) {
+                            Text(number, style = MaterialTheme.typography.displayLarge,
+                                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp)
+                                    .semantics { liveRegion = LiveRegionMode.Assertive })
+                        }
+                    }
+                }
+            }, modifier = Modifier.fillMaxSize(),
+        )
+        if (showingPositionHelp) {
+            ModalBottomSheet(onDismissRequest = { showingPositionHelp = false }) {
+                Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.camera_privacy))
+                    ExerciseGuideDetails(journey.exercise ?: flow.exercise)
+                    OutlinedButton(onClick = { showingPositionHelp = false },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.workout_help_close))
+                    }
+                    Button(onClick = { requestClose() }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.challenge_close))
+                    }
+                }
+            }
+        }
+        return
+    }
+    if (journey.stage == GuideStage.INTERRUPTED && session == null) {
+        Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(stringResource(R.string.challenge_interrupted), style = MaterialTheme.typography.headlineSmall)
+            if (journey.cancellationPending || journey.startInFlight) Text(stringResource(R.string.challenge_cancel_pending))
+            if (journey.cancellationError) {
+                Text(stringResource(R.string.challenge_storage_error), color = MaterialTheme.colorScheme.error)
+                Button(onClick = journey::retryCancellation, enabled = !journey.cancellationPending) {
+                    Text(stringResource(R.string.camera_retry))
+                }
+            } else if (!journey.cancellationPending && !journey.startInFlight) {
+                Button(onClick = {
+                    journey.returnToPrepare()
+                    flow.load()
+                }) { Text(stringResource(R.string.challenge_new_attempt)) }
+            }
+            Spacer(Modifier.weight(1f))
+            OutlinedButton(onClick = { close() }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.challenge_close))
+            }
+        }
+        return
+    }
+    if (journey.stage == GuideStage.EXERCISE && session != null && flow.phase in setOf(ChallengePhase.RUNNING, ChallengePhase.SAVING)) {
         val activeSession = session
         var cameraState by remember(activeSession.challenge.id) {
             mutableStateOf(CameraPoseState(CameraPoseStatus.INITIALIZING))
@@ -169,13 +327,16 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
             else if (result is CompletionResult.Refused) Text(stringResource(result.reason.message()))
             if (flow.cameraModelError) {
                 Text(stringResource(R.string.camera_model_error))
-                if (!flow.error) Button(onClick = flow::reviewNewChallenge, enabled = !flow.cancellationPending) {
-                    Text(stringResource(R.string.challenge_new_attempt))
-                }
                 OutlinedButton(onClick = {
                     context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         android.net.Uri.parse("package:${context.packageName}")))
                 }) { Text(stringResource(R.string.camera_app_info)) }
+            }
+            if (flow.interrupted && !flow.error && !flow.cancellationPending) {
+                Button(onClick = {
+                    flow.reviewNewChallenge()
+                    journey.returnToPrepare()
+                }, enabled = !flow.busy) { Text(stringResource(R.string.challenge_new_attempt)) }
             }
             if (flow.error) {
                 Text(stringResource(R.string.challenge_storage_error))
@@ -210,23 +371,10 @@ fun ChallengeScreen(mode: ChallengeMode, target: String? = null, initialExercise
                         if (quote.offer.reduced) Text(stringResource(R.string.challenge_reduced))
                         if (flow.changed) Text(stringResource(R.string.challenge_offer_changed))
                         Text(stringResource(R.string.challenge_active_notice))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = { flow.chooseCamera(CameraChoice.REAR) }, enabled = !flow.busy) {
-                                Text(stringResource(R.string.camera_rear))
-                            }
-                            OutlinedButton(onClick = { flow.chooseCamera(CameraChoice.FRONT) }, enabled = !flow.busy) {
-                                Text(stringResource(R.string.camera_front))
-                            }
+                        Button(onClick = { journey.showGuide(flow.exercise) },
+                            enabled = !flow.busy && !flow.cancellationPending) {
+                            Text(stringResource(R.string.position_review_guide))
                         }
-                        Text(stringResource(if (flow.camera == CameraChoice.FRONT) R.string.camera_selected_front else R.string.camera_selected_rear))
-                        if (!permission) {
-                            Button(onClick = { request.launch(Manifest.permission.CAMERA) }) { Text(stringResource(R.string.camera_grant)) }
-                            OutlinedButton(onClick = {
-                                context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                    android.net.Uri.parse("package:${context.packageName}")))
-                            }) { Text(stringResource(R.string.camera_settings)) }
-                        }
-                        Button(onClick = flow::start, enabled = permission && !flow.busy) { Text(stringResource(R.string.challenge_start)) }
                     }
                     is OfferResult.Refused -> Text(stringResource(quote.reason.message()))
                     null -> Text(stringResource(R.string.challenge_loading))

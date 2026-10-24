@@ -6,6 +6,9 @@
     <string name="position_one_repetition">Une répétition</string>
     <string name="position_body_coverage">Parties du corps à garder visibles</string>
     <string name="position_continue">Continuer vers le placement</string>
+    <string name="position_review_guide">Consulter le guide de l’exercice</string>
+    <string name="position_countdown_hint">Début dans %1$s. Les répétitions ne sont pas comptées pendant le compte à rebours.</string>
+    <string name="position_changed_retry">Votre position a changé. Revenez dans le cadre et recommencez l’exercice.</string>
     <string name="position_title">Positionnez la caméra</string>
     <string name="position_start">Commencer l’exercice</string>
     <string name="position_start_hint">Le démarrage sera disponible quand la caméra gardera les parties requises dans le cadre un instant.</string>

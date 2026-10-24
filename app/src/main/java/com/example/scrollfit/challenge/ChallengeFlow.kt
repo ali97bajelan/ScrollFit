@@ -24,7 +24,8 @@ import java.util.UUID
 internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: ChallengeMode,
     private val initialTarget: String?, private val initialExercise: Exercise?) {
     private val persistence = app.persistence
-    private val scope = app.challengeScope
+    val scope = app.challengeScope
+    val monotonicClock = persistence.monotonicClock
     val audio = ChallengeAudio(app)
     private val feedbackAccessibility = FeedbackAccessibility(audio::setAudioEnabled)
     private var speechWrite: Job? = null
@@ -37,6 +38,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     private var engine: BudgetEngine? = null
     private var generation = 0L
     private var refreshOnResume = false
+    private var pendingStartedChallenge: Challenge? = null
     var targets by mutableStateOf<List<TargetApp>>(emptyList()); private set
     var target by mutableStateOf(initialTarget); private set
     var exercise by mutableStateOf(initialExercise ?: Exercise.PUSH_UP); private set
@@ -129,33 +131,64 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
         }
     }
 
-    fun start() {
-        val quote = (offer as? OfferResult.Available)?.offer ?: return
-        val policy = engine ?: return
-        if (busy || session != null) return
+    /** Creates the persisted row after explicit Start, but leaves reps/audio inactive through countdown. */
+    suspend fun startForGuide(): StartResult {
+        val quote = (offer as? OfferResult.Available)?.offer
+            ?: return StartResult.OfferChanged(offer ?: OfferResult.Refused(RewardBlock.INACTIVE))
+        val policy = engine ?: return StartResult.OfferChanged(offer ?: OfferResult.Refused(RewardBlock.INACTIVE))
+        if (busy || session != null || pendingStartedChallenge != null) {
+            return StartResult.OfferChanged(offer ?: OfferResult.Refused(RewardBlock.INACTIVE))
+        }
         busy = true; error = false; changed = false; interrupted = false
         val ticket = ++generation
-        scope.launch {
-            try {
-                persistence.preferences.update { it.copy(lastExercise = quote.exercise) }
-                if (ticket != generation) return@launch
+        return try {
+            persistence.preferences.update { it.copy(lastExercise = quote.exercise) }
+            if (ticket != generation) {
+                StartResult.OfferChanged(offer ?: OfferResult.Refused(RewardBlock.INACTIVE))
+            } else {
                 val started = policy.start(UUID.randomUUID().toString(), quote)
-                if (started is StartResult.Started) {
-                    if (ticket != generation) {
-                        persistence.repository().cancelChallenge(started.challenge.id)
-                        return@launch
+                if (ticket == generation) {
+                    if (started is StartResult.Started) pendingStartedChallenge = started.challenge
+                    else {
+                        offer = (started as StartResult.OfferChanged).current
+                        changed = true
                     }
-                    session = ChallengeSession(started.challenge, policy, persistence.wallClock, persistence.monotonicClock)
-                    phase = ChallengePhase.RUNNING
-                    audio.controller.begin()
-                } else if (ticket == generation) {
-                    offer = (started as StartResult.OfferChanged).current; changed = true
                 }
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { if (ticket == generation) error = true }
-            finally { if (ticket == generation) busy = false }
+                started
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            if (ticket == generation) error = true
+            throw failure
+        } finally {
+            if (ticket == generation) busy = false
         }
     }
+
+    /** Activates only the exact row returned for the current countdown. */
+    fun activateStartedChallenge(id: String) {
+        val challenge = checkNotNull(pendingStartedChallenge?.takeIf { it.id == id }) {
+            "The started challenge is no longer pending"
+        }
+        val policy = checkNotNull(engine) { "Challenge policy is unavailable" }
+        pendingStartedChallenge = null
+        session = ChallengeSession(challenge, policy, persistence.wallClock, persistence.monotonicClock)
+        phase = ChallengePhase.RUNNING
+        result = null
+        repetitions = 0
+        interrupted = false
+        cameraModelError = false
+        audio.controller.begin()
+    }
+
+    suspend fun cancelStartedChallenge(id: String) {
+        persistence.repository().cancelChallenge(id)
+        if (pendingStartedChallenge?.id == id) pendingStartedChallenge = null
+    }
+
+    fun challengeIsCurrent(challenge: Challenge): Boolean =
+        challenge.day == persistence.wallClock.localDate().toString()
 
     private var tracking = false
     fun trackingChanged(available: Boolean) {
@@ -212,7 +245,7 @@ internal class ChallengeFlow(private val app: ScrollFitApplication, val mode: Ch
     fun recordCameraModelError() { cameraModelError = true }
 
     fun reviewNewChallenge() {
-        if (!interrupted || !cameraModelError || cancellationPending || error) return
+        if (!interrupted || cancellationPending || error) return
         session = null
         phase = null
         result = null
