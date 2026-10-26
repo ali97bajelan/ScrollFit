@@ -53,7 +53,7 @@ Reject recycled input before native entry. Capture dimensions/aspect before disp
 
 Prepare and execute current [T02](../../T02_PHONE_TEST.md), [T05](../../T05_PHONE_TEST.md), [T11](../../T11_PHONE_TEST.md), [T13](../../T13_PHONE_TEST.md) and T16 in `exercise_gate_tasks.md`. Use at least two eligible apps. Cover per-app and combined blocking, short-session Continue/Finish, all four exercises through advance and blocker earning, exercise-only/trial isolation, reduced/full/refused rewards, duplicate completions, kill/restart/rebind/reboot, permission loss, midnight and airplane-mode operation.
 
-Include slow storage + Settings/Home/self transition, queue overflow/staleness, prompt races, overlay removal failure, keyboard/dialog/lock/split-screen/PiP and long idle/non-target coverage. The intended qualification device is Xiaomi Mi 11 Lite NE / Android 14 API 34. Emulator results complement it. If unavailable, keep intended-device qualification blocked. Device-bound cursors must not charge guessed downtime or suppress a different device's observations.
+Include slow storage + Settings/Home/self transition, queue overflow/staleness, prompt races, overlay removal failure, keyboard/dialog/lock/split-screen/PiP and long idle/non-target coverage. The intended qualification device is physical Android 14 / API 34 phone. Emulator results complement it. If unavailable, keep intended-device qualification blocked. Device-bound cursors must not charge guessed downtime or suppress a different device's observations.
 
 ## I04 — Guide requalification
 

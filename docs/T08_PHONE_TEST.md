@@ -1,6 +1,6 @@
 # T08 squat phone checks — all pending
 
-Intended device: Xiaomi Mi 11 Lite NE, Android 14. Android compilation is
+Intended device: physical Android 14 phone. Android compilation is
 blocked and no installable APK is available. Complete the
 [T06 camera checks](T06_PHONE_TEST.md) before these actual-device trials.
 Synthetic sequences validate detector logic, not physical accuracy.

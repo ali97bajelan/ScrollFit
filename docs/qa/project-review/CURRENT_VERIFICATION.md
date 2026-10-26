@@ -63,7 +63,7 @@ These older records are not evidence for the dirty source identity above and do 
 | T14 Android-free core suite | `./gradlew -p verification/core :core:test --console=plain`; Kotlin 2.4.10, JUnit 4.13.2, Java 21 / JVM target 17 | 279 | 279 | 279 | 0 | 0 | Recorded in `TASK_STATUS.md`; preserved log/XML are not present in this checkout. It predates I09 source changes. |
 | T15 source/resource review | Source/resource checks only; no Gradle test or instrumentation run at that delivery | No test discovery | 0 tests | N/A | N/A | N/A | Historical T15 record in `TASK_STATUS.md`; does not establish current UI/device behavior. |
 
-The intended physical device remains Xiaomi Mi 11 Lite NE / Android 14 / API 34. No result on that device is recorded here. The prior API 36.1 emulator run is not a substitute for that device.
+The intended device is an Android 14 / API 34 phone. No result on that device is recorded here. The prior API 36.1 emulator run is not a substitute for that device.
 
 ## QA commands to run later
 
@@ -88,7 +88,7 @@ This supplement records the later QA run against the source revision below. It s
 | Tested source revision | `d8d86219b7822d03f91ecad7a32ad7f405197213`; no tracked source changes at test time |
 | Pre-existing untracked user files | `app/release/app-release.apk`; `docs/qa/position-guide/evidence/pg01/counter-tests.txt`; neither was modified |
 | Emulator | Android Emulator 36.1.9; `Medium_Phone_API_36.1`; Android 16 / API 36.1; x86_64; 1080×2400 at 420 dpi |
-| Intended physical device | Xiaomi Mi 11 Lite NE / Android 14 / API 34 was unavailable |
+| Intended physical device | physical Android 14 / API 34 phone was unavailable |
 | Tested debug APK | `app/build/outputs/apk/debug/app-debug.apk`; application ID `com.example.scrollfit`; versionCode 2; versionName `0.2.0-t02`; SHA-256 `a7f4fbb8ad25f7c7c565e60672e08f3f83ff04478e8a6864a8357079ef7c764e` |
 
 | Task | Command/result | QA decision |
@@ -101,7 +101,7 @@ QA logs, XML results, the platform failure logcat, and the emulator launch scree
 
 ## QA supplement — I04–I05, 2026-10-26
 
-These results use source revision `d8d86219b7822d03f91ecad7a32ad7f405197213`, Android Emulator 36.1.9 / `Medium_Phone_API_36.1` / Android 16 API 36.1 / x86_64 / 1080×2400 at 420 dpi, and debug APK SHA-256 `a7f4fbb8ad25f7c7c565e60672e08f3f83ff04478e8a6864a8357079ef7c764e`. The intended Xiaomi Mi 11 Lite NE / Android 14 API 34 was unavailable. No camera, Usage Access, or accessibility permission was granted during the limited UI smoke.
+These results use source revision `d8d86219b7822d03f91ecad7a32ad7f405197213`, Android Emulator 36.1.9 / `Medium_Phone_API_36.1` / Android 16 API 36.1 / x86_64 / 1080×2400 at 420 dpi, and debug APK SHA-256 `a7f4fbb8ad25f7c7c565e60672e08f3f83ff04478e8a6864a8357079ef7c764e`. The intended physical Android 14 / API 34 phone was unavailable. No camera, Usage Access, or accessibility permission was granted during the limited UI smoke.
 
 | Task | Command/result | QA decision |
 | --- | --- | --- |
@@ -119,7 +119,7 @@ This follow-up supersedes the automated failure counts above for the repaired di
 | Base revision | `d8d86219b7822d03f91ecad7a32ad7f405197213` |
 | Dirty-source identity | `fd23f7f583279e31e16c3b8b419c088a14b1e3ab1878406320fd50a6fd6404db` — SHA-256 over sorted modified files under `app/src/` and `platform/src/`, path and exact file bytes separated by NULs |
 | Emulator | Android Emulator 36.1.9; `Medium_Phone_API_36.1`; Android 16 / API 36.1; x86_64; 1080×2400 at 420 dpi |
-| Intended physical device | Xiaomi Mi 11 Lite NE / Android 14 / API 34 unavailable |
+| Intended physical device | physical Android 14 / API 34 phone unavailable |
 | Tested debug APK | `app/build/outputs/apk/debug/app-debug.apk`; application ID `com.example.scrollfit`; versionCode 2; versionName `0.2.0-t02`; SHA-256 `69c0a1d1656e0c9fd1b3d122b863286de71d30c06d137d6e6b826d32b407a708` |
 
 | Task | Fresh result | Current QA status |

@@ -1,6 +1,6 @@
 # T09 jumping-jack phone checks — all pending
 
-Intended device: Xiaomi Mi 11 Lite NE, Android 14. No installable APK or
+Intended device: physical Android 14 phone. No installable APK or
 device trial is available. Complete the [T06 camera checks](T06_PHONE_TEST.md)
 before these trials. Synthetic sequences establish detector logic, not
 physical accuracy or native inference performance.

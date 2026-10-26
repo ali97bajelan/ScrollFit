@@ -1,6 +1,6 @@
 # T07 push-up phone checks — all pending
 
-Intended device: Xiaomi Mi 11 Lite NE, Android 14. No installable APK is
+Intended device: physical Android 14 phone. No installable APK is
 available while Android compilation is blocked. First complete the
 [T06 camera checks](T06_PHONE_TEST.md), then run these trials on an actual
 built APK. Synthetic sequences validate detector logic, not phone accuracy.

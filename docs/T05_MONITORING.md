@@ -62,7 +62,7 @@ disabled, missing access, stopped and healthy states. It exposes validated
 allowance/combined-ceiling edits, target selection, explicit enable/disable and
 system access links, without reset or test-credit controls. Overlay explanations
 distinguish app exhaustion and combined ceiling; Home, quick settings and Stop
-remain available. No Xiaomi-specific battery setting is prescribed before an
+remain available. No manufacturer-specific battery setting is prescribed before an
 actual observed failure; record the owner's evidence first.
 
 Implementation checklist:
@@ -114,7 +114,7 @@ Delivery record: **2026-10-13 (Asia/Tehran)**; implementation started 2026-10-12
   ceiling reasons, permission revocation, screen off, re-add/settings, restart,
   reboot, midnight and split-screen/PiP. The T02 feasibility gate is still pending;
   no real-device reliability is assumed. Camera-to-reward and session prompts
-  remain T11/T13. No Xiaomi battery-management failure has yet been observed.
+  remain T11/T13. No manufacturer battery-management failure has yet been observed.
 
 T05 is **implemented with JVM verification; Android/device verification pending**.
 Generated message: [T05_COMMIT_MESSAGE.txt](T05_COMMIT_MESSAGE.txt). No git commit

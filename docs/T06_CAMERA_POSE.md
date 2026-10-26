@@ -27,7 +27,7 @@ monotonic samples. UI publication coalesces into one pending result and
 one runnable. Result age is checked after inference and again on main-thread
 delivery (250 ms). The screen reports tracking loss after a 750 ms gap,
 and opening errors after five seconds without a first result. These
-thresholds are conservative defaults, not measured Mi 11 Lite NE timings.
+thresholds are conservative defaults, not measured on a physical device.
 
 CameraX sensor timestamps may have an unknown time base; sample timestamps
 use `SystemClock.elapsedRealtime()` at analyzer arrival. Latest-frame

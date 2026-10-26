@@ -1,6 +1,6 @@
 # T12 phone checks — spoken counting and feedback
 
-Device: Xiaomi Mi 11 Lite NE / Android 14. **All checks pending; no APK or device execution yet.** Record the installed APK/version, app language, TTS engine/voice, sound volume, observed output and pass/fail for each row. Repeat the challenge checks for advance earning, blocker entry and exercise-only.
+Device: physical Android 14 phone. **All checks pending; no APK or device execution yet.** Record the installed APK/version, app language, TTS engine/voice, sound volume, observed output and pass/fail for each row. Repeat the challenge checks for advance earning, blocker entry and exercise-only.
 
 | Check | Expected result | Observed |
 | --- | --- | --- |

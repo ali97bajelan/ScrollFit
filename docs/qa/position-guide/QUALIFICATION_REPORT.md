@@ -11,7 +11,7 @@ This report records the QA actually completed. It does not accept I04, PG01–PG
 | Field | Result |
 | --- | --- |
 | Emulator | Android Emulator 36.1.9; `Medium_Phone_API_36.1`; Android 16 / API 36.1; x86_64; 1080×2400; 420 dpi |
-| Intended device | Xiaomi Mi 11 Lite NE / Android 14 / API 34 unavailable |
+| Intended device | physical Android 14 / API 34 phone unavailable |
 | Debug artifact | `app/build/outputs/apk/debug/app-debug.apk`; SHA-256 `a7f4fbb8ad25f7c7c565e60672e08f3f83ff04478e8a6864a8357079ef7c764e` |
 | Permissions | Camera, Usage Access, and accessibility permissions were not granted or changed |
 
@@ -40,7 +40,7 @@ Screenshots: [exercise list](../../verification/project-review/I04/emulator-exer
 
 1. Initial QA found that `RestoreSafetyTest.restoredInstallGetsFreshDeviceLocalTimelineAndReadiness` reopened an identity file with a different timeline ID. The parser defect is fixed; the latest platform suite passed 37/37, including this case.
 2. Initial app Android-test compilation found unresolved Compose semantics helpers and `compose.activity` references. Those test sources now compile, and the complete app suite passed 36/36, including workout accessibility/layout coverage.
-3. I02 remains blocked on camera lifecycle and mixed-use evidence; I11 and the physical Xiaomi/API 34 qualification and participant rows remain unrun. These gates keep I04 unaccepted.
+3. I02 remains blocked on camera lifecycle and mixed-use evidence; I11 and the physical API 34 qualification and participant rows remain unrun. These gates keep I04 unaccepted.
 
 ## Repair follow-up — 2026-10-26
 

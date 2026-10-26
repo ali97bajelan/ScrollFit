@@ -1,6 +1,6 @@
 # T06 phone checks — all pending
 
-Intended device: Xiaomi Mi 11 Lite NE, Android 14. No APK is currently
+Intended device: physical Android 14 phone. No APK is currently
 available because Android compilation is blocked. Run these checks after
 the documented build succeeds and record actual outcomes separately from
 JVM/source checks. This milestone does not count exercise repetitions or

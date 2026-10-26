@@ -2,7 +2,7 @@
 
 This checklist records device acceptance for U1, including production vocabulary and recovery copy. Source edits and structural checks do not establish screen layout, interaction, or Android behavior. No build, emulator, or phone checks have been run for UX13.
 
-The existing device record names a Xiaomi Mi 11 Lite NE on Android 14 as a candidate target. Confirm the actual device and OS build when testing; no manufacturer-specific behavior is assumed here.
+The existing device record names a physical phone on Android 14 as a candidate target. Confirm the actual device and OS build when testing; no manufacturer-specific behavior is assumed here.
 
 ## Acceptance steps
 

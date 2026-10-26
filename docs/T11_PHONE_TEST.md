@@ -1,6 +1,6 @@
 # T11 phone verification — pending
 
-Intended phone: Xiaomi Mi 11 Lite NE, Android 14 / API 34. No phone result is
+Intended phone: physical Android 14 / API 34 phone. No phone result is
 recorded. Android build/SDK prerequisites and the actual APK path must be resolved
 before these steps can run. Build with the README command; install the resulting
 `app/build/outputs/apk/debug/app-debug.apk` only after BUILD SUCCESSFUL. This file

@@ -1,6 +1,6 @@
 # T15 phone acceptance checklist
 
-Device intended by owner: Xiaomi Mi 11 Lite NE, Android 14. No physical run has been recorded.
+Device intended by owner: physical Android 14 phone. No physical run has been recorded.
 
 - [ ] Existing legacy history remains visible with unknown coverage.
 - [ ] Seven calendar dates render, including dates with no records.

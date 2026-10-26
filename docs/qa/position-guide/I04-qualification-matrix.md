@@ -136,7 +136,7 @@ Use five consenting first-time participants. Use only session codes P1–P5, no 
 | --- | --- |
 | Source revision | Record at QA start |
 | Dirty source identity | Record at QA start |
-| Device / Android API | Android 16 / API 36.1 `Medium_Phone_API_36.1` emulator for limited UI smoke; Xiaomi Mi 11 Lite NE / API 34 physical qualification NOT RUN |
+| Device / Android API | Android 16 / API 36.1 `Medium_Phone_API_36.1` emulator for limited UI smoke; physical API 34 phone qualification NOT RUN |
 | Build variant / artifact SHA-256 | Latest repair rerun: debug `app-debug.apk`; `69c0a1d1656e0c9fd1b3d122b863286de71d30c06d137d6e6b826d32b407a708` |
 | Test commands and exit codes | See [I04 result report](../project-review/results/I04.md); complete acceptance remains blocked |
 | Front/rear lens availability | NOT RUN |

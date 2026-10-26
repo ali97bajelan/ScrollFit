@@ -238,7 +238,7 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 2 — QA
 
-- [ ] Execute I03-01–I03-06 on the production service, with CORE/APP/BUILD/DEVICE and actual Xiaomi API 34 phone acceptance. Use debug spike only for its separate T02 checks.
+- [ ] Execute I03-01–I03-06 on the production service, with CORE/APP/BUILD/DEVICE and physical Android 14 / API 34 phone acceptance. Use debug spike only for its separate T02 checks.
 - [ ] Reconcile every T02/T05/T11/T13/T16 required path with evidence. Test both ceilings, eight earning paths, interruption/offline/midnight, overlay/queue/permission races and idle/special-window policy. Accept only with P0 gates met and no inferred downtime.
 
 ## Task F-A — Health and recovery center

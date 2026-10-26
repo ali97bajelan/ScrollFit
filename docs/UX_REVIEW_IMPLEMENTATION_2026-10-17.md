@@ -86,7 +86,7 @@ python3 verification/check_source.py
 
 U1 introduces BOM-aligned Compose UI instrumentation dependencies before any plan refers to Compose UI tests. Every implementation task first runs its new behavioral test and observes the intended failure, then implements and reruns it. Copy-only cleanup uses source/resource validation and manual inspection rather than a test that mirrors literal implementation text. Each task ends in a scoped review/commit; do not include unrelated files.
 
-Release acceptance requires a phone/emulator record with app build, OS, locale, font scale, theme, expected/actual behavior, and pass/fail. Cover the owner's documented Xiaomi Mi 11 Lite NE / Android 14 if available; also exercise API 28 and API 37 behavior. Use 320 dp available width, 200% font scale, keyboard visible, English/French/Persian, RTL, TalkBack with app speech on/off, and both challenge entry points. Report contrast, recognition quality, clipping, and performance only after measuring them.
+Release acceptance requires a phone/emulator record with app build, OS, locale, font scale, theme, expected/actual behavior, and pass/fail. Cover the owner's documented physical Android 14 phone if available; also exercise API 28 and API 37 behavior. Use 320 dp available width, 200% font scale, keyboard visible, English/French/Persian, RTL, TalkBack with app speech on/off, and both challenge entry points. Report contrast, recognition quality, clipping, and performance only after measuring them.
 
 ## Pilot and later-feature gates
 

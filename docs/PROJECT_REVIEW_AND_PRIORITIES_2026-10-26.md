@@ -4,7 +4,7 @@ Review date: **2026-10-26**, Asia/Tehran. Source snapshot: `f4a10bf` (`Improve o
 
 ## Recommendation
 
-**Prioritize reliable monitoring, camera ownership and qualification before expanding the feature set.** The project already contains most of its intended core experience. The main uncertainty is whether those pieces work together reliably on the intended Xiaomi Mi 11 Lite NE / Android 14.
+**Prioritize reliable monitoring, camera ownership and qualification before expanding the feature set.** The project already contains most of its intended core experience. The main uncertainty is whether those pieces work together reliably on the intended physical Android 14 phone.
 
 **`MonitoringService.kt` has critical importance: 5/5.** It connects Android foreground observations to spending, blocking, short-session decisions and coverage history. A failure can leave selected apps usable, misrepresent monitoring health, or make outcome comparisons unavailable. Keep it small, observable and covered by lifecycle/failure tests. Its presence and enabled permission alone do not establish that enforcement works.
 
@@ -175,5 +175,5 @@ Measure first successful setup, first completed challenge by exercise/mode, time
 - Fresh source/resource checks passed; they do not prove Kotlin compilation, persistence, accessibility, native inference or enforcement.
 - Historical platform result inspected: `platform/build/outputs/androidTest-results/connected/debug/TEST-Medium_Phone_API_36.1(AVD) - 16.xml` — 22 executed / 1 failure, dated 2026-10-23. Associated `OfflinePoseTest` log contains the recycled-bitmap/native crash evidence. Build outputs are local and may be regenerated.
 - Pinned `com.google.mediapipe:tasks-core:1.0.0` bytecode confirms bitmap recycling on final image closure. A fresh native regression run is required after any correction.
-- No fresh unit/instrumentation totals, release readiness, recognition accuracy, battery performance or Xiaomi enforcement result is claimed here.
+- No fresh unit/instrumentation totals, release readiness, recognition accuracy, battery performance or physical-device enforcement result is claimed here.
 - Historical execution instructions embedded in task/brief files were reviewed as project context; this request was for assessment and a prioritized document.

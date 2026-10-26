@@ -1,6 +1,6 @@
 # T02 — phone verification
 
-Target: Xiaomi Mi 11 Lite NE, Android 14. **No APK currently exists; do these steps only after a successful debug build is delivered.** This is a candidate feasibility experiment. Completing source or JVM tests does not confirm phone enforcement.
+Target: physical Android 14 phone. **No APK currently exists; do these steps only after a successful debug build is delivered.** This is a candidate feasibility experiment. Completing source or JVM tests does not confirm phone enforcement.
 
 The product UI is Persian. The dashboard test button is «تست پایش ۳۰ ثانیه‌ای». Accessibility service label: «اسکرول‌فیت — تست مسدودسازی».
 
@@ -34,7 +34,7 @@ The product UI is Persian. The dashboard test button is «تست پایش ۳۰ �
 ## Additional observations
 
 - Try the same transitions with both gesture and button navigation if available. Record stuck overlays, touches passing through, banners covering controls, repeated flashes and missing window events.
-- Leave an unrestricted app open, return to the target and note whether the connected service was stopped by the phone. Report any observed Xiaomi battery-management message or setting; no manufacturer-specific workaround has been confirmed yet.
+- Leave an unrestricted app open, return to the target and note whether the connected service was stopped by the phone. Report any observed manufacturer battery-management message or setting; no manufacturer-specific workaround has been confirmed yet.
 - Restart the ScrollFit process during a partially used test and inspect remaining time/service status after Android reconnects. Known consumption is persisted approximately once per second and at transitions; unknown downtime is paused. Abrupt kills may lose the last persistence interval plus scheduling delay. Force stop is a supported escape, and automatic recovery is not promised.
 - Reboot recovery, split-screen and PiP are outside this spike's supported accounting mode. If tested, report observations without treating them as production passes. T05 will define and verify those policies.
 - Confirm that camera permission is never requested during this test and that there are no exercise/reward claims.

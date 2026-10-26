@@ -12,7 +12,7 @@ Produce an honest evidence report that separates automated logic/layout verifica
 - For each exercise/lens combination: neutral start, correct complete movements, clipped joints, too close, too far, horizontal offset, brief occlusion, low-confidence image, return to starting pose. Jacks include overhead/open-frame coverage; push-ups include both visible anatomical sides; knee raises include same-side cycles and alternating sides.
 - Layout/accessibility: Persian RTL/English/French; light/dark; portrait 320 dp width at 100% and 200% font; short landscape 640×360 dp at both scales; TalkBack on/off, mute, absent offline voice, static/reduced-motion demo. Visual inspection must check actual camera letterboxing/mirroring after 90/180/270-degree rotation.
 - Reliability: deny permission, permanent denial, settings return, unavailable lens, model/inference failure, background during countdown/active exercise, process death, repeated Start, midnight, storage latency/failure and completion racing with exit. Inspect saved activity/award rows through test fixtures, never add production debug accounting controls.
-- Intended device from README: Xiaomi Mi 11 Lite NE / Android 14 API 34, **if available**. Record actual model/API, preview dimensions, lens and app revision. Do not assume a phone is connected or inherited build blockers remain current.
+- Intended device from README: physical Android 14 / API 34 phone, **if available**. Record actual model/API, preview dimensions, lens and app revision. Do not assume a phone is connected or inherited build blockers remain current.
 
 ## Proposed release targets
 

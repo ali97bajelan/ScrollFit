@@ -1,6 +1,6 @@
 # T14 phone checks — all pending
 
-Intended device: Xiaomi Mi 11 Lite NE / Android 14. No device result is claimed.
+Intended device: physical Android 14 phone. No device result is claimed.
 Build/install a debug candidate when official Android artifacts/SDK are available.
 Record actual results, locale, font scale, TalkBack state and observed failures.
 

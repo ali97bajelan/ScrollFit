@@ -69,7 +69,7 @@ The original T03 delivery had **7 Room tests** covering file reopen, concurrent 
   :platform:assembleDebugAndroidTest :platform:connectedDebugAndroidTest --console=plain
 ```
 
-Retain the authentic v1 schema if available and validate its migration path before marking the historical schema requirement complete. No intended Xiaomi device result is claimed.
+Retain the authentic v1 schema if available and validate its migration path before marking the historical schema requirement complete. No intended physical device result is claimed.
 
 Official references checked on 2026-10-12: [Room](https://developer.android.com/training/data-storage/room), [data-preserving migrations](https://developer.android.com/training/data-storage/room/migrating-db-versions), [Room database tests](https://developer.android.com/training/data-storage/room/testing-db), [atomic DataStore edits](https://developer.android.com/topic/libraries/architecture/datastore), [KSP 2.3.12 release](https://github.com/google/ksp/releases/tag/2.3.12), [AndroidX Test 1.7.0](https://developer.android.com/jetpack/androidx/releases/test). Android compilation now succeeds for the app/platform debug and Android-test sources in the 2026-10-23 rerun.
 

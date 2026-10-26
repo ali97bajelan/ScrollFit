@@ -1,6 +1,6 @@
 # T13 phone acceptance — pending
 
-Intended phone: Xiaomi Mi 11 Lite NE, Android 14. No results have been recorded.
+Intended phone: physical Android 14 phone. No results have been recorded.
 An APK is not available: the Android build is blocked before compilation at AGP
 resolution. Run these checks after a real debug APK can be built and installed.
 

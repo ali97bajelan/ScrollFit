@@ -16,7 +16,7 @@ Historical verification is recorded by task in [TASK_STATUS.md](TASK_STATUS.md).
 
 See [task-specific behavior and historical evidence](TASK_STATUS.md), the [project-review register](docs/PROJECT_REVIEW_DELIVERY_TASKS_2026-10-26.md), and the [current verification matrix](docs/qa/project-review/CURRENT_VERIFICATION.md). Historical evidence logs are local/ignored and may not be present in a fresh checkout.
 
-Intended device: **Xiaomi Mi 11 Lite NE, Android 14 / API 34**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
+Intended device: **physical Android 14 / API 34 phone**, provided by the owner. No manufacturer behavior or device test outcome has been confirmed.
 
 ## Build and install
 
@@ -69,7 +69,7 @@ Spike state uses private SharedPreferences for target, enabled state and consume
 
 **Start new test resets the experimental allowance.** That control is debug-only, explicitly labeled, and grants no production credit. Stop removes the spike overlay without changing access permissions. Permission loss, service disconnect, overlay/storage failure and interruption have visible states; an unavailable blocker is not reported as successful enforcement.
 
-Only a single fullscreen target is in scope for this spike. Split-screen, PiP, window/dialog/keyboard event ordering and metadata suppression need real-device investigation; event observation can fail or pause conservatively. No reliable reboot recovery is claimed. Force stop, revocation and uninstall can bypass limits. Emergency/system navigation and unrestricted apps must remain usable. Battery restrictions have not been observed yet; record them before prescribing Xiaomi-specific changes.
+Only a single fullscreen target is in scope for this spike. Split-screen, PiP, window/dialog/keyboard event ordering and metadata suppression need real-device investigation; event observation can fail or pause conservatively. No reliable reboot recovery is claimed. Force stop, revocation and uninstall can bypass limits. Emergency/system navigation and unrestricted apps must remain usable. Battery restrictions have not been observed yet; record them before prescribing manufacturer-specific changes.
 
 ## T03 persistence and verification
 
@@ -144,7 +144,7 @@ report a gap, and the Android wall clock follows the live device zone.
 Split-screen charges only the latest observed foreground package, never both
 panes. PiP-only time is excluded when metadata identifies another foreground
 app. OEM focus, dialog/keyboard ordering, permission loss and service rebinding
-remain physical-device checks. No Xiaomi battery restriction has been observed;
+remain physical-device checks. No manufacturer battery restriction has been observed;
 no manufacturer-specific setting is prescribed. This remains bypassable through
 permission removal, force stop, uninstall or some OEM behavior.
 

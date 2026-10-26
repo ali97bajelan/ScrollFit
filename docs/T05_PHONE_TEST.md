@@ -1,6 +1,6 @@
 # T05 phone verification — pending
 
-Intended device: Xiaomi Mi 11 Lite NE, Android 14. Every item below is pending.
+Intended device: physical Android 14 phone. Every item below is pending.
 No T05 APK exists: Android configuration fails before compilation at offline AGP
 9.4.0 resolution. Source/JVM results do not demonstrate Android enforcement.
 

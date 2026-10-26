@@ -21,7 +21,7 @@ Applicable scenarios: I03-01–I03-06; source task checklists T02, T05, T11, T13
 
 Tests/fixtures written but unrun: `ProductionLoopTest.perAppAndCombinedCeilingsPersistAcrossEngineRecreation`, `ProductionLoopTest.perAppBudgetBlocksBeforeSharedCeiling`, `ProductionLoopTest.eachExerciseAndEarningModeCommitsOneDurableAward`, and `ProductionLoopTest.sessionPromptWaitDoesNotSpendAndSecondResolutionIsStale`.
 
-QA commands: `./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`; `./gradlew :app:connectedDebugAndroidTest --console=plain`. Then run I03-01–I03-06 on the intended Xiaomi Mi 11 Lite NE / Android 14 API 34 if available; retain exact T02/T05/T11/T13/T16 results. The intended-device and service-level claims stay blocked until that evidence exists.
+QA commands: `./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`; `./gradlew :app:connectedDebugAndroidTest --console=plain`. Then run I03-01–I03-06 on the intended physical Android 14 / API 34 phone if available; retain exact T02/T05/T11/T13/T16 results. The intended-device and service-level claims stay blocked until that evidence exists.
 
 ## I04 — position-guide qualification
 
