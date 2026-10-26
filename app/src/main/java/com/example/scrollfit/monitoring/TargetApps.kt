@@ -30,6 +30,20 @@ object TargetApps {
     fun list(context: Context): List<TargetApp> {
         val manager = context.packageManager
         val excluded = protectedPackages(context)
+        return launcherApps(context, excluded)
+    }
+
+    /** Collects package and dynamic-role metadata as one revisioned, off-callback snapshot. */
+    @Suppress("DEPRECATION")
+    internal fun safetySnapshot(context: Context, revision: Long): SafetySnapshot {
+        val protected = protectedPackages(context)
+        val eligible = launcherApps(context, protected).map { it.packageName }.toSet()
+        return SafetySnapshot.ready(revision, eligible, protected)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun launcherApps(context: Context, excluded: Set<String>): List<TargetApp> {
+        val manager = context.packageManager
         return manager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
             .mapNotNull { resolve ->
                 val info = resolve.activityInfo ?: return@mapNotNull null

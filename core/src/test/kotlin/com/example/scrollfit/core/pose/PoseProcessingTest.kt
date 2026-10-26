@@ -130,6 +130,16 @@ class PoseProcessingTest {
         assertEquals(0f, p.second, 0f)
     }
 
+    @Test fun uprightGuideProjectionUsesImageAspectAndMirrorsOnlyTheFrontPreview() {
+        for (rotation in listOf(0, 90, 180, 270)) {
+            val (imageWidth, imageHeight) = if (rotation % 180 == 0) 400 to 200 else 200 to 400
+            val back = PreviewProjection.point(0.25f, 0.5f, imageWidth, imageHeight, 200f, 200f, false)
+            val front = PreviewProjection.point(0.25f, 0.5f, imageWidth, imageHeight, 200f, 200f, true)
+            assertEquals("rear x at rotation=$rotation", back.first, 200f - front.first, 0f)
+            assertEquals("same y at rotation=$rotation", back.second, front.second, 0f)
+        }
+    }
+
     @Test fun sideViewMayUseEitherCompleteArmAndHipGroup() {
         val f = PoseFilter(setOf(11, 13, 23), alternativeRequiredLandmarks = setOf(12, 14, 24))
         val p = pose(100)

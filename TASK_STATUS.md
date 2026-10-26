@@ -1,6 +1,6 @@
 # Exercise Gate task status
 
-Updated: 2026-10-23 (Asia/Tehran). Current implementation authorization: **T01–T15**. T15 implementation is prepared; at that delivery point emulator, Gradle tests and instrumentation were not run per owner instruction. T16 remains outside the current scope. The owner requested English communication; the product UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14, supplied by owner. No physical-device results recorded.
+Updated: 2026-10-26 (Asia/Tehran). Current authorization includes **I09–I11** in the project-review delivery register. Historical T01–T15 implementation and verification entries remain below; T16 acceptance is still pending. Project-review I01–I11 implementation is complete and every project-review QA scenario remains NOT RUN. See the [current delivery register](docs/PROJECT_REVIEW_DELIVERY_TASKS_2026-10-26.md), [verification matrix](docs/qa/project-review/CURRENT_VERIFICATION.md), and the [I09](docs/qa/project-review/implementation-handoff-I09.md), [I10](docs/qa/project-review/implementation-handoff-I10.md), and [I11](docs/qa/project-review/implementation-handoff-I11.md) handoffs. The UI supports Persian RTL plus English/French. Intended device: Xiaomi Mi 11 Lite NE / Android 14; no current physical-device result is recorded.
 
 | ID | Status | Verification evidence | Blocker | Next action |
 | --- | --- | --- | --- | --- |
@@ -20,6 +20,16 @@ Updated: 2026-10-23 (Asia/Tehran). Current implementation authorization: **T01�
 | T14 | implemented | Persisted onboarding, live budget/health dashboard, searchable setup and award caps, editable exercise/preferences and protected daily history connected in Persian/English/French. 279 JVM tests pass (12 new); independent review corrections and 47-string locale checks recorded. [Evidence](docs/T14_PRODUCT_UI.md). | Android compilation/lint/Room/UI and intended-device checks remain unverified; no APK. | Restore Android artifacts/SDK, build candidate and run enhanced Room/DataStore tests and [T14 phone checks](docs/T14_PHONE_TEST.md). |
 | T15 | implemented, unverified | Coverage persistence/recording, summaries, comparison gates and localized history UI prepared. Source/resource check and whitespace check only; no emulator, Gradle test or instrumentation run per owner instruction. [Evidence](docs/T15_OUTCOMES.md). | Android compilation, Room schema export/migration validation and physical-device behavior remain unverified. | Restore Android build environment; run the documented checks when authorized, export authentic schemas and complete [phone checklist](docs/T15_PHONE_TEST.md). |
 | T16 | todo | Not run. | Depends on earlier implementation; outside current request. | Run automated and intended-device acceptance and deliver actual APK. |
+
+## Current project-review delivery (2026-10-26)
+
+| ID | Implementation | QA | Current record |
+| --- | --- | --- | --- |
+| I09 | IMPLEMENTED | NOT RUN | Revisioned safety snapshots, off-callback package/role metadata refresh, 64-command queue and stale-sample guard; timing fixtures are written but unrun. [Handoff](docs/qa/project-review/implementation-handoff-I09.md) |
+| I10 | IMPLEMENTED | NOT RUN | README, task summary and artifact provenance reconciled; the local release APK is inventory-only and has a versionCode mismatch against source. [Handoff](docs/qa/project-review/implementation-handoff-I10.md) |
+| I11 | IMPLEMENTED | NOT RUN | Accessibility fixtures and 828-row locale/theme/viewport/font/audio/TalkBack matrix prepared. [Handoff](docs/qa/project-review/implementation-handoff-I11.md) |
+
+The review register covers I01–I11, with implementation complete and QA NOT RUN for each. This status does not change any historical T-task result or imply Android/device acceptance.
 
 ## T01–T03 emulator rerun (2026-10-23)
 

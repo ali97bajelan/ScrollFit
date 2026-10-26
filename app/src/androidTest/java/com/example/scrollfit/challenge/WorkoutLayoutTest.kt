@@ -62,6 +62,14 @@ class WorkoutLayoutTest {
         assertWorkoutFits(width = 640, height = 320, fontScale = 2f, direction = LayoutDirection.Ltr)
     }
 
+    @Test fun specifiedShortLandscapeAtTwoHundredPercentKeepsActionsReachable() {
+        assertWorkoutFits(width = 640, height = 360, fontScale = 2f, direction = LayoutDirection.Ltr)
+    }
+
+    @Test fun specifiedShortLandscapeInRtlKeepsActionsReachable() {
+        assertWorkoutFits(width = 640, height = 360, fontScale = 2f, direction = LayoutDirection.Rtl)
+    }
+
     @Test fun shortLandscapeTrialKeepsPreviewAndCameraCloseAtLargeText() {
         assertWorkoutFits(width = 640, height = 320, fontScale = 2f,
             direction = LayoutDirection.Ltr, trial = true)
@@ -159,6 +167,7 @@ class WorkoutLayoutTest {
         else compose.onNodeWithTag("workout_audio").assertExists().assertHeightIsAtLeast(48.dp)
         compose.onNodeWithTag("workout_help").assertExists().assertHeightIsAtLeast(48.dp)
         compose.onAllNodesWithTag("workout_end").assertCountEquals(1)
+        compose.onNodeWithTag("workout_end").assertHeightIsAtLeast(48.dp)
         val root = compose.onNodeWithTag("workout_root").getUnclippedBoundsInRoot()
         (listOf("workout_preview", "workout_count", "workout_status", "workout_help", "workout_end") +
             if (trial) emptyList() else listOf("workout_audio"))

@@ -17,32 +17,37 @@ import com.example.scrollfit.core.budget.*
 import com.example.scrollfit.core.data.AppPreferences
 import com.example.scrollfit.core.usage.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import java.util.UUID
 
 /** Main-source package-only monitor. Activities launch only after a tap on the visible blocker. */
 class MonitoringService : AccessibilityService() {
     private sealed interface Command
-    private data class Observation(val signal: MonitorSignal, val ticket: Long, val generation: Long) : Command
+    private data class Observation(
+        val signal: MonitorSignal,
+        val ticket: Long,
+        val generation: Long,
+        val safetyRevision: Long,
+    ) : Command
     private data class SessionCommand(val access: SessionAccess, val action: SessionAction) : Command
     private var sessionActionQueued = false
     private lateinit var budgetEngine: BudgetEngine
     private lateinit var scope: CoroutineScope
-    private lateinit var observations: Channel<Command>
+    private lateinit var observations: MonitorCommandQueue<Command>
     private lateinit var controller: MonitoringController
     private lateinit var overlay: MonitorOverlay
     private lateinit var presentation: MonitorPresentation
     private lateinit var dependencies: MonitorDependencies
     private lateinit var initialization: MonitorLifecycle
+    private lateinit var safetySnapshotRefresher: SafetySnapshotRefresher
     private var registrations: MonitorRegistrations? = null
+    private val safetySnapshotState = SafetySnapshotState()
     private val readiness = MonitoringReadiness()
     internal var dependenciesFactory: (MonitoringService) -> MonitorDependencies = { AndroidMonitorDependencies(it) }
     private var connected = false
     private val ready get() = ::initialization.isInitialized && initialization.state == MonitorInitState.READY
     private var foreground: String? = null
     private var foregroundKnown = false
-    private var safePackages = emptySet<String>()
     private var overflow = false
     private var tick: Job? = null
     private var coverageCheckpoint: Job? = null
@@ -55,7 +60,12 @@ class MonitoringService : AccessibilityService() {
     private var generation = 0L
     private var coverageRecorder: CoverageRecorder? = null
     private var lastProcessedElapsedMs: Long? = null
-    private var pendingCommands = 0
+    private var safetyRefreshGeneration = 0L
+    private var safetyRefreshForegroundHint: String? = null
+    private var safetyRefreshReconcileAfter = true
+    private var safetyRefreshRetryAttempt: Int? = null
+    private var controllerSafetyRevision = -1L
+    private var controllerSafetyReady = false
     private var diagnosticAttempt: Int? = null
     private var failureInProgress = false
     private var nestedFailure: Pair<MonitorFailure, MonitorFailureDetail>? = null
@@ -82,18 +92,28 @@ class MonitoringService : AccessibilityService() {
             }
         }
     }
+    private val packageSafetyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (connected && ready) refreshSafetySnapshot(reconcileAfter = true)
+        }
+    }
+    private val systemSafetyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (connected && ready) refreshSafetySnapshot(reconcileAfter = true)
+        }
+    }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         if (connected) cleanup()
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         generation++
-        observations = Channel(64)
+        observations = MonitorCommandQueue()
         connected = true
         dependencies = dependenciesFactory(this)
         readiness.failed(); foreground = null; foregroundKnown = false
-        safePackages = emptySet(); overflow = false; lastFailure = MonitorFailure.NONE
-        lastFailureDetail = null; pendingCommands = 0; diagnosticAttempt = null
+        overflow = false; lastFailure = MonitorFailure.NONE
+        lastFailureDetail = null; diagnosticAttempt = null
         overlay = dependencies.createOverlay(this, MonitorOverlayCallbacks(
             home = { navigate(GLOBAL_ACTION_HOME) },
             openScrollFit = ::openScrollFit,
@@ -108,10 +128,29 @@ class MonitoringService : AccessibilityService() {
         MonitorRuntime.publish(MonitorStatus(failure = MonitorFailure.STARTING))
         initialization = MonitorLifecycle(scope, ::initializationStateChanged,
             ::initializeMonitoring, ::initializationFailed)
+        safetySnapshotRefresher = SafetySnapshotRefresher(
+            scope = scope,
+            state = safetySnapshotState,
+            load = { revision -> monitorBoundary(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
+                MonitorFailureCode.SAFE_PACKAGE_LOOKUP) { dependencies.safetySnapshot(revision) } },
+            onInvalidated = ::safetySnapshotInvalidated,
+            onPublished = ::safetySnapshotPublished,
+            onFailure = ::safetySnapshotFailed,
+        )
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_USER_PRESENT); addAction(Intent.ACTION_DATE_CHANGED)
             addAction(Intent.ACTION_TIME_CHANGED); addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
+        val packageFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED); addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED); addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }
+        val systemFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_INPUT_METHOD_CHANGED)
+            addAction(Intent.ACTION_CONFIGURATION_CHANGED)
         }
         registrations = MonitorRegistrations(
             registerUsageWatcher = {
@@ -127,6 +166,10 @@ class MonitoringService : AccessibilityService() {
                 Unit
             },
             unregisterScreenReceiver = { unregisterReceiver(screenReceiver) },
+            registerPackageReceiver = { registerReceiverCompat(packageSafetyReceiver, packageFilter) },
+            unregisterPackageReceiver = { unregisterReceiver(packageSafetyReceiver) },
+            registerSystemReceiver = { registerReceiverCompat(systemSafetyReceiver, systemFilter) },
+            unregisterSystemReceiver = { unregisterReceiver(systemSafetyReceiver) },
             onFailure = { code, _ ->
                 val detail = MonitorFailureDetail(MonitorFailurePhase.REGISTRATION, code)
                 if (connected) fail(MonitorFailure.REGISTRATION, detail) else recordFailure(detail)
@@ -149,6 +192,12 @@ class MonitoringService : AccessibilityService() {
         }
     }
 
+    @Suppress("DEPRECATION")
+    private fun registerReceiverCompat(receiver: BroadcastReceiver, filter: IntentFilter) {
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        else registerReceiver(receiver, filter)
+    }
+
     private suspend fun initializeMonitoring(attemptGeneration: Long) {
         val bootIdentity = monitorBoundarySync(MonitorFailure.BOOT_ID, MonitorFailurePhase.BOOT,
             MonitorFailureCode.BOOT_IDENTITY, dependencies::bootIdentity)
@@ -162,10 +211,11 @@ class MonitoringService : AccessibilityService() {
             MonitorFailureCode.BUDGET_ENGINE_INITIALIZATION) { dependencies.budgetEngine(bootIdentity) }
         ensureInitializationCurrent(attemptGeneration)
 
-        val protected = monitorBoundarySync(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
-            MonitorFailureCode.PROTECTED_PACKAGE_LOOKUP, dependencies::protectedPackages)
+        val safetyRevision = safetySnapshotState.beginRefresh()
+        val newSafetySnapshot = monitorBoundary(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
+            MonitorFailureCode.SAFE_PACKAGE_LOOKUP) { dependencies.safetySnapshot(safetyRevision) }
         ensureInitializationCurrent(attemptGeneration)
-        val newController = MonitoringController(engine, protected)
+        val newController = MonitoringController(engine, newSafetySnapshot.protectedPackages)
 
         val recorder = monitorBoundary(MonitorFailure.STORAGE, MonitorFailurePhase.COVERAGE,
             MonitorFailureCode.COVERAGE_INITIALIZATION) {
@@ -173,14 +223,14 @@ class MonitoringService : AccessibilityService() {
         }
         ensureInitializationCurrent(attemptGeneration)
 
-        val newSafePackages = monitorBoundary(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
-            MonitorFailureCode.SAFE_PACKAGE_LOOKUP, dependencies::safePackages)
         // Publish the complete set together only after every boot, persistence and metadata step succeeds.
         if (!initialization.commitIfCurrent(attemptGeneration) {
+                check(safetySnapshotState.publish(newSafetySnapshot))
                 budgetEngine = engine
                 controller = newController
                 coverageRecorder = recorder
-                safePackages = newSafePackages
+                controllerSafetyRevision = newSafetySnapshot.revision
+                controllerSafetyReady = true
             }) throw CancellationException("Monitoring initialization was stopped")
     }
 
@@ -221,7 +271,6 @@ class MonitoringService : AccessibilityService() {
         coverageRecorder?.invalidate()
         if (::controller.isInitialized) controller.abandon()
         while (observations.tryReceive().isSuccess) { /* discard partial-start observations */ }
-        pendingCommands = 0
         sessionActionQueued = false
         foreground = null; foregroundKnown = false
         val boundary = failure as? MonitorBoundaryException
@@ -238,8 +287,8 @@ class MonitoringService : AccessibilityService() {
     private fun startCommandConsumer() {
         if (commandConsumer?.isActive == true) return
         commandConsumer = scope.launch {
-            for (command in observations) {
-                pendingCommands = (pendingCommands - 1).coerceAtLeast(0)
+            for (command in observations.receiveChannel) {
+                observations.received()
                 val start = nowElapsedRealtimeMs()
                 try {
                     processCommand(command)
@@ -268,9 +317,9 @@ class MonitoringService : AccessibilityService() {
         }
         val observation = command as Observation
         if (observation.generation != generation) return
-        if (monitorBoundarySync(MonitorFailure.QUEUE, MonitorFailurePhase.QUEUE,
-                MonitorFailureCode.COMMAND_PROCESSING) { dependencies.elapsedRealtimeMs() } -
-            observation.signal.sample.elapsedMs > MonitoringController.MAX_OBSERVED_GAP_MS) {
+        val nowElapsedMs = monitorBoundarySync(MonitorFailure.QUEUE, MonitorFailurePhase.QUEUE,
+            MonitorFailureCode.COMMAND_PROCESSING, dependencies::elapsedRealtimeMs)
+        if (!hasTrustedObservationAge(nowElapsedMs, observation.signal.sample.elapsedMs)) {
             fail(MonitorFailure.QUEUE,
                 MonitorFailureDetail(MonitorFailurePhase.QUEUE, MonitorFailureCode.COMMAND_PROCESSING)); return
         }
@@ -279,9 +328,22 @@ class MonitoringService : AccessibilityService() {
                 MonitorFailureDetail(MonitorFailurePhase.QUEUE, MonitorFailureCode.OWNER_ALREADY_CLAIMED)); return
         }
         if (observation.signal.enabled) leaseHeld = true
+        val currentSafety = safetySnapshotState.current()
+        if (controllerSafetyRevision != currentSafety.revision) {
+            controller.abandon()
+            controllerSafetyRevision = currentSafety.revision
+            controllerSafetyReady = false
+        }
+        if (currentSafety.ready && !controllerSafetyReady) {
+            controller.updateProtectedPackages(currentSafety.protectedPackages)
+            controllerSafetyReady = true
+        }
+        val safetyMatches = currentSafety.ready && observation.safetyRevision == currentSafety.revision
+        val signal = if (safetyMatches) observation.signal else observation.signal.copy(
+            foreground = null, foregroundKnown = false)
         val startedGeneration = generation
         val result = monitorBoundary(MonitorFailure.STORAGE, MonitorFailurePhase.BUDGET,
-            MonitorFailureCode.BUDGET_OPERATION) { controller.observe(observation.signal) }
+            MonitorFailureCode.BUDGET_OPERATION) { controller.observe(signal) }
         if (generation != startedGeneration) { controller.abandon(); return }
         if (overflow) { overflow = false; fail(MonitorFailure.QUEUE,
             MonitorFailureDetail(MonitorFailurePhase.QUEUE, MonitorFailureCode.QUEUE_OVERFLOW)); return }
@@ -289,14 +351,14 @@ class MonitoringService : AccessibilityService() {
             MonitorFailureCode.SELECTED_PACKAGE_LOOKUP, dependencies::selectedPackages)
         if (generation != startedGeneration) { coverageRecorder?.invalidate(); return }
         monitorBoundary(MonitorFailure.STORAGE, MonitorFailurePhase.COVERAGE, MonitorFailureCode.COVERAGE_WRITE) {
-            coverageRecorder?.observe(observation.signal, result, selectedScope, leaseHeld) {
+            coverageRecorder?.observe(signal, result, selectedScope, leaseHeld) {
                 connected && readiness.available && generation == startedGeneration && !overflow && leaseHeld &&
                     dependencies.usageAccess()
             }
         }
-        lastProcessedElapsedMs = observation.signal.sample.elapsedMs
-        if (observation.signal.enabled && observation.signal.foreground in selectedScope) {
-            MonitorRuntime.processedObservation(observation.signal.sample.elapsedMs)
+        lastProcessedElapsedMs = signal.sample.elapsedMs
+        if (signal.enabled && signal.foreground in selectedScope) {
+            MonitorRuntime.processedObservation(signal.sample.elapsedMs)
         }
         render(result, observation.ticket)
         scheduleCoverageCheckpoint(result)
@@ -310,8 +372,14 @@ class MonitoringService : AccessibilityService() {
             // Never event text, source or screen nodes.
             if (eventPackage == packageName && overlay.visible && !MonitorRuntime.ownUiVisible) return
             reconciliation?.cancel()
-            if (!acceptForeground(eventPackage, eventPackage != null)) return
-            enqueue()
+            if (eventPackage == null) {
+                refreshSafetySnapshot(reconcileAfter = true)
+            } else if (eventPackage != foreground || !safetySnapshotState.current().ready) {
+                // Re-evaluate dynamic home/dialer/keyboard roles on every foreground transition.
+                refreshSafetySnapshot(foregroundHint = eventPackage, reconcileAfter = false)
+            } else {
+                enqueue()
+            }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (failure: MonitorBoundaryException) {
@@ -488,12 +556,15 @@ class MonitoringService : AccessibilityService() {
 
     fun requestReconciliation() {
         if (!connected || !ready) return
+        val safetyRevision = safetySnapshotState.current().takeIf { it.ready }?.revision ?: return
         reconciliation?.cancel()
         reconciliation = scope.launch {
             try {
                 delay(200) // Let Android publish the activity transition; event callbacks cancel this lookup.
                 val current = monitorBoundary(MonitorFailure.METADATA, MonitorFailurePhase.RECONCILIATION,
                     MonitorFailureCode.FOREGROUND_RECONCILIATION) { dependencies.currentForeground() }
+                val latestSafety = safetySnapshotState.current()
+                if (!latestSafety.ready || latestSafety.revision != safetyRevision) return@launch
                 if (!acceptForeground(if (MonitorRuntime.ownUiVisible) packageName else current.packageName,
                         MonitorRuntime.ownUiVisible || current.known)) return@launch
                 if (current.known) MonitorRuntime.successfulReconciliation(nowElapsedRealtimeMs())
@@ -511,25 +582,10 @@ class MonitoringService : AccessibilityService() {
     }
 
     private fun acceptForeground(value: String?, known: Boolean): Boolean {
-        // Release the previous blocker before package/role metadata calls can suspend navigation.
+        // The event callback uses only the published snapshot; all PackageManager/role queries run elsewhere.
         if (value != foreground || !known) pausePresentation()
-        if (value != null && value in safePackages) {
-            try {
-                // Recheck dynamic home/dialer/keyboard roles on transitions, never on checkpoint ticks.
-                val protected = monitorBoundarySync(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
-                    MonitorFailureCode.PROTECTED_PACKAGE_LOOKUP) { dependencies.protectedPackages() }
-                if (value in protected) safePackages = safePackages - value
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (failure: MonitorBoundaryException) {
-                fail(failure.category, failure.detail); return false
-            } catch (_: Exception) {
-                fail(MonitorFailure.METADATA,
-                    MonitorFailureDetail(MonitorFailurePhase.METADATA, MonitorFailureCode.PROTECTED_PACKAGE_LOOKUP))
-                return false
-            }
-        }
-        foreground = value; foregroundKnown = known
+        foreground = value
+        foregroundKnown = known && value != null && safetySnapshotState.current().ready
         return true
     }
 
@@ -554,24 +610,55 @@ class MonitoringService : AccessibilityService() {
         generation++
         coverageRecorder?.invalidate()
         controller.abandon()
+        controllerSafetyReady = false
         coverageCheckpoint?.cancel()
         startPreferenceCollection(restart = !readiness.available)
-        scope.launch {
-            try {
-                safePackages = monitorBoundary(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
-                    MonitorFailureCode.SAFE_PACKAGE_LOOKUP, dependencies::safePackages)
-                enqueue(); requestReconciliation()
-                retryAttempt?.let { finishDiagnosticAttempt(succeeded = true, attempt = it) }
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (failure: MonitorBoundaryException) {
-                fail(failure.category, failure.detail)
-                retryAttempt?.let { finishDiagnosticAttempt(succeeded = false, attempt = it) }
-            } catch (_: Exception) {
-                fail(MonitorFailure.METADATA,
-                    MonitorFailureDetail(MonitorFailurePhase.METADATA, MonitorFailureCode.SAFE_PACKAGE_LOOKUP))
-                retryAttempt?.let { finishDiagnosticAttempt(succeeded = false, attempt = it) }
-            }
+        refreshSafetySnapshot(reconcileAfter = true, retryAttempt = retryAttempt)
+    }
+
+    private fun refreshSafetySnapshot(
+        foregroundHint: String? = null,
+        reconcileAfter: Boolean,
+        retryAttempt: Int? = null,
+    ) {
+        if (!connected || !ready) return
+        reconciliation?.cancel()
+        safetyRefreshForegroundHint = foregroundHint
+        safetyRefreshReconcileAfter = reconcileAfter
+        safetyRefreshRetryAttempt = retryAttempt
+        safetySnapshotRefresher.refresh()
+    }
+
+    private fun safetySnapshotInvalidated(revision: Long) {
+        generation++
+        safetyRefreshGeneration = generation
+        foreground = safetyRefreshForegroundHint
+        foregroundKnown = false
+        pausePresentation()
+        enqueue()
+    }
+
+    private fun safetySnapshotPublished(snapshot: SafetySnapshot) {
+        if (!connected || !ready || snapshot.revision != safetySnapshotState.current().revision ||
+            generation != safetyRefreshGeneration) return
+        if (safetyRefreshReconcileAfter) {
+            requestReconciliation()
+        } else {
+            foreground = safetyRefreshForegroundHint
+            foregroundKnown = foreground != null
+            enqueue()
         }
+        safetyRefreshRetryAttempt?.let { finishDiagnosticAttempt(succeeded = true, attempt = it) }
+        safetyRefreshRetryAttempt = null
+    }
+
+    private fun safetySnapshotFailed(failure: Exception) {
+        if (!connected || !ready || generation != safetyRefreshGeneration) return
+        if (failure is MonitorBoundaryException) fail(failure.category, failure.detail)
+        else fail(MonitorFailure.METADATA,
+            MonitorFailureDetail(MonitorFailurePhase.METADATA, MonitorFailureCode.SAFE_PACKAGE_LOOKUP))
+        safetyRefreshRetryAttempt?.let { finishDiagnosticAttempt(succeeded = false, attempt = it) }
+        safetyRefreshRetryAttempt = null
     }
 
     private fun enqueue() {
@@ -589,21 +676,23 @@ class MonitoringService : AccessibilityService() {
                 monitorBoundarySync(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
                     MonitorFailureCode.EVENT_PACKAGE_METADATA) { dependencies.zoneId() },
             )
-            val candidate = foreground?.takeIf { it in safePackages }
+            val safety = safetySnapshotState.current()
+            val candidate = foreground?.takeIf { foregroundKnown && safety.allows(it) }
             val usageAccess = monitorBoundarySync(MonitorFailure.METADATA, MonitorFailurePhase.METADATA,
                 MonitorFailureCode.EVENT_PACKAGE_METADATA) { dependencies.usageAccess() }
             val signal = readiness.guard(MonitorSignal(sample, candidate, false, usageAccess, connected,
-                interactive, MonitorRuntime.ownUiVisible, foregroundKnown))
+                interactive, MonitorRuntime.ownUiVisible, foregroundKnown && safety.ready))
             // Hide on safe/system/self/access-loss signals now, independently of a suspended budget read.
             val beforePresentation = generation
             val ticket = monitorBoundarySync(MonitorFailure.OVERLAY, MonitorFailurePhase.OVERLAY,
                 MonitorFailureCode.OVERLAY_FAILURE) {
                 presentation.transition(candidate, pause = !signal.enabled || !signal.connected ||
-                    !signal.usageAccess || !signal.interactive || signal.ownUiVisible || !signal.foregroundKnown)
+                    !signal.usageAccess || !signal.interactive || signal.ownUiVisible || !signal.foregroundKnown ||
+                    !safety.ready)
             }
             if (generation != beforePresentation) return
             if (!readiness.available) return
-            if (!sendCommand(Observation(signal, ticket, generation))) {
+            if (!sendCommand(Observation(signal, ticket, generation, safety.revision))) {
                 overflow = true
                 fail(MonitorFailure.QUEUE,
                     MonitorFailureDetail(MonitorFailurePhase.QUEUE, MonitorFailureCode.QUEUE_OVERFLOW))
@@ -719,7 +808,6 @@ class MonitoringService : AccessibilityService() {
         }
         if (::controller.isInitialized) controller.abandon()
         while (observations.tryReceive().isSuccess) {
-            pendingCommands = (pendingCommands - 1).coerceAtLeast(0)
             MonitorRuntime.commandDropped()
         }
         foreground = null; foregroundKnown = false
@@ -773,7 +861,8 @@ class MonitoringService : AccessibilityService() {
         commandConsumer?.cancel(); commandConsumer = null
         coverageRecorder?.invalidate(); coverageRecorder = null
         if (::scope.isInitialized) scope.cancel()
-        if (::observations.isInitialized) observations.close()
+        if (::safetySnapshotRefresher.isInitialized) safetySnapshotRefresher.cancel()
+        if (::observations.isInitialized) observations.cancel()
         try { registrations?.unregisterAll() } catch (_: Exception) { /* Continue releasing other resources. */ }
         registrations = null
         try { if (overlay.dismiss()) releaseLease() }
@@ -782,10 +871,9 @@ class MonitoringService : AccessibilityService() {
     }
 
     private fun sendCommand(command: Command): Boolean {
-        pendingCommands++
-        MonitorRuntime.queueDepth(pendingCommands.coerceAtMost(64))
-        if (observations.trySend(command).isSuccess) return true
-        pendingCommands = (pendingCommands - 1).coerceAtLeast(0)
+        if (observations.trySend(command) { depth ->
+                MonitorRuntime.queueDepth(depth.coerceAtMost(observations.capacity))
+            }) return true
         MonitorRuntime.commandDropped()
         return false
     }

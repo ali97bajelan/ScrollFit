@@ -28,7 +28,8 @@ data class MonitorDecision(
 }
 
 /** One serialized caller owns observations. Unknown process downtime is never backfilled. */
-class MonitoringController(private val engine: BudgetEngine, private val protectedPackages: Set<String>) {
+class MonitoringController(private val engine: BudgetEngine, protectedPackages: Set<String>) {
+    private var protectedPackages = protectedPackages.toSet()
     private var previous: MonitorSample? = null
     private var chargeable: String? = null
     private var decision = MonitorDecision(MonitoringHealth.SERVICE_STOPPED)
@@ -74,6 +75,11 @@ class MonitoringController(private val engine: BudgetEngine, private val protect
             tickDelayMs = if (access != null && access.usableMs > 0) minOf(1000L, access.usableMs) else 1000,
             sessionAccess = access)
         return decision
+    }
+
+    /** Service worker applies a newly qualified safety snapshot between observations. */
+    fun updateProtectedPackages(packages: Set<String>) {
+        protectedPackages = packages.toSet()
     }
 
     /** Storage, queue or overlay failures discard the in-memory interval until fresh reconciliation. */

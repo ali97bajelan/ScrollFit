@@ -95,6 +95,8 @@ Implementation handoff: [I08 implementation details and unrun fixtures](implemen
 
 ## I09 — Callback latency
 
+Implementation handoff and QA-only stage-timing fixture: [I09 handoff](implementation-handoff-I09.md). The fixture reports sample count, median, p95 and max; its printed values are not results until run during QA.
+
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |
 | I09-01 / JVM + Measure | Slow metadata latch and active overlay | Switch target → safe/unknown while latch remains held | Dismissal/invalidation occurs before latch release; callback performs no blocking package/role lookup; no old result reinstates overlay |
@@ -104,6 +106,8 @@ Implementation handoff: [I08 implementation details and unrun fixtures](implemen
 
 ## I10 — Documentation and provenance
 
+Current source/artifact inventory: [CURRENT_VERIFICATION.md](CURRENT_VERIFICATION.md). The local APK is inventory-only until exact tested source and signing provenance are established.
+
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |
 | I10-01 / Review | README/status/config/current task register | Cross-check delivery claims, min/compile/target SDK and version | Current overview reflects source and pending QA; baseline 28/37/35, JVM17, versionCode2 / 0.2.0-t02; old target37 assumptions identified; dated history not rewritten |
@@ -112,7 +116,7 @@ Implementation handoff: [I08 implementation details and unrun fixtures](implemen
 
 ## I11 — Accessibility and physical use
 
-Expand conditions into explicit rows rather than a single group PASS. Screens: Welcome/setup/health/Home/settings/history/Learn/Position/countdown/workout/help/result/blocker. Matrix: Persian RTL/English/French × light/dark × portrait 320 dp/landscape 640×360 dp × font 100%/200%; add TalkBack and mute/no-offline-voice/reduced-motion branches. Shared I04 rows may reuse evidence only with identical source/build/conditions.
+Expand conditions into explicit rows rather than a single group PASS. The [I11 accessibility matrix](I11-accessibility-matrix.md) has 828 rows for Welcome/setup/health/Home/settings/history/Learn/Position/countdown/workout/help/result/blocker; Persian RTL/English/French; light/dark; portrait 320 dp/landscape 640×360 dp; font 100%/200%; TalkBack; and mute/no-offline-voice/reduced-motion branches. All rows start NOT RUN. Shared I04 rows may reuse evidence only with identical source/build/conditions.
 
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |

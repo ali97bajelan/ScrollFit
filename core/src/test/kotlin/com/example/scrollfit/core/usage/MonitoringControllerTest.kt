@@ -130,6 +130,33 @@ class MonitoringControllerTest {
         assertEquals(500L, repo.combinedUsage().consumedMs)
     }
 
+    @Test fun staleSamplesPauseWithoutSpendUntilFreshInterval() = run {
+        setup(); controller.observe(signal()); advance(5001)
+        val stale = controller.observe(signal())
+        assertEquals(MonitorIssue.OBSERVATION_GAP, stale.issue)
+        assertEquals(5001L, stale.unmonitoredMs)
+        controller.abandon()
+        assertEquals(0L, repo.combinedUsage().consumedMs)
+
+        advance(1000); controller.observe(signal(known = false))
+        advance(100); controller.observe(signal())
+        advance(100); controller.observe(signal())
+        assertEquals(100L, repo.combinedUsage().consumedMs)
+    }
+
+    @Test fun refreshedProtectedRoleStopsAndThenRestoresEligibilitySafely() = run {
+        setup(); controller.observe(signal("a")); advance(500)
+        controller.observe(signal("a", known = false))
+        controller.updateProtectedPackages(setOf("a"))
+        advance(500); controller.observe(signal("a"))
+        assertEquals(500L, repo.combinedUsage().consumedMs)
+
+        controller.updateProtectedPackages(emptySet())
+        advance(100); controller.observe(signal("a"))
+        advance(100); controller.observe(signal("a"))
+        assertEquals(600L, repo.combinedUsage().consumedMs)
+    }
+
     @Test fun storageFailureNeverResetsBudgetAndAbandonDiscardsUnknownInterval() = run {
         setup(); controller.observe(signal()); advance(500); store.failNextUsage = true
         try { controller.observe(signal()); fail() } catch (_: IllegalStateException) { }

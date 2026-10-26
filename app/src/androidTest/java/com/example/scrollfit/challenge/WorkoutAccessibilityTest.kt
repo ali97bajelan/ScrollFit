@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.fetchSemanticsNode
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -57,6 +58,14 @@ class WorkoutAccessibilityTest {
         assertTrue(count[SemanticsProperties.StateDescription].isNotBlank())
         compose.onNodeWithTag("workout_audio").assertDoesNotExist()
         compose.onNodeWithText(compose.activity.getString(R.string.camera_cancel)).assertExists()
+    }
+
+    @Test fun helpAndEndRemainLabeledActionsWithMinimumTouchHeight() {
+        showWorkout(required = 10)
+
+        compose.onNodeWithTag("workout_help").assertHasClickAction().assertHeightIsAtLeast(48.dp)
+        compose.onNodeWithTag("workout_end").assertHasClickAction().assertHeightIsAtLeast(48.dp)
+        compose.onNodeWithTag("workout_audio").assertHasClickAction().assertHeightIsAtLeast(48.dp)
     }
 
     @Test fun cameraErrorsUseTheSinglePoliteStatusNodeImmediately() {

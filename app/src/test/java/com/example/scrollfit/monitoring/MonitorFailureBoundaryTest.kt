@@ -36,6 +36,8 @@ class MonitorFailureBoundaryTest {
             unregisterUsageWatcher = { watcherStops++ },
             registerScreenReceiver = { receiverStarts++; error("injected registration failure") },
             unregisterScreenReceiver = { receiverStops++ },
+            registerPackageReceiver = {}, unregisterPackageReceiver = {},
+            registerSystemReceiver = {}, unregisterSystemReceiver = {},
             onFailure = { code, _ -> reported += code },
         )
 
@@ -56,6 +58,8 @@ class MonitorFailureBoundaryTest {
             unregisterUsageWatcher = { watcherStops++ },
             registerScreenReceiver = {},
             unregisterScreenReceiver = { receiverStops++; error("injected unregister failure") },
+            registerPackageReceiver = {}, unregisterPackageReceiver = {},
+            registerSystemReceiver = {}, unregisterSystemReceiver = {},
             onFailure = { code, _ -> reported += code },
         )
         assertTrue(registrations.register())

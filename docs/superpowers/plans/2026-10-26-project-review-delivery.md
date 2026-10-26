@@ -168,9 +168,9 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Prepare a QA-only before/after timing harness for callback, metadata, queue and persistence delays with deterministic slow dependencies. Keep production collection bounded to I07 aggregates.
-- [ ] Move package/role queries off callbacks and add invalidation on package/role/input-method/configuration changes. Synchronize safe dismissal before async refresh; reject old revisions.
-- [ ] Write `slowMetadataDoesNotDelayDismissal`, `roleChangeWithholdsEligibility`, `staleSafetyRefreshIgnored`, `overflowAndStaleSamplesPauseWithoutSpend`; include exactly 65 queued commands and 5,001 ms old sample. No benchmark/test run yet.
+- [x] Prepare a QA-only before/after timing harness for callback, metadata, queue and persistence delays with deterministic slow dependencies. Keep production collection bounded to I07 aggregates.
+- [x] Move package/role queries off callbacks; invalidate on package/input-method/configuration broadcasts and foreground transitions that re-evaluate dynamic roles. Synchronize safe dismissal before async refresh and reject old revisions. A direct role-holder observer is privileged, so record that limitation.
+- [x] Write `slowMetadataDoesNotDelayDismissal`, `roleChangeWithholdsEligibility`, `staleSafetyRefreshIgnored`, `overflowAndStaleSamplesPauseWithoutSpend`; include exactly 65 queued commands and 5,001 ms old sample. No benchmark/test run yet.
 
 ### Phase 2 — QA
 
@@ -185,8 +185,8 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Reconcile current overview with existing source and dated T14/T15/build/guide records. State that full core/native/phone gates need current evidence.
-- [ ] Prepare current matrix with NOT RUN entries and actual build-config values. Record artifact hashes only when the inspected artifact exists, explicitly distinguishing inventory from tested provenance. Do not build an artifact here.
+- [x] Reconcile current overview with existing source and dated T14/T15/build/guide records. State that full core/native/phone gates need current evidence.
+- [x] Prepare current matrix with NOT RUN entries and actual build-config values. Record artifact hashes only when the inspected artifact exists, explicitly distinguishing inventory from tested provenance. Do not build an artifact here.
 
 ### Phase 2 — QA
 
@@ -201,8 +201,8 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Prepare explicit screen × locale/theme/size/font/audio/TalkBack matrix. Add focused fixtures checking reachable actions, reading order, disabled/recovery descriptions and guide transforms.
-- [ ] Correct source-confirmed layout/semantic defects if identified; record reproduction hypotheses for QA rather than presuming all old failures remain. Document unrun fixture names and control bounds.
+- [x] Prepare explicit screen × locale/theme/size/font/audio/TalkBack matrix. Add focused fixtures checking reachable actions, reading order, disabled/recovery descriptions and guide transforms.
+- [x] Correct source-confirmed layout/semantic defects if identified; record reproduction hypotheses for QA rather than presuming all old failures remain. Document unrun fixture names and control bounds.
 
 ### Phase 2 — QA
 

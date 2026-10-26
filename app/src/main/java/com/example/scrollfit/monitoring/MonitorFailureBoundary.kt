@@ -39,10 +39,16 @@ internal class MonitorRegistrations(
     private val unregisterUsageWatcher: () -> Unit,
     private val registerScreenReceiver: () -> Unit,
     private val unregisterScreenReceiver: () -> Unit,
+    private val registerPackageReceiver: () -> Unit,
+    private val unregisterPackageReceiver: () -> Unit,
+    private val registerSystemReceiver: () -> Unit,
+    private val unregisterSystemReceiver: () -> Unit,
     private val onFailure: (MonitorFailureCode, Exception) -> Unit,
 ) {
     private var usageWatcherRegistered = false
     private var screenReceiverRegistered = false
+    private var packageReceiverRegistered = false
+    private var systemReceiverRegistered = false
 
     fun register(): Boolean {
         if (!usageWatcherRegistered) {
@@ -70,11 +76,57 @@ internal class MonitorRegistrations(
                 return false
             }
         }
+        if (!packageReceiverRegistered) {
+            try {
+                registerPackageReceiver()
+                packageReceiverRegistered = true
+            } catch (cancelled: CancellationException) {
+                try { unregisterAll() } catch (_: CancellationException) { /* Preserve the registration cancellation. */ }
+                throw cancelled
+            } catch (failure: Exception) {
+                onFailure(MonitorFailureCode.PACKAGE_RECEIVER_REGISTER, failure)
+                unregisterAll()
+                return false
+            }
+        }
+        if (!systemReceiverRegistered) {
+            try {
+                registerSystemReceiver()
+                systemReceiverRegistered = true
+            } catch (cancelled: CancellationException) {
+                try { unregisterAll() } catch (_: CancellationException) { /* Preserve the registration cancellation. */ }
+                throw cancelled
+            } catch (failure: Exception) {
+                onFailure(MonitorFailureCode.SYSTEM_RECEIVER_REGISTER, failure)
+                unregisterAll()
+                return false
+            }
+        }
         return true
     }
 
     fun unregisterAll() {
         var cancellation: CancellationException? = null
+        if (systemReceiverRegistered) {
+            systemReceiverRegistered = false
+            try {
+                unregisterSystemReceiver()
+            } catch (cancelled: CancellationException) {
+                cancellation = cancelled
+            } catch (failure: Exception) {
+                onFailure(MonitorFailureCode.SYSTEM_RECEIVER_UNREGISTER, failure)
+            }
+        }
+        if (packageReceiverRegistered) {
+            packageReceiverRegistered = false
+            try {
+                unregisterPackageReceiver()
+            } catch (cancelled: CancellationException) {
+                if (cancellation == null) cancellation = cancelled
+            } catch (failure: Exception) {
+                onFailure(MonitorFailureCode.PACKAGE_RECEIVER_UNREGISTER, failure)
+            }
+        }
         if (screenReceiverRegistered) {
             screenReceiverRegistered = false
             try {

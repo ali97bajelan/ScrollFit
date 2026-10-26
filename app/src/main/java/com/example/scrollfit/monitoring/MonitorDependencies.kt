@@ -47,8 +47,7 @@ internal interface MonitorDependencies {
     fun usageAccess(): Boolean
     fun isInteractive(): Boolean
     fun isKeyguardLocked(): Boolean
-    fun protectedPackages(): Set<String>
-    suspend fun safePackages(): Set<String>
+    suspend fun safetySnapshot(revision: Long): SafetySnapshot
     suspend fun currentForeground(): ForegroundResult
     suspend fun budgetEngine(bootIdentity: String): BudgetEngine
     suspend fun coverageRecorder(bootIdentity: String, sessionId: String): CoverageRecorder
@@ -87,10 +86,8 @@ internal class AndroidMonitorDependencies(
     override fun usageAccess() = MonitorAccess.usage(service)
     override fun isInteractive() = requireNotNull(service.getSystemService(PowerManager::class.java)).isInteractive
     override fun isKeyguardLocked() = requireNotNull(service.getSystemService(KeyguardManager::class.java)).isKeyguardLocked
-    override fun protectedPackages() = TargetApps.protectedPackages(service)
-
-    override suspend fun safePackages(): Set<String> = withContext(Dispatchers.IO) {
-        TargetApps.list(service).map { it.packageName }.toSet()
+    override suspend fun safetySnapshot(revision: Long): SafetySnapshot = withContext(Dispatchers.IO) {
+        TargetApps.safetySnapshot(service, revision)
     }
 
     override suspend fun currentForeground(): ForegroundResult = withContext(Dispatchers.IO) {
