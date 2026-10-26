@@ -14,6 +14,7 @@
     <string name="monitor_queue_failed">رویدادهای پایش با تأخیر رسیده‌اند؛ بازهٔ نامطمئن محاسبه نشد. برنامه را دوباره باز کنید.</string>
     <string name="monitor_interrupted">پایش توسط سیستم متوقف شد؛ وضعیت دسترس‌پذیری را بررسی کنید.</string>
     <string name="monitor_metadata_failed">اطلاعات برنامهٔ جلوی صفحه در دسترس نیست؛ پایش متوقف است. دوباره بررسی کنید.</string>
+    <string name="monitor_registration_failed">ثبت یا پاک‌سازی پایش کامل نشد؛ سرویس متوقف است. دوباره تلاش کنید.</string>
     <string name="monitor_gap">بازه‌هایی بدون پایش وجود دارد؛ زمان ثبت‌نشده به معنی مصرف صفر نیست.</string>
     <string name="monitor_reboot_notice">بعد از راه‌اندازی مجدد، ادامهٔ پایش به اتصال سرویس توسط اندروید وابسته است. اگر وضعیت «آماده نیست» باقی ماند، دسترس‌پذیری را بررسی کنید. بازهٔ قطع سرویس محاسبه نمی‌شود.</string>
     <string name="monitor_usage_settings">تنظیمات دسترسی به مصرف برنامه‌ها</string>

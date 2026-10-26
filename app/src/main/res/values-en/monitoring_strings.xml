@@ -14,6 +14,7 @@
     <string name="monitor_queue_failed">Monitoring events arrived late, so the uncertain interval was not counted. Reopen the app.</string>
     <string name="monitor_interrupted">The system stopped monitoring. Check Accessibility settings.</string>
     <string name="monitor_metadata_failed">Foreground app details are unavailable. Monitoring has stopped; check again.</string>
+    <string name="monitor_registration_failed">Monitoring could not finish registering its system callbacks. Retry from ScrollFit.</string>
     <string name="monitor_gap">Some intervals were not monitored. Unrecorded time does not mean zero usage.</string>
     <string name="monitor_reboot_notice">After a restart, Android must reconnect the service for monitoring to continue. If the status remains “Not ready,” check Accessibility settings. Time while the service is disconnected is not counted.</string>
     <string name="monitor_usage_settings">App usage access settings</string>

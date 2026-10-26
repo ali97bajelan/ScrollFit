@@ -13,6 +13,8 @@ import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.usage.CoverageRecorder
 import com.example.scrollfit.core.usage.BlockReason
 import com.example.scrollfit.platform.data.ExerciseGatePersistence
+import com.example.scrollfit.platform.data.LocalInstallIdentity
+import com.example.scrollfit.platform.data.RestoreStateCleaner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -41,6 +43,7 @@ internal interface MonitorDependencies {
     fun wallTimeMs(): Long
     fun zoneId(): String
     fun bootIdentity(): String
+    suspend fun prepareReadiness()
     fun usageAccess(): Boolean
     fun isInteractive(): Boolean
     fun isKeyguardLocked(): Boolean
@@ -57,14 +60,30 @@ internal interface MonitorDependencies {
 internal class AndroidMonitorDependencies(
     private val service: MonitoringService,
 ) : MonitorDependencies {
+    private val app: ScrollFitApplication
+        get() = service.application as ScrollFitApplication
+    private val installIdentity: LocalInstallIdentity
+        get() = app.localInstallIdentity ?: LocalInstallIdentity.open(service)
     private val persistence: ExerciseGatePersistence
-        get() = (service.application as ScrollFitApplication).persistence
+        get() = app.persistence
 
     override val preferences: Flow<AppPreferences> get() = persistence.preferences.values
     override fun elapsedRealtimeMs() = SystemClock.elapsedRealtime()
     override fun wallTimeMs() = System.currentTimeMillis()
     override fun zoneId() = ZoneId.systemDefault().id
-    override fun bootIdentity() = MonitorAccess.bootIdentity(service)
+    override fun bootIdentity() = installIdentity.bootIdentity(MonitorAccess.bootCount(service))
+    override suspend fun prepareReadiness() {
+        if (!app.localInstallReady) {
+            RestoreStateCleaner.clear(service)
+            installIdentity.markMonitoringReadinessPrepared()
+            app.markLocalInstallReady()
+        }
+        if (!installIdentity.requiresFreshMonitoringReadiness) return
+        persistence.preferences.update { preferences ->
+            if (preferences.monitoringEnabled) preferences.copy(monitoringEnabled = false) else preferences
+        }
+        installIdentity.markMonitoringReadinessPrepared()
+    }
     override fun usageAccess() = MonitorAccess.usage(service)
     override fun isInteractive() = requireNotNull(service.getSystemService(PowerManager::class.java)).isInteractive
     override fun isKeyguardLocked() = requireNotNull(service.getSystemService(KeyguardManager::class.java)).isKeyguardLocked

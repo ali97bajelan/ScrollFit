@@ -14,6 +14,7 @@
     <string name="monitor_queue_failed">Des événements de suivi sont arrivés en retard ; l’intervalle incertain n’a pas été compté. Rouvrez l’application.</string>
     <string name="monitor_interrupted">Le système a interrompu le suivi. Vérifiez les paramètres d’accessibilité.</string>
     <string name="monitor_metadata_failed">Les informations sur l’application au premier plan sont indisponibles. Le suivi a été arrêté ; vérifiez à nouveau.</string>
+    <string name="monitor_registration_failed">Le suivi n’a pas pu enregistrer ses rappels système. Réessayez depuis ScrollFit.</string>
     <string name="monitor_gap">Certains intervalles n’ont pas été suivis. Une durée non enregistrée ne signifie pas une utilisation nulle.</string>
     <string name="monitor_reboot_notice">Après un redémarrage, Android doit reconnecter le service pour que le suivi reprenne. Si l’état reste « Pas prêt », vérifiez les paramètres d’accessibilité. Le temps pendant lequel le service est déconnecté n’est pas compté.</string>
     <string name="monitor_usage_settings">Paramètres d’accès aux statistiques d’utilisation</string>

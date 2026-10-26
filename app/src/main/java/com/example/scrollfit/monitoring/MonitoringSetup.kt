@@ -363,4 +363,6 @@ internal fun MonitorFailure.message(): Int = when (this) {
     MonitorFailure.QUEUE -> R.string.monitor_queue_failed
     MonitorFailure.INTERRUPTED -> R.string.monitor_interrupted
     MonitorFailure.METADATA -> R.string.monitor_metadata_failed
+    MonitorFailure.REGISTRATION -> R.string.monitor_registration_failed
+    MonitorFailure.NAVIGATION -> R.string.monitor_navigation_failed
 }

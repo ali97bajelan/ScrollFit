@@ -63,6 +63,8 @@ Implementation fixture and handoff: [I03–I05 implementation handoff](implement
 
 ## I06 — Boundary failures
 
+Implementation handoff: [I06 implementation details and unrun fixtures](implementation-handoff-I06.md).
+
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |
 | I06-01 / JVM + Android | Reconciler throws IllegalStateException rather than SecurityException | Request reconciliation while prior status was healthy | Exception handled at reconciliation boundary; phase RECONCILIATION, failed/stopped eligibility, coverage invalidated, no unhandled child exception or stale healthy state; retry works after fault clears |
@@ -72,6 +74,8 @@ Implementation fixture and handoff: [I03–I05 implementation handoff](implement
 
 ## I07 — Diagnostics
 
+Implementation handoff: [I07 implementation details and unrun fixtures](implementation-handoff-I07.md).
+
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |
 | I07-01 / JVM + Review | At least 10,000 sanitized observation/failure events | Record snapshots and inspect schema/output | Last 128 records only; fixed-size aggregate counters correct; bounded memory; no packages/text/raw events/camera/stack trace or unbounded history |
@@ -79,6 +83,8 @@ Implementation fixture and handoff: [I03–I05 implementation handoff](implement
 | I07-03 / JVM + Measure | Slow processing, queue high-water and dropped commands | Fill/overflow queue, recover and inspect counters/retry results | Accurate high-water/dropped/latency count-total-max, no synchronous storage on diagnostic writes; gap/retry visible without claiming non-target idle is a live selected-app countdown |
 
 ## I08 — Backup and transfer
+
+Implementation handoff: [I08 implementation details and unrun fixtures](implementation-handoff-I08.md). Storage policy: [PRIVACY_STORAGE_POLICY.md](../../PRIVACY_STORAGE_POLICY.md).
 
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |

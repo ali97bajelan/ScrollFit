@@ -85,8 +85,3 @@ internal class MonitorLifecycle(
         true
     }
 }
-
-internal class MonitorInitializationException(
-    val failure: MonitorFailure,
-    cause: Exception,
-) : Exception(cause)

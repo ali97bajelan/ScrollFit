@@ -117,9 +117,9 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Guard each Android/asynchronous boundary, rethrow `CancellationException`, and classify failures by phase. On failure invalidate processing/coverage and publish truthful health.
-- [ ] Track usage-listener/receiver registration independently. Cleanup handles partial setup and continues releasing resources after an unregister error; preserve the overlay-removal lease contract.
-- [ ] Write `nonSecurityReconcileFailureStopsHealth`, `secondRegistrationFailureCleansFirst`, `cleanupContinuesAfterUnregisterThrows`, `cancellationPropagates`, `removalFailureRetainsOwnership` with no test execution.
+- [x] Guard each Android/asynchronous boundary, rethrow `CancellationException`, and classify failures by phase. On failure invalidate processing/coverage and publish truthful health.
+- [x] Track usage-listener/receiver registration independently. Cleanup handles partial setup and continues releasing resources after an unregister error; preserve the overlay-removal lease contract.
+- [x] Write `nonSecurityReconcileFailureStopsHealth`, `secondRegistrationFailureCleansFirst`, `cleanupContinuesAfterUnregisterThrows`, `cancellationPropagates`, `removalFailureRetainsOwnership` with no test execution.
 
 ### Phase 2 — QA
 
@@ -134,9 +134,9 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Add non-suspending bounded recording for phase/code/retry results and aggregate queue/processing latency. Keep package/event/camera data out of fields and string formatting.
-- [ ] Distinguish last selected-app processing from reconciliation/checkpoints; reset process-local scope explicitly on restart and make cross-boot age Unknown.
-- [ ] Write `ringRetainsLast128`, `noPrivatePayloadInSnapshot`, `monotonicAgeIgnoresWallClock`, `dropsAndLatencyAggregateWithoutGrowth`; record tests as unrun.
+- [x] Add non-suspending bounded recording for phase/code/retry results and aggregate queue/processing latency. Keep package/event/camera data out of fields and string formatting.
+- [x] Distinguish last selected-app processing from reconciliation/checkpoints; reset process-local scope explicitly on restart and make cross-boot age Unknown.
+- [x] Write `ringRetainsLast128`, `noPrivatePayloadInSnapshot`, `monotonicAgeIgnoresWallClock`, `dropsAndLatencyAggregateWithoutGrowth`; record tests as unrun.
 
 ### Phase 2 — QA
 
@@ -151,9 +151,9 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Inventory all app data/storage domains and current backup configuration; implement explicit exclusions under the spec's proposed all-state exclusion policy. Include current/future feature stores and device-protected equivalents; document OEM qualification limits.
-- [ ] If old-restored enabled/cursor state can establish readiness or collide across devices, add a device-local non-backed-up install/timeline guard without resetting the current install's existing accounting.
-- [ ] Prepare synthetic old-backup and second-device fixtures asserting fresh readiness and no cursor suppression; document exact cloud/transfer test procedures, without running a device or Gradle command.
+- [x] Inventory all app data/storage domains and current backup configuration; implement explicit exclusions under the spec's proposed all-state exclusion policy. Include current/future feature stores and device-protected equivalents; document OEM qualification limits.
+- [x] If old-restored enabled/cursor state can establish readiness or collide across devices, add a device-local non-backed-up install/timeline guard without resetting the current install's existing accounting.
+- [x] Prepare synthetic old-backup and second-device fixtures asserting fresh readiness and no cursor suppression; document exact cloud/transfer test procedures, without running a device or Gradle command.
 
 ### Phase 2 — QA
 
