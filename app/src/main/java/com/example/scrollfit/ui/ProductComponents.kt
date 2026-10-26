@@ -22,8 +22,16 @@ import androidx.compose.ui.platform.LocalContext
 import java.text.NumberFormat
 
 @Composable
-internal fun ProductPage(@StringRes title: Int, content: @Composable ColumnScope.() -> Unit) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+internal fun ProductPage(
+    @StringRes title: Int,
+    scrollResetKey: Any? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val scrollState = rememberScrollState()
+    if (scrollResetKey != null) {
+        LaunchedEffect(scrollResetKey) { scrollState.scrollTo(0) }
+    }
+    Column(Modifier.fillMaxSize().verticalScroll(scrollState).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(title), style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.semantics { heading() })

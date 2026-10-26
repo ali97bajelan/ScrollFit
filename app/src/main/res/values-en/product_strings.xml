@@ -7,7 +7,7 @@
     <string name="product_read_error">Saved data could not be read. Try again.</string>
     <string name="product_save_error">The action could not be saved. Try again.</string>
     <string name="product_metric">%1$s: %2$s</string>
-    <string name="product_duration">%1$s hr %2$s min %3$s sec</string>
+    <string name="product_duration">%1$s hr %2$s min</string>
     <string name="product_combined_summary">Shared daily limit</string>
     <string name="product_show_awards">Show reward details</string>
     <string name="product_hide_awards">Hide reward details</string>
@@ -26,8 +26,8 @@
     <string name="product_session_pending">A Continue or Finish prompt is pending and appears when you open the app.</string>
     <string name="product_recorded_notice">Only recorded time is shown. Unmonitored time does not mean zero usage.</string>
     <string name="product_refresh">Refresh saved data</string>
-    <string name="product_defaults_notice">Suggested amounts are editable product defaults, not a personal exercise prescription. Settings changes preserve today’s usage and earned time.</string>
-    <string name="product_rule">%1$s complete repetitions; suggested time award: %2$s seconds</string>
+    <string name="product_defaults_notice">Suggested values are editable and are not a personal exercise prescription. Changes preserve today’s usage and earned time.</string>
+    <string name="product_rule">%1$s complete reps; suggested reward: %2$s</string>
     <string name="product_history_notice">Usage and exercise are shown separately. History contains saved, undeleted records and does not establish full-day monitoring coverage.</string>
     <string name="product_history_empty">No visible history has been saved yet.</string>
     <string name="product_usage">App usage</string>
@@ -38,7 +38,7 @@
     <string name="product_active">Observed active exercise time</string>
     <string name="product_onboarding_limits">Editable defaults: 30 minutes of free time per app each day, a 60-minute shared daily limit, a 20-minute daily reward cap per app and 5-minute sessions. Monitoring starts only when you explicitly enable it.</string>
     <string name="product_repetitions">Complete repetitions (greater than zero)</string>
-    <string name="product_reward_seconds">Time award (greater than zero)</string>
+    <string name="product_reward_seconds">Time per reward</string>
     <string name="product_camera">Preferred camera</string>
     <string name="product_last_exercise">Exercise preselected for next time</string>
     <string name="product_delete_explanation">Delete exercise activity and hide usage history. Today’s usage, earned time, sessions and duplicate-award protection remain. This cannot be undone.</string>
@@ -48,11 +48,11 @@
     <string name="product_about">Setup and privacy information</string>
     <string name="product_search">Search apps</string>
     <string name="product_no_matches">No apps match this search.</string>
-    <string name="product_cap_seconds">Daily reward cap for this app (zero allowed)</string>
-    <string name="product_cap_notice">The daily reward cap counts all time awarded today, including time already spent. Lowering it keeps earned time you already have. A zero cap stops new awards.</string>
+    <string name="product_cap_seconds">Daily reward cap</string>
+    <string name="product_cap_notice">The cap counts all rewards earned today, including time already used. Lowering it keeps existing earned time; zero stops new rewards.</string>
     <string name="product_enable_access">To enable monitoring, grant Usage Access and connect the Accessibility service, then return here.</string>
     <string name="product_back">Back</string>
-    <string name="product_unavailable_target">This app is currently unavailable for selection and its monitoring cannot be confirmed. Its saved selection is retained; you can remove it explicitly.</string>
+    <string name="product_unavailable_target">This app can’t be monitored now. Its saved selection remains until you remove it.</string>
     <string name="product_remove_target">Remove from selected apps</string>
     <string name="product_award_limit">Daily reward cap</string>
 </resources>

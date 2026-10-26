@@ -104,7 +104,8 @@ internal fun ExerciseCatalog(onExercise: (Exercise) -> Unit, onEarn: () -> Unit)
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(exercise.label()), style = MaterialTheme.typography.titleLarge)
-                        Text(stringResource(R.string.product_rule, number(rule.repetitions), number(rule.rewardSeconds)))
+                        Text(stringResource(R.string.product_rule, number(rule.repetitions),
+                            duration(Math.multiplyExact(rule.rewardSeconds, 1_000L))))
                         Text(stringResource(when (exercise) {
                             Exercise.PUSH_UP -> R.string.push_up_guidance
                             Exercise.SQUAT -> R.string.squat_guidance

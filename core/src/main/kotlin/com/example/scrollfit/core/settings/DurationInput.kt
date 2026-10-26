@@ -1,7 +1,9 @@
 package com.example.scrollfit.core.settings
 
 enum class DurationUnit(val milliseconds: Long) {
+    HOURS(3_600_000L),
     MINUTES(60_000L),
+    // Retained for existing saved values; duration settings now expose hours and minutes.
     SECONDS(1_000L),
 }
 

@@ -50,20 +50,28 @@ internal data class DurationDraft(
         fun fromMilliseconds(milliseconds: Long): DurationDraft {
             require(milliseconds >= 0L)
             return when {
+                milliseconds >= DurationUnit.HOURS.milliseconds &&
+                    milliseconds % DurationUnit.HOURS.milliseconds == 0L -> DurationDraft(
+                    value = (milliseconds / DurationUnit.HOURS.milliseconds).toString(),
+                    unit = DurationUnit.HOURS,
+                    preservedMilliseconds = milliseconds,
+                )
                 milliseconds % DurationUnit.MINUTES.milliseconds == 0L -> DurationDraft(
                     value = (milliseconds / DurationUnit.MINUTES.milliseconds).toString(),
                     unit = DurationUnit.MINUTES,
                     preservedMilliseconds = milliseconds,
                 )
-                milliseconds % DurationUnit.SECONDS.milliseconds == 0L -> DurationDraft(
-                    value = (milliseconds / DurationUnit.SECONDS.milliseconds).toString(),
-                    unit = DurationUnit.SECONDS,
-                    preservedMilliseconds = milliseconds,
-                )
-                else -> DurationDraft("", DurationUnit.SECONDS, milliseconds)
+                else -> DurationDraft("", DurationUnit.MINUTES, milliseconds)
             }
         }
     }
+}
+
+private fun DurationDraft.withHourMinuteUnit(): DurationDraft {
+    if (unit != DurationUnit.SECONDS) return this
+    val savedMilliseconds = milliseconds(positive = false)
+        ?: return copy(value = "", unit = DurationUnit.MINUTES)
+    return DurationDraft.fromMilliseconds(savedMilliseconds)
 }
 
 internal val durationDraftSaver: Saver<DurationDraft, ArrayList<String>> = Saver(
@@ -74,9 +82,9 @@ internal val durationDraftSaver: Saver<DurationDraft, ArrayList<String>> = Saver
         DurationDraft(
             value = saved.getOrElse(0) { "" },
             unit = saved.getOrNull(1)?.let { runCatching { DurationUnit.valueOf(it) }.getOrNull() }
-                ?: DurationUnit.SECONDS,
+                ?: DurationUnit.MINUTES,
             preservedMilliseconds = saved.getOrNull(2)?.toLongOrNull(),
-        )
+        ).withHourMinuteUnit()
     },
 )
 
@@ -88,7 +96,7 @@ internal val durationDraftMapSaver: Saver<Map<String, DurationDraft>, ArrayList<
         saved.chunked(4).mapNotNull { entry ->
             if (entry.size != 4) return@mapNotNull null
             val unit = runCatching { DurationUnit.valueOf(entry[2]) }.getOrNull() ?: return@mapNotNull null
-            entry[0] to DurationDraft(entry[1], unit, entry[3].toLongOrNull())
+            entry[0] to DurationDraft(entry[1], unit, entry[3].toLongOrNull()).withHourMinuteUnit()
         }.toMap()
     },
 )
@@ -126,12 +134,27 @@ internal fun DurationSetting(
                     milliseconds == null -> Text(stringResource(if (positive) R.string.product_positive_error else R.string.product_nonnegative_error))
                     unitError -> Text(stringResource(R.string.ux_duration_unit_error), color = MaterialTheme.colorScheme.error)
                     preservedMilliseconds != null && value.isEmpty() -> Text(
-                        stringResource(R.string.ux_duration_preserved, duration(preservedMilliseconds)))
+                        stringResource(
+                            if (preservedMilliseconds % DurationUnit.MINUTES.milliseconds == 0L)
+                                R.string.ux_duration_preserved
+                            else R.string.ux_duration_preserved_partial,
+                            duration(preservedMilliseconds),
+                        ))
                     else -> Text(stringResource(R.string.ux_duration_hint, duration(milliseconds)))
                 }
             },
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = unit == DurationUnit.HOURS,
+                onClick = {
+                    if (unit == DurationUnit.HOURS) unitError = false
+                    else selectUnit(DurationUnit.HOURS, milliseconds, unit, onUnitChange) { unitError = true }
+                },
+                modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp),
+                label = { Text(stringResource(R.string.ux_duration_unit_hours), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                enabled = enabled,
+            )
             FilterChip(
                 selected = unit == DurationUnit.MINUTES,
                 onClick = {
@@ -140,16 +163,6 @@ internal fun DurationSetting(
                 },
                 modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp),
                 label = { Text(stringResource(R.string.ux_duration_unit_minutes), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                enabled = enabled,
-            )
-            FilterChip(
-                selected = unit == DurationUnit.SECONDS,
-                onClick = {
-                    if (unit == DurationUnit.SECONDS) unitError = false
-                    else selectUnit(DurationUnit.SECONDS, milliseconds, unit, onUnitChange) { unitError = true }
-                },
-                modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp),
-                label = { Text(stringResource(R.string.ux_duration_unit_seconds), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 enabled = enabled,
             )
         }

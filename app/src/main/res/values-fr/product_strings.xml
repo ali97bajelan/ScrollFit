@@ -7,7 +7,7 @@
     <string name="product_read_error">Impossible de lire les données enregistrées. Réessayez.</string>
     <string name="product_save_error">Impossible d’enregistrer cette action. Réessayez.</string>
     <string name="product_metric">%1$s : %2$s</string>
-    <string name="product_duration">%1$s h %2$s min %3$s s</string>
+    <string name="product_duration">%1$s h %2$s min</string>
     <string name="product_combined_summary">Limite quotidienne partagée</string>
     <string name="product_show_awards">Afficher le détail des gains</string>
     <string name="product_hide_awards">Masquer le détail des gains</string>
@@ -26,8 +26,8 @@
     <string name="product_session_pending">Un choix Continuer ou Terminer est en attente à l’ouverture de l’application.</string>
     <string name="product_recorded_notice">Seul le temps enregistré est affiché. Une période non suivie ne signifie pas une utilisation nulle.</string>
     <string name="product_refresh">Actualiser les données</string>
-    <string name="product_defaults_notice">Les valeurs proposées sont modifiables et ne constituent pas une prescription sportive personnelle. Les modifications préservent l’utilisation du jour et le temps gagné.</string>
-    <string name="product_rule">%1$s répétitions complètes ; temps proposé : %2$s secondes</string>
+    <string name="product_defaults_notice">Valeurs modifiables, sans prescription sportive personnelle. Les changements préservent l’utilisation du jour et le temps gagné.</string>
+    <string name="product_rule">%1$s répétitions complètes ; récompense proposée : %2$s</string>
     <string name="product_history_notice">L’utilisation et l’exercice sont séparés. L’historique contient les données enregistrées non supprimées et ne garantit pas un suivi de la journée entière.</string>
     <string name="product_history_empty">Aucun historique visible n’a encore été enregistré.</string>
     <string name="product_usage">Utilisation des applications</string>
@@ -38,7 +38,7 @@
     <string name="product_active">Durée d’exercice actif observée</string>
     <string name="product_onboarding_limits">Valeurs initiales modifiables : 30 minutes de temps gratuit par jour et par application, une limite quotidienne partagée de 60 minutes, un plafond quotidien de récompense de 20 minutes par application et des sessions de 5 minutes. Le suivi démarre uniquement sur activation explicite.</string>
     <string name="product_repetitions">Répétitions complètes (supérieur à zéro)</string>
-    <string name="product_reward_seconds">Temps accordé (supérieur à zéro)</string>
+    <string name="product_reward_seconds">Temps par récompense</string>
     <string name="product_camera">Caméra préférée</string>
     <string name="product_last_exercise">Exercice présélectionné pour la prochaine fois</string>
     <string name="product_delete_explanation">Supprimer l’activité physique et masquer l’historique d’utilisation. L’utilisation du jour, le temps gagné, les sessions et la protection contre les gains en double sont conservés. Cette action est irréversible.</string>
@@ -48,11 +48,11 @@
     <string name="product_about">Configuration et confidentialité</string>
     <string name="product_search">Rechercher une application</string>
     <string name="product_no_matches">Aucune application ne correspond à la recherche.</string>
-    <string name="product_cap_seconds">Plafond quotidien de récompense pour cette application (zéro autorisé)</string>
-    <string name="product_cap_notice">Le plafond quotidien de récompense compte tout le temps accordé aujourd’hui, y compris le temps déjà dépensé. Le réduire conserve le temps gagné disponible. Zéro bloque toute nouvelle récompense.</string>
+    <string name="product_cap_seconds">Plafond quotidien de récompense</string>
+    <string name="product_cap_notice">Le plafond compte toutes les récompenses du jour, même le temps déjà utilisé. Le réduire conserve le temps gagné ; zéro bloque les nouvelles récompenses.</string>
     <string name="product_enable_access">Pour activer le suivi, autorisez l’accès aux données d’utilisation et connectez le service d’accessibilité, puis revenez ici.</string>
     <string name="product_back">Retour</string>
-    <string name="product_unavailable_target">Cette application n’est actuellement pas sélectionnable et son suivi ne peut pas être confirmé. Sa sélection est conservée ; vous pouvez la retirer explicitement.</string>
+    <string name="product_unavailable_target">Cette application ne peut pas être suivie pour le moment. Sa sélection reste enregistrée jusqu’à son retrait.</string>
     <string name="product_remove_target">Retirer des applications sélectionnées</string>
     <string name="product_award_limit">Plafond quotidien de récompense</string>
 </resources>

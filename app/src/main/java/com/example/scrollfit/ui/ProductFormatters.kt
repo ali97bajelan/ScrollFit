@@ -4,7 +4,6 @@ import android.content.Context
 import android.text.BidiFormatter
 import com.example.scrollfit.R
 import com.example.scrollfit.core.settings.DurationDisplay
-import java.math.BigDecimal
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.chrono.IsoChronology
@@ -25,22 +24,16 @@ internal object ProductFormatters {
                 add(unit(context, locale, R.plurals.ux_duration_minutes, parts.minutes.toLong(),
                     integer(parts.minutes.toLong(), locale)))
             }
-            if (parts.seconds > 0 || parts.milliseconds > 0) {
-                val hasFraction = parts.milliseconds > 0
-                val seconds = if (hasFraction) fractionalSeconds(parts.seconds, parts.milliseconds, locale)
-                    else integer(parts.seconds.toLong(), locale)
-                val pluralQuantity = if (hasFraction) 2 else parts.seconds.toLong()
-                add(unit(context, locale, R.plurals.ux_duration_seconds, pluralQuantity, seconds))
-            }
             if (isEmpty()) {
-                add(unit(context, locale, R.plurals.ux_duration_seconds, 0, integer(0, locale)))
+                if (ms > 0L) add(context.getString(R.string.ux_duration_under_minute))
+                else add(unit(context, locale, R.plurals.ux_duration_minutes, 0, integer(0, locale)))
             }
         }
 
         val text = when (components.size) {
             1 -> components[0]
             2 -> context.getString(R.string.ux_duration_pair, components[0], components[1])
-            else -> context.getString(R.string.ux_duration_triple, components[0], components[1], components[2])
+            else -> error("Duration formatting produces at most hours and minutes")
         }
         return BidiFormatter.getInstance(locale).unicodeWrap(text)
     }
@@ -63,15 +56,6 @@ internal object ProductFormatters {
 
     private fun integer(value: Long, locale: Locale): String =
         NumberFormat.getIntegerInstance(locale).format(value)
-
-    private fun fractionalSeconds(seconds: Int, milliseconds: Int, locale: Locale): String {
-        val value = BigDecimal.valueOf(seconds * 1_000L + milliseconds, 3).stripTrailingZeros()
-        return NumberFormat.getNumberInstance(locale).apply {
-            isGroupingUsed = false
-            maximumFractionDigits = 3
-            minimumFractionDigits = 0
-        }.format(value)
-    }
 
     private fun effectiveLocale(context: Context): Locale {
         val locales = context.resources.configuration.locales

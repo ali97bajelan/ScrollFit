@@ -13,15 +13,12 @@
         <item quantity="one">%1$s min</item>
         <item quantity="other">%1$s min</item>
     </plurals>
-    <plurals name="ux_duration_seconds">
-        <item quantity="one">%1$s sec</item>
-        <item quantity="other">%1$s sec</item>
-    </plurals>
+    <string name="ux_duration_under_minute">Less than 1 min</string>
     <string name="ux_duration_pair">%1$s %2$s</string>
-    <string name="ux_duration_triple">%1$s %2$s %3$s</string>
+    <string name="ux_duration_unit_hours">Hours</string>
     <string name="ux_duration_unit_minutes">Minutes</string>
-    <string name="ux_duration_unit_seconds">Seconds</string>
     <string name="ux_duration_hint">Current value: %1$s</string>
     <string name="ux_duration_preserved">Saved value: %1$s. Enter a whole number to change it.</string>
+    <string name="ux_duration_preserved_partial">Saved value includes a fraction of a minute (%1$s). Enter a whole number to replace it.</string>
     <string name="ux_duration_unit_error">This value cannot be represented by a whole number in the selected unit.</string>
 </resources>

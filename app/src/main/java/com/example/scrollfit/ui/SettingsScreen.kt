@@ -1,6 +1,7 @@
 package com.example.scrollfit.ui
 
 import androidx.annotation.StringRes
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.selection.selectable
@@ -30,6 +31,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 private enum class SettingsAction { MONITORING, SAVE, DELETE_HISTORY }
+private enum class SettingsSubmenu(@StringRes val title: Int) {
+    MONITORING(R.string.settings_section_monitoring),
+    REWARDS(R.string.settings_section_rewards),
+    PREFERENCES(R.string.settings_section_preferences),
+    DATA_PRIVACY(R.string.settings_section_data_privacy),
+}
 
 @Composable
 internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
@@ -44,7 +51,11 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
     var saveMessage by remember { mutableStateOf<Int?>(null) }
     var deleteMessage by remember { mutableStateOf<Int?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var submenu by rememberSaveable { mutableStateOf<SettingsSubmenu?>(null) }
     val busy = activeAction != null
+    BackHandler(enabled = submenu != null && !confirmDelete) {
+        if (!busy) submenu = null
+    }
     fun perform(type: SettingsAction, action: suspend () -> Unit) {
         if (activeAction != null) return
         activeAction = type
@@ -66,7 +77,12 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
             finally { activeAction = null }
         }
     }
-    ProductPage(R.string.settings) {
+    ProductPage(submenu?.title ?: R.string.settings, scrollResetKey = submenu?.title ?: R.string.settings) {
+        if (submenu != null) {
+            TextButton(onClick = { submenu = null }, enabled = !busy) {
+                Text(stringResource(R.string.product_back))
+            }
+        }
         ProductContent(data) { snapshot ->
             val initial = snapshot.preferences
             val initialRewardDrafts = remember(initial.rewardRules) { initial.rewardRules.mapValues { (_, rule) ->
@@ -76,6 +92,9 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
                 rule.repetitions.toString() to initialRewardDrafts.getValue(item).value
             }) }
             var rewardUnits by rememberSaveable { mutableStateOf(initialRewardDrafts.mapValues { (_, draft) -> draft.unit.name }) }
+            var rewardPreserved by rememberSaveable { mutableStateOf(initialRewardDrafts.mapNotNull { (item, draft) ->
+                draft.preservedMilliseconds?.let { item.name to it }
+            }.toMap()) }
             var speech by rememberSaveable { mutableStateOf(initial.speechEnabled) }
             var camera by rememberSaveable { mutableStateOf(initial.camera) }
             var exercise by rememberSaveable { mutableStateOf(initial.lastExercise) }
@@ -85,106 +104,138 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
             var exerciseDirty by rememberSaveable { mutableStateOf(false) }
             val valid = rules.all { (exercise, value) ->
                 SettingNumbers.positiveInt(value.first) != null &&
-                    DurationInput.parse(value.second, DurationUnit.valueOf(rewardUnits.getValue(exercise)), true) != null
+                    (rewardPreserved[exercise.name]?.let { it > 0L } ?:
+                        (DurationInput.parse(value.second, DurationUnit.valueOf(rewardUnits.getValue(exercise)), true) != null))
             }
-            SettingsSectionCard(R.string.settings_section_monitoring) {
-                MonitoringHealthInfo(initial.monitoringEnabled)
-                Button(onClick = onSetup, enabled = !busy) { Text(stringResource(R.string.monitor_title)) }
-                if (initial.monitoringEnabled) {
-                    Button(enabled = !busy, onClick = { perform(SettingsAction.MONITORING) {
-                        MonitorRuntime.service?.pauseForDisable()
-                        persistence.preferences.update { it.copy(monitoringEnabled = false) }
-                        MonitorRuntime.configurationChanged(); data.refresh()
-                    } }) { Text(stringResource(R.string.monitor_disable)) }
+            fun saveSettings() {
+                val savedRules = rules.mapValues { (item, value) -> RewardRule(
+                    requireNotNull(SettingNumbers.positiveInt(value.first)),
+                    (rewardPreserved[item.name] ?: requireNotNull(DurationInput.parse(value.second,
+                        DurationUnit.valueOf(rewardUnits.getValue(item)), true))) / 1000) }
+                val changedRules = savedRules.filter { (item, rule) -> originalRules[item] != rule }
+                val savedCamera = camera; val savedExercise = exercise; val savedSpeech = speech
+                val changeCamera = cameraDirty; val changeExercise = exerciseDirty; val changeSpeech = speechDirty
+                perform(SettingsAction.SAVE) {
+                    persistence.preferences.update { latest -> latest.copy(rewardRules = latest.rewardRules + changedRules,
+                        speechEnabled = if (changeSpeech) savedSpeech else latest.speechEnabled,
+                        camera = if (changeCamera) savedCamera else latest.camera,
+                        lastExercise = if (changeExercise) savedExercise else latest.lastExercise) }
+                    originalRules = savedRules; speechDirty = false; cameraDirty = false; exerciseDirty = false
+                    saveMessage = R.string.monitor_saved
                 }
-                if (activeAction == SettingsAction.MONITORING) CircularProgressIndicator(Modifier.size(24.dp))
-                if (monitoringFailed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
             }
-
-            SettingsSectionCard(R.string.settings_section_rewards) {
-                Text(stringResource(R.string.product_defaults_notice))
-                Exercise.entries.forEach { item ->
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(item.label()), style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.semantics { heading() })
-                        val rule = rules.getValue(item)
-                        val rewardUnit = DurationUnit.valueOf(rewardUnits.getValue(item))
-                        NumberSetting(rule.first, { rules = rules + (item to (it to rule.second)); saveMessage = null },
-                            R.string.product_repetitions, SettingNumbers.positiveInt(rule.first) != null, !busy)
-                        DurationSetting(
-                            value = rule.second,
-                            unit = rewardUnit,
-                            onValueChange = { rules = rules + (item to (rule.first to it)); saveMessage = null },
-                            onUnitChange = { nextUnit ->
-                                val milliseconds = DurationInput.parse(rule.second, rewardUnit, positive = true)
-                                if (milliseconds != null && milliseconds % nextUnit.milliseconds == 0L) {
-                                    val converted = (milliseconds / nextUnit.milliseconds).toString()
-                                    rules = rules + (item to (rule.first to converted))
-                                    rewardUnits = rewardUnits + (item to nextUnit.name)
+            when (submenu) {
+                null -> SettingsContentCard {
+                    MonitoringHealthInfo(initial.monitoringEnabled)
+                    SettingsMenuButton(SettingsSubmenu.MONITORING.title) { submenu = SettingsSubmenu.MONITORING }
+                    SettingsMenuButton(SettingsSubmenu.REWARDS.title) { submenu = SettingsSubmenu.REWARDS }
+                    SettingsMenuButton(SettingsSubmenu.PREFERENCES.title) { submenu = SettingsSubmenu.PREFERENCES }
+                    SettingsMenuButton(SettingsSubmenu.DATA_PRIVACY.title) { submenu = SettingsSubmenu.DATA_PRIVACY }
+                }
+                SettingsSubmenu.MONITORING -> SettingsContentCard {
+                    MonitoringHealthInfo(initial.monitoringEnabled)
+                    Button(onClick = { submenu = null; onSetup() }, enabled = !busy) {
+                        Text(stringResource(R.string.monitor_title))
+                    }
+                    if (initial.monitoringEnabled) {
+                        Button(enabled = !busy, onClick = { perform(SettingsAction.MONITORING) {
+                            MonitorRuntime.service?.pauseForDisable()
+                            persistence.preferences.update { it.copy(monitoringEnabled = false) }
+                            MonitorRuntime.configurationChanged(); data.refresh()
+                        } }) { Text(stringResource(R.string.monitor_disable)) }
+                    }
+                    if (activeAction == SettingsAction.MONITORING) CircularProgressIndicator(Modifier.size(24.dp))
+                    if (monitoringFailed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
+                }
+                SettingsSubmenu.REWARDS -> SettingsContentCard {
+                    Text(stringResource(R.string.product_defaults_notice))
+                    Exercise.entries.forEach { item ->
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(stringResource(item.label()), style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.semantics { heading() })
+                            val rule = rules.getValue(item)
+                            val rewardUnit = DurationUnit.valueOf(rewardUnits.getValue(item))
+                            NumberSetting(rule.first, { rules = rules + (item to (it to rule.second)); saveMessage = null },
+                                R.string.product_repetitions, SettingNumbers.positiveInt(rule.first) != null, !busy)
+                            DurationSetting(
+                                value = rule.second,
+                                unit = rewardUnit,
+                                onValueChange = {
+                                    rules = rules + (item to (rule.first to it))
+                                    rewardPreserved = rewardPreserved - item.name
                                     saveMessage = null
-                                }
-                            },
-                            label = R.string.product_reward_seconds,
-                            positive = true,
-                            enabled = !busy,
-                        )
+                                },
+                                onUnitChange = { nextUnit ->
+                                    val milliseconds = rewardPreserved[item.name]
+                                        ?: DurationInput.parse(rule.second, rewardUnit, positive = true)
+                                    if (milliseconds != null && milliseconds % nextUnit.milliseconds == 0L) {
+                                        val converted = (milliseconds / nextUnit.milliseconds).toString()
+                                        rules = rules + (item to (rule.first to converted))
+                                        rewardUnits = rewardUnits + (item to nextUnit.name)
+                                        rewardPreserved = rewardPreserved - item.name
+                                        saveMessage = null
+                                    }
+                                },
+                                label = R.string.product_reward_seconds,
+                                positive = true,
+                                enabled = !busy,
+                                preservedMilliseconds = rewardPreserved[item.name],
+                            )
+                        }
+                    }
+                    SettingsSaveAction(
+                        valid = valid,
+                        busy = busy,
+                        saving = activeAction == SettingsAction.SAVE,
+                        failed = saveFailed,
+                        message = saveMessage,
+                        onSave = { saveSettings() },
+                    )
+                }
+                SettingsSubmenu.PREFERENCES -> SettingsContentCard {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(speech, enabled = !busy, role = Role.Switch,
+                        onValueChange = { speech = it; speechDirty = true; saveMessage = null }), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Switch(checked = speech, onCheckedChange = null, enabled = !busy)
+                        Text(stringResource(R.string.feedback_enabled), modifier = Modifier.weight(1f))
+                    }
+                    Text(stringResource(R.string.product_camera), style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.semantics { heading() })
+                    Column(Modifier.selectableGroup()) { CameraChoice.entries.forEach { item ->
+                        SelectionRow(camera == item, !busy, stringResource(if (item == CameraChoice.FRONT) R.string.camera_front else R.string.camera_rear)) {
+                            camera = item; cameraDirty = true; saveMessage = null
+                        }
+                    } }
+                    Text(stringResource(R.string.product_last_exercise), style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.semantics { heading() })
+                    Column(Modifier.selectableGroup()) { Exercise.entries.forEach { item ->
+                        SelectionRow(exercise == item, !busy, stringResource(item.label())) {
+                            exercise = item; exerciseDirty = true; saveMessage = null
+                        }
+                    } }
+                    SettingsSaveAction(
+                        valid = valid,
+                        busy = busy,
+                        saving = activeAction == SettingsAction.SAVE,
+                        failed = saveFailed,
+                        message = saveMessage,
+                        invalidSettingsLabel = R.string.settings_section_rewards,
+                        onFixInvalidSettings = { submenu = SettingsSubmenu.REWARDS },
+                        onSave = { saveSettings() },
+                    )
+                }
+                SettingsSubmenu.DATA_PRIVACY -> SettingsContentCard {
+                    Text(stringResource(R.string.product_delete_explanation))
+                    OutlinedButton(onClick = { confirmDelete = true }, enabled = !busy) {
+                        Text(stringResource(R.string.product_delete))
+                    }
+                    if (activeAction == SettingsAction.DELETE_HISTORY) CircularProgressIndicator(Modifier.size(24.dp))
+                    if (deleteFailed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
+                    deleteMessage?.let { Text(stringResource(it)) }
+                    OutlinedButton(onClick = { submenu = null; onWelcome() }, enabled = !busy) {
+                        Text(stringResource(R.string.product_about))
                     }
                 }
-            }
-
-            SettingsSectionCard(R.string.settings_section_preferences) {
-                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(speech, enabled = !busy, role = Role.Switch,
-                    onValueChange = { speech = it; speechDirty = true; saveMessage = null }), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Switch(checked = speech, onCheckedChange = null, enabled = !busy)
-                    Text(stringResource(R.string.feedback_enabled), modifier = Modifier.weight(1f))
-                }
-                Text(stringResource(R.string.product_camera), style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.semantics { heading() })
-                Column(Modifier.selectableGroup()) { CameraChoice.entries.forEach { item ->
-                    SelectionRow(camera == item, !busy, stringResource(if (item == CameraChoice.FRONT) R.string.camera_front else R.string.camera_rear)) {
-                        camera = item; cameraDirty = true; saveMessage = null
-                    }
-                } }
-                Text(stringResource(R.string.product_last_exercise), style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.semantics { heading() })
-                Column(Modifier.selectableGroup()) { Exercise.entries.forEach { item ->
-                    SelectionRow(exercise == item, !busy, stringResource(item.label())) {
-                        exercise = item; exerciseDirty = true; saveMessage = null
-                    }
-                } }
-                if (!valid) Text(stringResource(R.string.product_correct_fields), color = MaterialTheme.colorScheme.error)
-                Button(enabled = !busy && valid, onClick = {
-                    val savedRules = rules.mapValues { (item, value) -> RewardRule(
-                        requireNotNull(SettingNumbers.positiveInt(value.first)),
-                        requireNotNull(DurationInput.parse(value.second,
-                            DurationUnit.valueOf(rewardUnits.getValue(item)), true)) / 1000) }
-                    val changedRules = savedRules.filter { (item, rule) -> originalRules[item] != rule }
-                    val savedCamera = camera; val savedExercise = exercise; val savedSpeech = speech
-                    val changeCamera = cameraDirty; val changeExercise = exerciseDirty; val changeSpeech = speechDirty
-                    perform(SettingsAction.SAVE) {
-                        persistence.preferences.update { latest -> latest.copy(rewardRules = latest.rewardRules + changedRules,
-                            speechEnabled = if (changeSpeech) savedSpeech else latest.speechEnabled,
-                            camera = if (changeCamera) savedCamera else latest.camera,
-                            lastExercise = if (changeExercise) savedExercise else latest.lastExercise) }
-                        originalRules = savedRules; speechDirty = false; cameraDirty = false; exerciseDirty = false
-                        saveMessage = R.string.monitor_saved
-                    }
-                }) { Text(stringResource(R.string.monitor_save)) }
-                if (activeAction == SettingsAction.SAVE) CircularProgressIndicator(Modifier.size(24.dp))
-                if (saveFailed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
-                saveMessage?.let { Text(stringResource(it)) }
-            }
-
-            SettingsSectionCard(R.string.settings_section_data_privacy) {
-                Text(stringResource(R.string.product_delete_explanation))
-                OutlinedButton(onClick = { confirmDelete = true }, enabled = !busy) {
-                    Text(stringResource(R.string.product_delete))
-                }
-                if (activeAction == SettingsAction.DELETE_HISTORY) CircularProgressIndicator(Modifier.size(24.dp))
-                if (deleteFailed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
-                deleteMessage?.let { Text(stringResource(it)) }
-                OutlinedButton(onClick = onWelcome, enabled = !busy) { Text(stringResource(R.string.product_about)) }
             }
         }
     }
@@ -203,14 +254,42 @@ internal fun SettingsScreen(onSetup: () -> Unit, onWelcome: () -> Unit) {
 }
 
 @Composable
-private fun SettingsSectionCard(@StringRes title: Int, content: @Composable ColumnScope.() -> Unit) {
+private fun SettingsContentCard(content: @Composable ColumnScope.() -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(stringResource(title), style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.semantics { heading() })
             content()
         }
     }
+}
+
+@Composable
+private fun SettingsMenuButton(@StringRes title: Int, onClick: () -> Unit) {
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+@Composable
+private fun SettingsSaveAction(
+    valid: Boolean,
+    busy: Boolean,
+    saving: Boolean,
+    failed: Boolean,
+    message: Int?,
+    @StringRes invalidSettingsLabel: Int? = null,
+    onFixInvalidSettings: (() -> Unit)? = null,
+    onSave: () -> Unit,
+) {
+    if (!valid) {
+        Text(stringResource(R.string.product_correct_fields), color = MaterialTheme.colorScheme.error)
+        if (invalidSettingsLabel != null && onFixInvalidSettings != null) {
+            TextButton(onClick = onFixInvalidSettings) { Text(stringResource(invalidSettingsLabel)) }
+        }
+    }
+    Button(enabled = !busy && valid, onClick = onSave) { Text(stringResource(R.string.monitor_save)) }
+    if (saving) CircularProgressIndicator(Modifier.size(24.dp))
+    if (failed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
+    message?.let { Text(stringResource(it)) }
 }
 
 @Composable

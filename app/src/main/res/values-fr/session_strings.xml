@@ -4,6 +4,6 @@
     <string name="session_explanation">Cette session est terminée. Continuer utilise le temps restant sans nouvel exercice. Aucun temps n’est décompté pendant ce message. Terminer revient à l’écran d’accueil et conserve le temps inutilisé.</string>
     <string name="session_continue">Continuer</string>
     <string name="session_finish">Terminer et revenir à l’accueil</string>
-    <string name="session_boundary_seconds">Durée des sessions par application (supérieure à zéro)</string>
-    <string name="session_settings_explanation">La valeur par défaut est de 300 secondes (5 minutes). Chaque application a sa propre session. Changer d’application ou redémarrer conserve le temps accumulé. Modifier cette valeur conserve tout message de pause en attente.</string>
+    <string name="session_boundary_seconds">Durée de session par application</string>
+    <string name="session_settings_explanation">Par défaut : 5 minutes par application. Changer d’application ou redémarrer conserve le temps accumulé. Modifier cette durée conserve tout message de pause en attente.</string>
 </resources>

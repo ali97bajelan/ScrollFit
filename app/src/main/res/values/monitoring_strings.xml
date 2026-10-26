@@ -2,12 +2,12 @@
     <string name="monitor_title">پایش و بودجهٔ برنامه‌ها</string>
     <string name="monitor_service_label">پایش برنامه‌ها در اسکرول‌فیت</string>
     <string name="monitor_service_description">فقط نام برنامهٔ جلوی صفحه برای محاسبهٔ زمان و نمایش محدودیت بررسی می‌شود؛ متن، پیام و محتوای صفحه خوانده نمی‌شود. پایش را خودتان فعال می‌کنید و همیشه می‌توانید متوقفش کنید.</string>
-    <string name="monitor_explanation">برنامه‌ها و زمان رایگان روزانه را انتخاب کنید. پایش فقط پس از لمس «فعال کردن» شروع می‌شود. زمان مصرف‌شده با تغییر تنظیمات، حذف انتخاب یا بازگشت برنامه صفر نمی‌شود.</string>
+    <string name="monitor_explanation">برنامه‌ها و زمان رایگان روزانه را تنظیم کنید. برای شروع، «فعال کردن پایش» را لمس کنید. تغییر تنظیمات، حذف برنامه یا بازکردن دوبارهٔ اسکرول‌فیت، مصرف امروز را صفر نمی‌کند.</string>
     <string name="monitor_permission_missing">دسترسی لازم وجود ندارد؛ محدودیت قابل اجرا نیست.</string>
     <string name="monitor_service_stopped">سرویس پایش آماده نیست؛ اسکرول‌فیت را باز کنید و وضعیت دسترس‌پذیری را بررسی کنید.</string>
     <string name="monitor_healthy">دسترسی‌ها وصل‌اند. ممکن است در پایش وقفه پیش بیاید؛ زمان ثبت‌شده را در اسکرول‌فیت بررسی کنید.</string>
     <string name="monitor_starting">در حال آماده‌سازی پایش</string>
-    <string name="monitor_owner_busy">یک پایش دیگر فعال است. ابتدا تست ۳۰ ثانیه‌ای یا پایش اصلی را متوقف کنید.</string>
+    <string name="monitor_owner_busy">پایش دیگری فعال است. ابتدا تست یا پایش اصلی را متوقف کنید.</string>
     <string name="monitor_boot_failed">شناسهٔ راه‌اندازی گوشی در دسترس نیست؛ برای جلوگیری از محاسبهٔ تکراری، پایش متوقف است.</string>
     <string name="monitor_storage_failed">ذخیرهٔ بودجه انجام نشد؛ پایش متوقف است. فضای ذخیره‌سازی و وضعیت برنامه را بررسی کنید.</string>
     <string name="monitor_overlay_failed">نمایش یا حذف صفحهٔ محدودیت انجام نشد؛ اجرای محدودیت تأیید نمی‌شود.</string>
@@ -16,16 +16,16 @@
     <string name="monitor_metadata_failed">اطلاعات برنامهٔ جلوی صفحه در دسترس نیست؛ پایش متوقف است. دوباره بررسی کنید.</string>
     <string name="monitor_registration_failed">ثبت یا پاک‌سازی پایش کامل نشد؛ سرویس متوقف است. دوباره تلاش کنید.</string>
     <string name="monitor_gap">بازه‌هایی بدون پایش وجود دارد؛ زمان ثبت‌نشده به معنی مصرف صفر نیست.</string>
-    <string name="monitor_reboot_notice">بعد از راه‌اندازی مجدد، ادامهٔ پایش به اتصال سرویس توسط اندروید وابسته است. اگر وضعیت «آماده نیست» باقی ماند، دسترس‌پذیری را بررسی کنید. بازهٔ قطع سرویس محاسبه نمی‌شود.</string>
+    <string name="monitor_reboot_notice">پس از راه‌اندازی دوباره، پایش منتظر اتصال سرویس توسط اندروید می‌ماند. اگر وضعیت «آماده نیست» ماند، دسترس‌پذیری را بررسی کنید. زمان قطع سرویس محاسبه نمی‌شود.</string>
     <string name="monitor_usage_settings">تنظیمات دسترسی به مصرف برنامه‌ها</string>
     <string name="monitor_accessibility_settings">تنظیمات دسترس‌پذیری</string>
-    <string name="monitor_ceiling_seconds">سقف مشترک روزانهٔ برنامه‌ها (بیشتر از صفر)</string>
-    <string name="monitor_allowance_seconds">زمان رایگان روزانهٔ این برنامه (صفر مجاز است)</string>
+    <string name="monitor_ceiling_seconds">سقف مشترک روزانه</string>
+    <string name="monitor_allowance_seconds">زمان رایگان روزانهٔ این برنامه</string>
     <string name="monitor_zero_base">شروع روز بدون زمان رایگان</string>
-    <string name="monitor_select_apps">برنامه‌های موردنظر را انتخاب کنید؛ برنامه‌های سیستمی و حیاتی در این فهرست نیستند.</string>
+    <string name="monitor_select_apps">برنامه‌ها را برای پایش انتخاب کنید؛ برنامه‌های سیستمی و ضروری حذف شده‌اند.</string>
     <string name="monitor_no_apps">برنامهٔ قابل انتخاب پیدا نشد.</string>
-    <string name="monitor_budget">باقی‌مانده: زمان رایگان %1$s، زمان کسب‌شده %2$s، سقف مشترک روزانه %3$s</string>
-    <string name="monitor_enable_prerequisites">برای فعال‌سازی، مقدارها را اصلاح کنید، دست‌کم یک برنامه انتخاب کنید و هر سه وضعیت دسترسی زیر را برقرار کنید.</string>
+    <string name="monitor_budget">باقی‌مانده: رایگان %1$s، زمان کسب‌شده %2$s، سقف مشترک %3$s</string>
+    <string name="monitor_enable_prerequisites">مقدارها را اصلاح کنید، برنامه‌ای برگزینید و مطمئن شوید هر سه دسترسی زیر آماده‌اند.</string>
     <string name="monitor_usage_readiness">دسترسی به مصرف برنامه</string>
     <string name="monitor_accessibility_readiness">سرویس دسترس‌پذیری</string>
     <string name="monitor_service_readiness">سرویس پایش</string>
@@ -45,5 +45,5 @@
     <string name="monitor_home">رفتن به صفحهٔ اصلی گوشی</string>
     <string name="monitor_panel">باز کردن تنظیمات سریع</string>
     <string name="monitor_navigation_failed">این فرمان اجرا نشد؛ از دکمه یا حرکت پیمایشی سیستم استفاده کنید.</string>
-    <string name="monitor_limits_notice">پایش ممکن است بعضی زمان‌ها را ثبت نکند؛ لغو دسترسی یا متوقف‌شدن سرویس می‌تواند محدودیت را از کار بیندازد. وضعیت پایش و زمان ثبت‌شده را مرتب بررسی کنید.</string>
+    <string name="monitor_limits_notice">پایش ممکن است بعضی زمان‌ها را ثبت نکند. لغو دسترسی یا توقف سرویس می‌تواند محدودیت را غیرفعال کند؛ وضعیت و زمان ثبت‌شده را مرتب بررسی کنید.</string>
 </resources>

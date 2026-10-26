@@ -13,15 +13,12 @@
         <item quantity="one">%1$s دقیقه</item>
         <item quantity="other">%1$s دقیقه</item>
     </plurals>
-    <plurals name="ux_duration_seconds">
-        <item quantity="one">%1$s ثانیه</item>
-        <item quantity="other">%1$s ثانیه</item>
-    </plurals>
+    <string name="ux_duration_under_minute">کمتر از ۱ دقیقه</string>
     <string name="ux_duration_pair">%1$s %2$s</string>
-    <string name="ux_duration_triple">%1$s %2$s %3$s</string>
+    <string name="ux_duration_unit_hours">ساعت</string>
     <string name="ux_duration_unit_minutes">دقیقه</string>
-    <string name="ux_duration_unit_seconds">ثانیه</string>
     <string name="ux_duration_hint">مقدار فعلی: %1$s</string>
     <string name="ux_duration_preserved">مقدار ذخیره‌شده: %1$s. برای تغییر، یک عدد صحیح وارد کنید.</string>
+    <string name="ux_duration_preserved_partial">مقدار ذخیره‌شده بخشی از یک دقیقه دارد (%1$s). برای جایگزینی، عدد صحیح وارد کنید.</string>
     <string name="ux_duration_unit_error">این مقدار در واحد انتخاب‌شده به عدد صحیح تبدیل نمی‌شود.</string>
 </resources>

@@ -7,7 +7,7 @@
     <string name="product_read_error">خواندن اطلاعات ذخیره‌شده ممکن نشد. دوباره تلاش کنید.</string>
     <string name="product_save_error">ذخیره‌سازی انجام نشد. دوباره تلاش کنید.</string>
     <string name="product_metric">%1$s: ⁨%2$s⁩</string>
-    <string name="product_duration">%1$s ساعت، %2$s دقیقه، %3$s ثانیه</string>
+    <string name="product_duration">%1$s ساعت، %2$s دقیقه</string>
     <string name="product_combined_summary">سقف مشترک روزانه</string>
     <string name="product_show_awards">نمایش جزئیات پاداش</string>
     <string name="product_hide_awards">پنهان کردن جزئیات پاداش</string>
@@ -26,8 +26,8 @@
     <string name="product_session_pending">پرسش ادامه یا پایان در انتظار است؛ با بازکردن برنامه نمایش داده می‌شود.</string>
     <string name="product_recorded_notice">فقط زمان ثبت‌شده نشان داده می‌شود. زمان پایش‌نشده به معنی استفادهٔ صفر نیست.</string>
     <string name="product_refresh">به‌روزرسانی اطلاعات</string>
-    <string name="product_defaults_notice">مقدارهای پیشنهادی قابل ویرایش‌اند و نسخهٔ ورزشی شخصی نیستند. تغییر تنظیمات، مصرف امروز یا زمان کسب‌شدهٔ ذخیره‌شده را پاک نمی‌کند.</string>
-    <string name="product_rule">⁨%1$s⁩ تکرار کامل؛ زمان پاداش پیشنهادی: ⁨%2$s⁩ ثانیه</string>
+    <string name="product_defaults_notice">مقدارهای پیشنهادی قابل ویرایش‌اند و برنامهٔ ورزشی شخصی نیستند. تغییر تنظیمات، مصرف امروز و زمان کسب‌شده را حفظ می‌کند.</string>
+    <string name="product_rule">⁨%1$s⁩ تکرار کامل؛ پاداش پیشنهادی: ⁨%2$s⁩</string>
     <string name="product_history_notice">استفاده و فعالیت ورزشی جداگانه نمایش داده می‌شوند. این سابقه فقط اطلاعات ثبت‌شده و حذف‌نشده را نشان می‌دهد و پوشش کامل روز را تضمین نمی‌کند.</string>
     <string name="product_history_empty">هنوز سابقهٔ قابل نمایشی وجود ندارد.</string>
     <string name="product_usage">استفاده از برنامه‌ها</string>
@@ -38,7 +38,7 @@
     <string name="product_active">زمان فعال مشاهده‌شده</string>
     <string name="product_onboarding_limits">پیش‌فرض قابل ویرایش: روزانه ۳۰ دقیقه زمان رایگان برای هر برنامه، سقف مشترک روزانهٔ ۶۰ دقیقه، سقف پاداش روزانهٔ ۲۰ دقیقه برای هر برنامه و بازه‌های استفادهٔ ۵ دقیقه‌ای. پایش تنها با انتخاب صریح شما فعال می‌شود.</string>
     <string name="product_repetitions">تعداد تکرار کامل (بزرگ‌تر از صفر)</string>
-    <string name="product_reward_seconds">زمان پاداش (بزرگ‌تر از صفر)</string>
+    <string name="product_reward_seconds">زمان هر پاداش</string>
     <string name="product_camera">دوربین ترجیحی</string>
     <string name="product_last_exercise">ورزش انتخاب‌شده برای شروع بعدی</string>
     <string name="product_delete_explanation">فعالیت ورزشی حذف و سابقهٔ مصرف پنهان می‌شود. مصرف امروز، زمان کسب‌شده، وضعیت بازه‌ها و رکوردهای جلوگیری از پاداش تکراری حفظ می‌شوند. این کار قابل بازگردانی نیست.</string>
@@ -48,11 +48,11 @@
     <string name="product_about">راهنما و حریم خصوصی</string>
     <string name="product_search">جست‌وجوی برنامه</string>
     <string name="product_no_matches">برنامه‌ای مطابق جست‌وجو پیدا نشد.</string>
-    <string name="product_cap_seconds">سقف پاداش روزانهٔ این برنامه (صفر مجاز است)</string>
-    <string name="product_cap_notice">سقف پاداش روزانه کل زمان اعطاشدهٔ امروز را، حتی زمان خرج‌شده را، محاسبه می‌کند. کاهش سقف، زمان کسب‌شدهٔ موجود را نگه می‌دارد. سقف صفر پاداش تازه را متوقف می‌کند.</string>
+    <string name="product_cap_seconds">سقف پاداش روزانه</string>
+    <string name="product_cap_notice">سقف، همهٔ پاداش‌های امروز از جمله زمان مصرف‌شده را حساب می‌کند. با کاهش سقف، زمان کسب‌شده حفظ می‌شود؛ سقف صفر پاداش تازه را متوقف می‌کند.</string>
     <string name="product_enable_access">برای فعال‌کردن پایش، دسترسی استفاده و سرویس دسترس‌پذیری را فعال کنید و به این صفحه برگردید.</string>
     <string name="product_back">بازگشت</string>
-    <string name="product_unavailable_target">این برنامه اکنون قابل انتخاب نیست و پایش آن تأیید نمی‌شود. انتخاب قبلی حفظ شده است؛ در صورت تمایل آن را حذف کنید.</string>
+    <string name="product_unavailable_target">این برنامه فعلاً قابل پایش نیست. انتخاب ذخیره‌شده باقی می‌ماند تا آن را حذف کنید.</string>
     <string name="product_remove_target">حذف از برنامه‌های انتخاب‌شده</string>
     <string name="product_award_limit">سقف پاداش روزانه</string>
 </resources>
