@@ -2,18 +2,14 @@ package com.example.scrollfit.monitoring
 
 import android.accessibilityservice.AccessibilityService
 import android.app.AppOpsManager
-import android.app.KeyguardManager
 import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.*
 import android.os.Build
-import android.os.PowerManager
-import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import com.example.scrollfit.R
 import com.example.scrollfit.MainActivity
-import com.example.scrollfit.ScrollFitApplication
 import com.example.scrollfit.challenge.ChallengeActivity
 import com.example.scrollfit.core.exercise.Exercise
 import com.example.scrollfit.core.budget.*
@@ -22,7 +18,6 @@ import com.example.scrollfit.core.usage.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
-import java.time.ZoneId
 import java.util.UUID
 
 /** Main-source package-only monitor. Activities launch only after a tap on the visible blocker. */
@@ -35,12 +30,14 @@ class MonitoringService : AccessibilityService() {
     private lateinit var scope: CoroutineScope
     private lateinit var observations: Channel<Command>
     private lateinit var controller: MonitoringController
-    private lateinit var overlay: BudgetOverlay
+    private lateinit var overlay: MonitorOverlay
     private lateinit var presentation: MonitorPresentation
+    private lateinit var dependencies: MonitorDependencies
+    private lateinit var initialization: MonitorLifecycle
     private val readiness = MonitoringReadiness()
-    private val persistence get() = (application as ScrollFitApplication).persistence
+    internal var dependenciesFactory: (MonitoringService) -> MonitorDependencies = { AndroidMonitorDependencies(it) }
     private var connected = false
-    private var ready = false
+    private val ready get() = ::initialization.isInitialized && initialization.state == MonitorInitState.READY
     private var foreground: String? = null
     private var foregroundKnown = false
     private var safePackages = emptySet<String>()
@@ -49,6 +46,7 @@ class MonitoringService : AccessibilityService() {
     private var coverageCheckpoint: Job? = null
     private var reconciliation: Job? = null
     private var preferenceJob: Job? = null
+    private var commandConsumer: Job? = null
     private var leaseHeld = false
     private var lastFailure = MonitorFailure.NONE
     private var generation = 0L
@@ -85,14 +83,22 @@ class MonitoringService : AccessibilityService() {
         generation++
         observations = Channel(64)
         connected = true
-        ready = false; readiness.failed(); foreground = null; foregroundKnown = false
+        dependencies = dependenciesFactory(this)
+        readiness.failed(); foreground = null; foregroundKnown = false
         safePackages = emptySet(); overflow = false; lastFailure = MonitorFailure.NONE
-        overlay = BudgetOverlay(this, { navigate(GLOBAL_ACTION_HOME) },
-            { openScrollFit() }, { disableMonitoring() }, { fail(MonitorFailure.OVERLAY) },
-            ::openChallenge, ::resolveSession)
+        overlay = dependencies.createOverlay(this, MonitorOverlayCallbacks(
+            home = { navigate(GLOBAL_ACTION_HOME) },
+            openScrollFit = ::openScrollFit,
+            stop = ::disableMonitoring,
+            failed = { fail(MonitorFailure.OVERLAY) },
+            earn = ::openChallenge,
+            sessionAction = ::resolveSession,
+        ))
         presentation = MonitorPresentation(overlay::show, overlay::dismiss)
         MonitorRuntime.connected(this)
         MonitorRuntime.publish(MonitorStatus(failure = MonitorFailure.STARTING))
+        initialization = MonitorLifecycle(scope, ::initializationStateChanged,
+            ::initializeMonitoring, ::initializationFailed)
         requireNotNull(getSystemService(AppOpsManager::class.java)).startWatchingMode(
             AppOpsManager.OPSTR_GET_USAGE_STATS, packageName, usageListener)
         val filter = IntentFilter().apply {
@@ -102,55 +108,123 @@ class MonitoringService : AccessibilityService() {
         }
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(screenReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
         else { @Suppress("DEPRECATION") registerReceiver(screenReceiver, filter) }
+        startCommandConsumer()
+        initialization.startOrRetry()
+    }
 
-        scope.launch {
-            val boot = try { MonitorAccess.bootIdentity(this@MonitoringService) }
-            catch (_: Exception) { fail(MonitorFailure.BOOT_ID); return@launch }
-            try {
-                val sessionId = UUID.randomUUID().toString()
-                budgetEngine = persistence.budgetEngine(boot)
-                controller = MonitoringController(budgetEngine, TargetApps.protectedPackages(this@MonitoringService))
-                coverageRecorder = persistence.coverageRecorder(boot, sessionId)
-                safePackages = withContext(Dispatchers.IO) { TargetApps.list(this@MonitoringService).map { it.packageName }.toSet() }
-                ready = true
-                startPreferenceCollection()
-                requestReconciliation()
-                for (command in observations) {
-                    try {
-                        if (!readiness.available) { sessionActionQueued = false; continue }
-                        if (overflow) { overflow = false; fail(MonitorFailure.QUEUE); continue }
-                        if (command is SessionCommand) {
-                            try { applySessionAction(command) } finally { sessionActionQueued = false }
-                            continue
-                        }
-                        val observation = command as Observation
-                        if (observation.generation != generation) continue
-                        if (SystemClock.elapsedRealtime() - observation.signal.sample.elapsedMs > MonitoringController.MAX_OBSERVED_GAP_MS) {
-                            fail(MonitorFailure.QUEUE); continue
-                        }
-                        if (observation.signal.enabled && !MonitorRuntime.ownership.acquire(this@MonitoringService)) {
-                            fail(MonitorFailure.OWNER_BUSY); continue
-                        }
-                        if (observation.signal.enabled) leaseHeld = true
-                        val startedGeneration = generation
-                        val result = controller.observe(observation.signal)
-                        if (generation != startedGeneration) { controller.abandon(); continue }
-                        if (overflow) { overflow = false; fail(MonitorFailure.QUEUE); continue }
-                        val selectedScope = persistence.repository().targets().filter { it.selected }.map { it.packageName }.toSet()
-                        if (generation != startedGeneration) { coverageRecorder?.invalidate(); continue }
-                        coverageRecorder?.observe(observation.signal, result, selectedScope, leaseHeld) {
-                            connected && readiness.available && generation == startedGeneration && !overflow && leaseHeld
-                                && MonitorAccess.usage(this@MonitoringService)
-                        }
-                        lastProcessedElapsedMs = observation.signal.sample.elapsedMs
-                        render(result, observation.ticket)
-                        scheduleCoverageCheckpoint(result)
-                    } catch (cancelled: CancellationException) { throw cancelled }
-                    catch (_: Exception) { fail(MonitorFailure.STORAGE) }
-                }
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { fail(MonitorFailure.STORAGE) }
+    private suspend fun initializeMonitoring(attemptGeneration: Long) {
+        val bootIdentity = try { dependencies.bootIdentity() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { throw MonitorInitializationException(MonitorFailure.BOOT_ID, failure) }
+        ensureInitializationCurrent(attemptGeneration)
+
+        val engine = try { dependencies.budgetEngine(bootIdentity) }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { throw MonitorInitializationException(MonitorFailure.STORAGE, failure) }
+        ensureInitializationCurrent(attemptGeneration)
+
+        val protected = try { dependencies.protectedPackages() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { throw MonitorInitializationException(MonitorFailure.METADATA, failure) }
+        ensureInitializationCurrent(attemptGeneration)
+        val newController = MonitoringController(engine, protected)
+
+        val recorder = try { dependencies.coverageRecorder(bootIdentity, UUID.randomUUID().toString()) }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { throw MonitorInitializationException(MonitorFailure.STORAGE, failure) }
+        ensureInitializationCurrent(attemptGeneration)
+
+        val newSafePackages = try { dependencies.safePackages() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (failure: Exception) { throw MonitorInitializationException(MonitorFailure.METADATA, failure) }
+        // Publish the complete set together only after every boot, persistence and metadata step succeeds.
+        if (!initialization.commitIfCurrent(attemptGeneration) {
+                budgetEngine = engine
+                controller = newController
+                coverageRecorder = recorder
+                safePackages = newSafePackages
+            }) throw CancellationException("Monitoring initialization was stopped")
+    }
+
+    private fun ensureInitializationCurrent(attemptGeneration: Long) {
+        if (!connected || !initialization.isCurrent(attemptGeneration)) {
+            throw CancellationException("Monitoring initialization was stopped")
         }
+    }
+
+    private fun initializationStateChanged(state: MonitorInitState) {
+        MonitorRuntime.publishInitializationState(state)
+        when (state) {
+            MonitorInitState.INITIALIZING -> {
+                lastFailure = MonitorFailure.STARTING
+                MonitorRuntime.publish(MonitorStatus(failure = MonitorFailure.STARTING, hasUnmonitoredGap = true))
+            }
+            MonitorInitState.READY -> {
+                lastFailure = MonitorFailure.NONE
+                if (connected) {
+                    startPreferenceCollection()
+                    requestReconciliation()
+                }
+            }
+            MonitorInitState.STOPPED, MonitorInitState.FAILED -> Unit
+        }
+    }
+
+    private fun initializationFailed(attemptGeneration: Long, failure: Exception) {
+        if (!connected || !initialization.isLatest(attemptGeneration) ||
+            initialization.state != MonitorInitState.FAILED) return
+        generation++
+        readiness.failed()
+        coverageRecorder?.invalidate()
+        if (::controller.isInitialized) controller.abandon()
+        while (observations.tryReceive().isSuccess) { /* discard partial-start observations */ }
+        sessionActionQueued = false
+        foreground = null; foregroundKnown = false
+        lastFailure = (failure as? MonitorInitializationException)?.failure ?: MonitorFailure.STORAGE
+        presentation.pause()
+        MonitorRuntime.publish(MonitorStatus(failure = lastFailure, hasUnmonitoredGap = true))
+    }
+
+    private fun startCommandConsumer() {
+        if (commandConsumer?.isActive == true) return
+        commandConsumer = scope.launch {
+            for (command in observations) {
+                try { processCommand(command) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { fail(MonitorFailure.STORAGE) }
+            }
+        }
+    }
+
+    private suspend fun processCommand(command: Command) {
+        if (!ready || !readiness.available) { sessionActionQueued = false; return }
+        if (overflow) { overflow = false; fail(MonitorFailure.QUEUE); return }
+        if (command is SessionCommand) {
+            try { applySessionAction(command) } finally { sessionActionQueued = false }
+            return
+        }
+        val observation = command as Observation
+        if (observation.generation != generation) return
+        if (dependencies.elapsedRealtimeMs() - observation.signal.sample.elapsedMs > MonitoringController.MAX_OBSERVED_GAP_MS) {
+            fail(MonitorFailure.QUEUE); return
+        }
+        if (observation.signal.enabled && !MonitorRuntime.ownership.acquire(this@MonitoringService)) {
+            fail(MonitorFailure.OWNER_BUSY); return
+        }
+        if (observation.signal.enabled) leaseHeld = true
+        val startedGeneration = generation
+        val result = controller.observe(observation.signal)
+        if (generation != startedGeneration) { controller.abandon(); return }
+        if (overflow) { overflow = false; fail(MonitorFailure.QUEUE); return }
+        val selectedScope = dependencies.selectedPackages()
+        if (generation != startedGeneration) { coverageRecorder?.invalidate(); return }
+        coverageRecorder?.observe(observation.signal, result, selectedScope, leaseHeld) {
+            connected && readiness.available && generation == startedGeneration && !overflow && leaseHeld &&
+                dependencies.usageAccess()
+        }
+        lastProcessedElapsedMs = observation.signal.sample.elapsedMs
+        render(result, observation.ticket)
+        scheduleCoverageCheckpoint(result)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -232,10 +306,9 @@ class MonitoringService : AccessibilityService() {
         val displayed = command.access
         val startedGeneration = generation
         fun eligible() = connected && readiness.monitoringEnabled && leaseHeld &&
-            generation == startedGeneration && !overflow && MonitorAccess.usage(this) &&
+            generation == startedGeneration && !overflow && dependencies.usageAccess() &&
             !MonitorRuntime.ownUiVisible &&
-            requireNotNull(getSystemService(PowerManager::class.java)).isInteractive &&
-            !requireNotNull(getSystemService(KeyguardManager::class.java)).isKeyguardLocked
+            dependencies.isInteractive() && !dependencies.isKeyguardLocked()
         if (!eligible() || !overlay.isCurrent(displayed) || foreground != displayed.session.packageName) {
             enqueue(); return
         }
@@ -260,7 +333,13 @@ class MonitoringService : AccessibilityService() {
     }
 
     /** Stop the live monitor immediately while the durable disable write completes. */
-    fun pauseForDisable() { readiness.failed(); fail(MonitorFailure.STARTING) }
+    fun pauseForDisable() {
+        if (::initialization.isInitialized && initialization.state == MonitorInitState.INITIALIZING) {
+            initialization.stop()
+        }
+        readiness.failed()
+        fail(MonitorFailure.STARTING)
+    }
 
     private fun startPreferenceCollection(restart: Boolean = false) {
         if (!connected || !ready) return
@@ -268,7 +347,7 @@ class MonitoringService : AccessibilityService() {
         else if (preferenceJob?.isActive == true) return
         preferenceJob = scope.launch {
             try {
-                persistence.preferences.values.collect { prefs: AppPreferences ->
+                dependencies.preferences.collect { prefs: AppPreferences ->
                     val resumedAfterGap = !readiness.available && prefs.monitoringEnabled
                     readiness.updated(prefs.monitoringEnabled)
                     if (resumedAfterGap) MonitorRuntime.publish(MonitorRuntime.status.value.copy(hasUnmonitoredGap = true))
@@ -284,7 +363,7 @@ class MonitoringService : AccessibilityService() {
         reconciliation?.cancel()
         reconciliation = scope.launch {
             delay(200) // Let Android publish the activity transition; event callbacks cancel this lookup.
-            val current = withContext(Dispatchers.IO) { ForegroundReconciler(this@MonitoringService).current() }
+            val current = dependencies.currentForeground()
             if (!acceptForeground(if (MonitorRuntime.ownUiVisible) packageName else current.packageName,
                     MonitorRuntime.ownUiVisible || current.known)) return@launch
             enqueue()
@@ -297,7 +376,7 @@ class MonitoringService : AccessibilityService() {
         if (value != null && value in safePackages) {
             try {
                 // Recheck dynamic home/dialer/keyboard roles on transitions, never on checkpoint ticks.
-                if (value in TargetApps.protectedPackages(this)) safePackages = safePackages - value
+                if (value in dependencies.protectedPackages()) safePackages = safePackages - value
             } catch (_: Exception) { fail(MonitorFailure.METADATA); return false }
         }
         foreground = value; foregroundKnown = known
@@ -305,7 +384,18 @@ class MonitoringService : AccessibilityService() {
     }
 
     fun reloadConfiguration() {
-        if (!connected || !ready) return
+        if (!connected) return
+        if (!ready) { initialization.startOrRetry(); return }
+        refreshReadyConfiguration()
+    }
+
+    /** Retry uses initialization only until READY; a ready service refreshes its live configuration. */
+    fun retryInitialization() {
+        if (!connected) return
+        if (ready) refreshReadyConfiguration() else initialization.startOrRetry()
+    }
+
+    private fun refreshReadyConfiguration() {
         generation++
         coverageRecorder?.invalidate()
         controller.abandon()
@@ -313,10 +403,10 @@ class MonitoringService : AccessibilityService() {
         startPreferenceCollection(restart = !readiness.available)
         scope.launch {
             try {
-                safePackages = withContext(Dispatchers.IO) { TargetApps.list(this@MonitoringService).map { it.packageName }.toSet() }
+                safePackages = dependencies.safePackages()
                 enqueue(); requestReconciliation()
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { fail(MonitorFailure.STORAGE) }
+            catch (_: Exception) { fail(MonitorFailure.METADATA) }
         }
     }
 
@@ -324,11 +414,10 @@ class MonitoringService : AccessibilityService() {
         if (!connected || !ready) return
         tick?.cancel()
         coverageCheckpoint?.cancel()
-        val interactive = requireNotNull(getSystemService(PowerManager::class.java)).isInteractive &&
-            !requireNotNull(getSystemService(KeyguardManager::class.java)).isKeyguardLocked
-        val sample = MonitorSample(SystemClock.elapsedRealtime(), System.currentTimeMillis(), ZoneId.systemDefault().id)
+        val interactive = dependencies.isInteractive() && !dependencies.isKeyguardLocked()
+        val sample = MonitorSample(dependencies.elapsedRealtimeMs(), dependencies.wallTimeMs(), dependencies.zoneId())
         val candidate = foreground?.takeIf { it in safePackages }
-        val signal = readiness.guard(MonitorSignal(sample, candidate, false, MonitorAccess.usage(this), connected,
+        val signal = readiness.guard(MonitorSignal(sample, candidate, false, dependencies.usageAccess(), connected,
             interactive, MonitorRuntime.ownUiVisible, foregroundKnown))
         // Hide on safe/system/self/access-loss signals now, independently of a suspended budget read.
         val beforePresentation = generation
@@ -357,7 +446,7 @@ class MonitoringService : AccessibilityService() {
     private fun scheduleCoverageCheckpoint(result: MonitorDecision) {
         coverageCheckpoint?.cancel()
         if (!connected || !ready || !readiness.available || result.health != MonitoringHealth.HEALTHY || result.shouldTick) return
-        val delayMs = CoverageCheckpoint.nextDelayMs(SystemClock.elapsedRealtime(), lastProcessedElapsedMs, true) ?: return
+        val delayMs = CoverageCheckpoint.nextDelayMs(dependencies.elapsedRealtimeMs(), lastProcessedElapsedMs, true) ?: return
         coverageCheckpoint = scope.launch {
             delay(delayMs)
             if (connected && ready && readiness.available) requestReconciliation()
@@ -379,7 +468,7 @@ class MonitoringService : AccessibilityService() {
         pauseForDisable()
         scope.launch {
             try {
-                persistence.preferences.update { it.copy(monitoringEnabled = false) }
+                dependencies.setMonitoringEnabled(false)
                 startPreferenceCollection(restart = true)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { fail(MonitorFailure.STORAGE) }
@@ -408,13 +497,16 @@ class MonitoringService : AccessibilityService() {
     private fun cleanup() {
         if (!connected) return
         // Last asynchronous checkpoint may be cancelled by Android; do not block the main thread.
-        connected = false; ready = false
+        initialization.stop()
+        connected = false
         readiness.failed()
         tick?.cancel(); coverageCheckpoint?.cancel(); reconciliation?.cancel(); preferenceJob?.cancel()
+        commandConsumer?.cancel(); commandConsumer = null
         coverageRecorder?.invalidate(); coverageRecorder = null
         scope.cancel(); observations.close()
         requireNotNull(getSystemService(AppOpsManager::class.java)).stopWatchingMode(usageListener)
         runCatching { unregisterReceiver(screenReceiver) }
-        overlay.dismiss(); releaseLease(); MonitorRuntime.disconnected(this)
+        if (overlay.dismiss()) releaseLease()
+        MonitorRuntime.disconnected(this)
     }
 }

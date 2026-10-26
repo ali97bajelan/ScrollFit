@@ -7,11 +7,14 @@ import android.content.Context
 data class ForegroundResult(val packageName: String?, val known: Boolean)
 
 /** Bounded transient metadata lookup. No package history is recorded or logged. */
-class ForegroundReconciler(private val context: Context) {
+class ForegroundReconciler(
+    private val context: Context,
+    private val wallTimeMs: () -> Long = { System.currentTimeMillis() },
+) {
     @Suppress("DEPRECATION")
     fun current(): ForegroundResult {
         if (!MonitorAccess.usage(context)) return ForegroundResult(null, false)
-        val end = System.currentTimeMillis()
+        val end = wallTimeMs()
         return try {
             val events = requireNotNull(context.getSystemService(UsageStatsManager::class.java))
                 .queryEvents((end - 5 * 60_000).coerceAtLeast(0), end) ?: return ForegroundResult(null, false)

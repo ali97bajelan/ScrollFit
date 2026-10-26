@@ -100,9 +100,9 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Move startup into one guarded attempt with generation invalidation; repeated retry coalesces. Create the command consumer exactly once per service lifecycle and acquire at most one existing ownership lease through normal eligible observation processing.
-- [ ] Route retry while !ready to initialization; route ready-state refresh through existing configuration/reconciliation. Disable/disconnect cancels partial work and cannot be undone by late initialization completion.
-- [ ] Write `failOnceThenRetryReachesReady`, `retryBurstCreatesOneWorker`, `disableDuringInitRejectsLateResult`, `retryPreservesBudgetAndGap` with fake suspended dependencies and exact worker/lease counts. Prepare Android lifecycle fixture, no test execution.
+- [x] Move startup into one guarded attempt with generation invalidation; repeated retry coalesces. Create the command consumer exactly once per service lifecycle and acquire at most one existing ownership lease through normal eligible observation processing.
+- [x] Route retry while !ready to initialization; route ready-state refresh through existing configuration/reconciliation. Disable/disconnect cancels partial work and cannot be undone by late initialization completion.
+- [x] Write `failOnceThenRetryReachesReady`, `retryBurstCreatesOneWorker`, `disableDuringInitRejectsLateResult`, `retryPreservesBudgetAndGap` with fake suspended dependencies and exact worker/lease counts. Prepare Android lifecycle fixture, no test execution.
 
 ### Phase 2 — QA
 
@@ -217,8 +217,8 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Reconcile old PG01 two failures with current recovery/demo code; prepare retest IDs and all PG02–PG06 scenario links. Expand the full matrix as unrun, with environment fields ready.
-- [ ] Prepare deterministic stale-callback/countdown/help/permission/save fixtures where missing. No Gradle, emulator, participant or recognition trial execution in this phase.
+- [x] Reconcile old PG01 two failures with current recovery/demo code; prepare retest IDs and all PG02–PG06 scenario links. Expand the full matrix as unrun, with environment fields ready.
+- [x] Prepare deterministic stale-callback/countdown/help/permission/save fixtures where missing. No Gradle, emulator, participant or recognition trial execution in this phase.
 
 ### Phase 2 — QA
 
@@ -233,8 +233,8 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Prepare two-app fixtures with per-app/combined limits, short sessions and eligible rewards for each exercise/mode. Prepare midnight, duplicate completion, access-loss and kill/rebind paths.
-- [ ] Add integration assertions for unchanged prompt-wait spending, exactly-once awards, no practice/exercise-only credit and preserved cursor/wallet across restart. Inventory required owner-controlled access steps and intended hardware; no device testing yet.
+- [x] Prepare two-app fixtures with per-app/combined limits, short sessions and eligible rewards for each exercise/mode. Prepare midnight, duplicate completion, access-loss and kill/rebind paths.
+- [x] Add integration assertions for unchanged prompt-wait spending, exactly-once awards, no practice/exercise-only credit and preserved cursor/wallet across restart. Inventory required owner-controlled access steps and intended hardware; no device testing yet.
 
 ### Phase 2 — QA
 

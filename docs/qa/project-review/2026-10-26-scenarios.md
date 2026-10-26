@@ -52,6 +52,8 @@ Decision: <PASS / FAIL / BLOCKED; acceptance scope>
 
 ## I05 — Initialization retry
 
+Implementation fixture and handoff: [I03–I05 implementation handoff](implementation-handoff-2026-10-26.md).
+
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |
 | I05-01 / JVM + Android | Boot identity, persistence or metadata fails once (separate rows) | Connect; observe FAILED; clear fault and explicitly retry | INITIALIZING → FAILED → INITIALIZING → READY; worker/collector count one; no service rebind required; permission/enabled unchanged; only eligible fresh processing can acquire lease |
@@ -115,6 +117,8 @@ Expand conditions into explicit rows rather than a single group PASS. Screens: W
 
 ## I04 — Guide qualification
 
+The row-by-row I04/PG06 worksheet is [I04-qualification-matrix.md](../position-guide/I04-qualification-matrix.md). It is preparation only; execute and report each row during QA.
+
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |
 | I04-01 / Android + Phone | PG01 historic 7 PASS / 2 FAIL; current recovery/demo fixes | Re-run affected PG01 cases then PG02–PG05 scenarios | Actual current behavior recorded; fixes not assumed qualified or refiled from old copy alone; practice/countdown never save reps/rewards; stale callbacks rejected |
@@ -125,6 +129,8 @@ Expand conditions into explicit rows rather than a single group PASS. Screens: W
 The full [PG06](../position-guide/PG06.md) and PG01–PG05 scenarios remain required, including push-up both visible sides, jacks overhead space, knee-raise cycles, permanent denial/settings return, unavailable lens/model, background/process death, Help and midnight/save races. These four groups are routing IDs, not permission to shrink that matrix.
 
 ## I03 — Production monitoring and reward loop
+
+The Room-backed deterministic fixture and implementation handoff are listed in [the I03–I05 handoff](implementation-handoff-2026-10-26.md). Fixture results do not replace production service/device QA.
 
 | ID / method | Given | Action | Expected / required evidence |
 | --- | --- | --- | --- |

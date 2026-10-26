@@ -38,7 +38,7 @@ class BudgetOverlay(
     private val failed: () -> Unit,
     private val earn: (String, Exercise?) -> Unit,
     private val sessionAction: (SessionAccess, SessionAction) -> Unit,
-) {
+) : MonitorOverlay {
     private val manager = requireNotNull(service.getSystemService(WindowManager::class.java))
     private var showing: Triple<String, BlockReason, SessionAccess?>? = null
     private val windows = OverlayState<View>({ view ->
@@ -55,12 +55,12 @@ class BudgetOverlay(
         manager.addView(view, params)
     }, { manager.removeViewImmediate(it) }, failed)
 
-    val visible get() = windows.current != null
+    override val visible get() = windows.current != null
 
-    fun isCurrent(access: SessionAccess) = visible &&
+    override fun isCurrent(access: SessionAccess) = visible &&
         showing?.second == BlockReason.SESSION_BOUNDARY && showing?.third == access
 
-    fun show(packageName: String, reason: BlockReason, access: SessionAccess?): Boolean {
+    override fun show(packageName: String, reason: BlockReason, access: SessionAccess?): Boolean {
         if (reason == BlockReason.SESSION_BOUNDARY) require(access != null)
         if (showing == Triple(packageName, reason, access) && visible) return true
         val label = runCatching {
@@ -123,7 +123,7 @@ class BudgetOverlay(
         return true
     }
 
-    fun dismiss(): Boolean {
+    override fun dismiss(): Boolean {
         val removed = windows.dismiss()
         if (removed) showing = null
         return removed

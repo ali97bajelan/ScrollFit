@@ -23,7 +23,8 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
-    implementation(libs.androidx.room.runtime)
+    // ExerciseGateDatabase publicly extends RoomDatabase, so downstream modules need this API.
+    api(libs.androidx.room.runtime)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.mediapipe.tasks.vision)
     implementation(libs.androidx.room.ktx)
