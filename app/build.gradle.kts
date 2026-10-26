@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.scrollfit"
         minSdk = 28
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0-t02"
+        versionCode = 3
+        versionName = "0.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -22,7 +22,7 @@ android {
     buildTypes {
         release {
             optimization {
-                enable = false
+                enable = true
             }
         }
     }
