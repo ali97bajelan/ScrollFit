@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_section_monitoring">Suivi</string>
+    <string name="settings_section_rewards">Récompenses d’exercice</string>
+    <string name="settings_section_preferences">Préférences d’entraînement</string>
+    <string name="settings_section_data_privacy">Données et confidentialité</string>
     <string name="product_read_error">Impossible de lire les données enregistrées. Réessayez.</string>
     <string name="product_save_error">Impossible d’enregistrer cette action. Réessayez.</string>
     <string name="product_metric">%1$s : %2$s</string>

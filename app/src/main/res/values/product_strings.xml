@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_section_monitoring">پایش</string>
+    <string name="settings_section_rewards">پاداش ورزش</string>
+    <string name="settings_section_preferences">ترجیحات تمرین</string>
+    <string name="settings_section_data_privacy">داده‌ها و حریم خصوصی</string>
     <string name="product_read_error">خواندن اطلاعات ذخیره‌شده ممکن نشد. دوباره تلاش کنید.</string>
     <string name="product_save_error">ذخیره‌سازی انجام نشد. دوباره تلاش کنید.</string>
     <string name="product_metric">%1$s: ⁨%2$s⁩</string>

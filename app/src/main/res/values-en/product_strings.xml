@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_section_monitoring">Monitoring</string>
+    <string name="settings_section_rewards">Exercise rewards</string>
+    <string name="settings_section_preferences">Workout preferences</string>
+    <string name="settings_section_data_privacy">Data &amp; privacy</string>
     <string name="product_read_error">Saved data could not be read. Try again.</string>
     <string name="product_save_error">The action could not be saved. Try again.</string>
     <string name="product_metric">%1$s: %2$s</string>
