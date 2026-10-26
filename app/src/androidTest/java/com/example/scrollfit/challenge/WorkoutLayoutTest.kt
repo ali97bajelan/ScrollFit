@@ -15,12 +15,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertDoesNotExist
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
-import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -179,8 +178,13 @@ class WorkoutLayoutTest {
                     bounds.top >= root.top && bounds.bottom <= root.bottom)
             }
         if (recoveryControls) {
-            compose.onNodeWithTag("recovery_control_4").performScrollTo()
-            compose.onNodeWithTag("recovery_control_4").assertExists()
+            val lastRecoveryControl = compose.onNodeWithTag("recovery_control_4")
+            repeat(3) {
+                compose.onNodeWithTag("workout_recovery_scroller")
+                    .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 120f) }
+            }
+            compose.waitForIdle()
+            lastRecoveryControl.assertExists()
             listOf("workout_preview", "workout_end", "recovery_control_4").forEach { tag ->
                 val bounds = compose.onNodeWithTag(tag).getUnclippedBoundsInRoot()
                 assertTrue("$tag remains reachable while recovery controls scroll",

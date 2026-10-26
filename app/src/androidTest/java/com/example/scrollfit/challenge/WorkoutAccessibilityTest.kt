@@ -3,6 +3,7 @@ package com.example.scrollfit.challenge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -10,12 +11,9 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertDoesNotExist
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
-import androidx.compose.ui.test.fetchSemanticsNode
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -34,7 +32,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class WorkoutAccessibilityTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun challengeCountExposesProgressAndOnePoliteTrackingNode() {
         showWorkout(required = 10)
@@ -73,7 +71,8 @@ class WorkoutAccessibilityTest {
         compose.onAllNodesWithTag("workout_status").assertCountEquals(1)
         val status = compose.onNodeWithTag("workout_status").fetchSemanticsNode().config
         assertEquals(LiveRegionMode.Polite, status[SemanticsProperties.LiveRegion])
-        assertEquals(listOf(compose.activity.getString(R.string.camera_error)), status[SemanticsProperties.Text])
+        assertEquals(listOf(compose.activity.getString(R.string.camera_error)),
+            status[SemanticsProperties.Text].map { it.text })
     }
 
     private fun showWorkout(required: Int?, status: CameraPoseStatus = CameraPoseStatus.TRACKING,

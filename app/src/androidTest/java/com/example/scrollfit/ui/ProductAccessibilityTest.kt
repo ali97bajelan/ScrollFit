@@ -3,20 +3,21 @@ package com.example.scrollfit.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.fetchSemanticsNode
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -36,7 +37,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ProductAccessibilityTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun disabledStartExplainsTheCameraProblemAndRecoveryStaysReachable() {
         var retries = 0
@@ -73,8 +74,9 @@ class ProductAccessibilityTest {
         assertEquals(expectedDescription, start.fetchSemanticsNode().config[SemanticsProperties.StateDescription])
         compose.onNodeWithText(compose.activity.getString(R.string.workout_help))
             .assertHasClickAction().assertHeightIsAtLeast(48.dp)
-        compose.onNodeWithText(compose.activity.getString(R.string.camera_retry))
-            .assertHasClickAction().assertHeightIsAtLeast(48.dp).performClick()
+        val retry = compose.onNodeWithText(compose.activity.getString(R.string.camera_retry))
+        retry.assertHasClickAction().assertHeightIsAtLeast(48.dp)
+        retry.performSemanticsAction(SemanticsActions.OnClick) { it() }
         compose.runOnIdle { assertEquals(1, retries) }
     }
 

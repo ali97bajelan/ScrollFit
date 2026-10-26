@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -87,11 +88,15 @@ internal fun WorkoutContent(
             Row(Modifier.fillMaxSize().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.weight(1.2f).fillMaxHeight().heightIn(min = 96.dp)) { preview(Modifier.fillMaxSize()) }
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    header()
+                    Column(Modifier.fillMaxWidth().heightIn(max = 64.dp)
+                        .verticalScroll(rememberScrollState())) {
+                        header()
+                    }
                     Counter(state)
                     TrackingStatus(state.status, statusMessage)
                     if (scrollExtraControls) {
-                        Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                        Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())
+                            .testTag("workout_recovery_scroller")) {
                             extraControls()
                         }
                     } else extraControls()
@@ -110,7 +115,8 @@ internal fun WorkoutContent(
                 Counter(state)
                 TrackingStatus(state.status, statusMessage)
                 if (scrollExtraControls) {
-                    Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                    Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())
+                        .testTag("workout_recovery_scroller")) {
                         extraControls()
                     }
                 } else extraControls()
@@ -157,7 +163,8 @@ private fun Counter(state: WorkoutUiState) {
                     state.repetitions.coerceIn(0, target).toFloat(), 0f..target.toFloat(), 0,
                 )
             }
-        }.testTag("workout_count"))
+            testTag = "workout_count"
+        })
 }
 
 @Composable

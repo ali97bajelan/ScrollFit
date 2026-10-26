@@ -1,6 +1,6 @@
 # I03–I05 implementation handoff
 
-Status for all three tasks: **IMPLEMENTED — QA NOT RUN**. This handoff records implementation preparation only. It is not an acceptance report.
+At handoff creation, all three tasks were **IMPLEMENTED — QA NOT RUN**. Initial QA found an app instrumentation compile failure and a restore-marker reopen failure; both are fixed and their complete emulator suites now pass. Current status: I03–I05 are **BLOCKED** on production-device and scenario qualification, not on those automated defects. See the [I03](results/I03.md), [I04](results/I04.md), and [I05](results/I05.md) reports and the [repair follow-up](CURRENT_VERIFICATION.md#qa-repair-follow-up--i02i05-2026-10-26); this file remains the implementation preparation record.
 
 ## Source identity
 
@@ -47,4 +47,4 @@ Tests/fixtures written but unrun: `MonitorLifecycleTest.failOnceThenRetryReaches
 
 Applicable scenarios: I05-01–I05-04, plus I05 retry/disable regressions at the integrated I03/F-A checkpoint. QA commands: `./gradlew :app:testDebugUnitTest :core:test --console=plain`; `./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain`; `./gradlew :app:connectedDebugAndroidTest --console=plain`. On device, inject boot identity, persistence and metadata fail-once paths separately; confirm a retry does not change balances/cursors, records a gap, begins from fresh observations and never creates a second consumer or lease.
 
-No result file under `docs/qa/project-review/results/` was created; those files are reserved for QA execution.
+QA result files are created during QA at `docs/qa/project-review/results/I03.md`, `I04.md`, and `I05.md`. This handoff's fixture lists describe their state before that QA run.

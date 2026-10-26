@@ -1,6 +1,6 @@
 # I04 position-guide qualification matrix
 
-Status: **IMPLEMENTED — QA NOT RUN**. This is an execution worksheet for I04/PG06, not a result report. Every row starts `NOT RUN`; retain failures and stops in the totals. Do not store participant identities or camera frames.
+Status: **IMPLEMENTED — qualification BLOCKED**. This remains the execution worksheet for I04/PG06, not a result report. A limited API 36.1 emulator guide smoke ran, but each qualification row below remains `NOT RUN`; see the [I04 result report](../project-review/results/I04.md). Retain failures and stops in the totals. Do not store participant identities or camera frames.
 
 ## Current-source retests
 
@@ -136,11 +136,11 @@ Use five consenting first-time participants. Use only session codes P1–P5, no 
 | --- | --- |
 | Source revision | Record at QA start |
 | Dirty source identity | Record at QA start |
-| Device / Android API | NOT RUN; intended Xiaomi Mi 11 Lite NE / API 34 if available |
-| Build variant / artifact SHA-256 | NOT RUN |
-| Test commands and exit codes | NOT RUN |
+| Device / Android API | Android 16 / API 36.1 `Medium_Phone_API_36.1` emulator for limited UI smoke; Xiaomi Mi 11 Lite NE / API 34 physical qualification NOT RUN |
+| Build variant / artifact SHA-256 | Latest repair rerun: debug `app-debug.apk`; `69c0a1d1656e0c9fd1b3d122b863286de71d30c06d137d6e6b826d32b407a708` |
+| Test commands and exit codes | See [I04 result report](../project-review/results/I04.md); complete acceptance remains blocked |
 | Front/rear lens availability | NOT RUN |
 | Tester / date | NOT RUN |
-| Open defects and blocked rows | NOT RUN |
+| Open defects and blocked rows | App/platform automated defects fixed; all physical recognition, usability, and accessibility rows remain NOT RUN |
 
 Create the result report only during QA. This worksheet does not qualify the guide or replace the PG01–PG06 records.

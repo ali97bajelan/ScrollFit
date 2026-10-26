@@ -43,7 +43,14 @@ class LocalInstallIdentity internal constructor(
         } catch (_: FileNotFoundException) {
             return null
         }
-        val fields = text.lineSequence().toList()
+        val lines = text.lineSequence().toList()
+        // The marker writer terminates every field with a newline, so lineSequence includes one
+        // trailing empty entry. Exclude that terminator while still rejecting additional blanks.
+        val fields = if ((text.endsWith('\n') || text.endsWith('\r')) && lines.lastOrNull().isNullOrEmpty()) {
+            lines.dropLast(1)
+        } else {
+            lines
+        }
         if (fields.size != 4 || fields[0] != FORMAT) return null
         val installId = fields[1].takeIf { it.isNotBlank() } ?: return null
         val fresh = when (fields[2]) {

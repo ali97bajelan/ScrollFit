@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -41,16 +40,20 @@ class CameraRunOwnershipTest {
             var runKey by remember { mutableStateOf("first") }
             var helpOpen by remember { mutableStateOf(false) }
             var audioEnabled by remember { mutableStateOf(true) }
+            var cameraVisible by remember { mutableStateOf(true) }
             var delivered by remember { mutableIntStateOf(0) }
             ScrollFitTheme {
                 Column {
                     Button(onClick = { helpOpen = !helpOpen }, modifier = Modifier.testTag("help")) { Text("Help") }
                     Button(onClick = { audioEnabled = !audioEnabled }, modifier = Modifier.testTag("audio")) { Text("Audio") }
                     Button(onClick = { runKey = "second" }, modifier = Modifier.testTag("replace")) { Text("Replace") }
+                    Button(onClick = { cameraVisible = false }, modifier = Modifier.testTag("dispose")) { Text("Dispose") }
                     if (helpOpen || audioEnabled) Text("State")
-                    CameraViewportSurface(context, owner, preview, Exercise.SQUAT, CameraChoice.REAR, runKey,
-                        Modifier.size(160.dp), enabled = true, permission = true, resumed = true,
-                        debugOverlay = false, runFactory = factory) { delivered++ }
+                    if (cameraVisible) {
+                        CameraViewportSurface(context, owner, preview, Exercise.SQUAT, CameraChoice.REAR, runKey,
+                            Modifier.size(160.dp), enabled = true, permission = true, resumed = true,
+                            debugOverlay = false, runFactory = factory) { delivered++ }
+                    }
                     Text("delivered=$delivered", modifier = Modifier.testTag("delivered"))
                 }
             }
@@ -74,7 +77,8 @@ class CameraRunOwnershipTest {
         compose.onNodeWithTag("delivered").assertExists()
         assertEquals(deliveredBeforeLateEvent, compose.onNodeWithTag("delivered").fetchSemanticsNode().config)
 
-        compose.disposeContent()
+        compose.onNodeWithTag("dispose").performClick()
+        compose.waitForIdle()
         assertEquals(2, factory.closes)
     }
 

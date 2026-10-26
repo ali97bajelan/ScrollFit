@@ -4,14 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.assertDoesNotExist
-import androidx.compose.ui.test.assertExists
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -48,7 +46,9 @@ class HistoryLazyListTest {
                 initiallyComposed.size < 30)
         }
         compose.onNodeWithTag("history_card_$oldest").assertDoesNotExist()
-        compose.onNodeWithTag("history_list").performScrollToNode(hasTestTag("history_card_$oldest"))
+        val oldestIndex = 8 + presentation.summary.recentDays.size + 1 + presentation.summary.olderDays.lastIndex
+        compose.onNodeWithTag("history_list")
+            .performSemanticsAction(SemanticsActions.ScrollToIndex) { it(oldestIndex) }
         compose.onNodeWithTag("history_card_$oldest").assertExists()
     }
 

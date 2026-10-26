@@ -8,12 +8,11 @@ import android.util.Log
 import android.view.FrameMetrics
 import android.view.Window
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertExists
-import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.scrollfit.core.data.*
 import com.example.scrollfit.core.exercise.Exercise
@@ -73,8 +72,12 @@ class HistoryPerformanceTest {
             val initiallyComposed = compose.onAllNodesWithTag("history_day").fetchSemanticsNodes().size
             val oldestDay = (presentation.summary.olderDays.lastOrNull()
                 ?: presentation.summary.recentDays.last()).day.toString()
+            val oldestIndex = presentation.summary.olderDays.lastOrNull()?.let {
+                8 + presentation.summary.recentDays.size + 1 + presentation.summary.olderDays.lastIndex
+            } ?: (8 + presentation.summary.recentDays.indexOfLast { it.day.toString() == oldestDay })
             val scrollStart = SystemClock.elapsedRealtimeNanos()
-            compose.onNodeWithTag("history_list").performScrollToNode(hasTestTag("history_card_$oldestDay"))
+            compose.onNodeWithTag("history_list")
+                .performSemanticsAction(SemanticsActions.ScrollToIndex) { it(oldestIndex) }
             compose.waitForIdle()
             val oldestScrollMs = elapsedMs(scrollStart)
             compose.onNodeWithTag("history_card_$oldestDay").assertExists()

@@ -78,3 +78,55 @@ python3 verification/check_source.py
 ```
 
 For I09, compare baseline and changed source using the same rapid-switch workload, slow metadata/storage fixture, sample count and device/API; report median, p95 and max per stage. For I11, record each matrix row separately and include actual TalkBack, mute/offline-voice/reduced-motion, text contrast and camera-transform observations. Any new build artifact must get its own version, hash and provenance row; do not overwrite this inventory with inferred values.
+
+## QA supplement — I01–I03, 2026-10-26
+
+This supplement records the later QA run against the source revision below. It supersedes the “no current-task build/test commands” statement above for I01–I03 only; the I09–I11 rows remain unchanged.
+
+| Field | Value |
+| --- | --- |
+| Tested source revision | `d8d86219b7822d03f91ecad7a32ad7f405197213`; no tracked source changes at test time |
+| Pre-existing untracked user files | `app/release/app-release.apk`; `docs/qa/position-guide/evidence/pg01/counter-tests.txt`; neither was modified |
+| Emulator | Android Emulator 36.1.9; `Medium_Phone_API_36.1`; Android 16 / API 36.1; x86_64; 1080×2400 at 420 dpi |
+| Intended physical device | Xiaomi Mi 11 Lite NE / Android 14 / API 34 was unavailable |
+| Tested debug APK | `app/build/outputs/apk/debug/app-debug.apk`; application ID `com.example.scrollfit`; versionCode 2; versionName `0.2.0-t02`; SHA-256 `a7f4fbb8ad25f7c7c565e60672e08f3f83ff04478e8a6864a8357079ef7c764e` |
+
+| Task | Command/result | QA decision |
+| --- | --- | --- |
+| I01 | `./gradlew -p verification/core :core:test --console=plain`; **311 passed, 0 failed/errors/skipped**. Resolved coroutine core/test are 1.10.2; isolated core classpath has no Android runtime. | **PASS** — [report](results/I01.md) |
+| I02 | `./gradlew :platform:connectedDebugAndroidTest --console=plain`; **37 total, 36 passed, 1 failed**. All 8 bitmap ownership and 3 offline pose tests passed. `RestoreSafetyTest.restoredInstallGetsFreshDeviceLocalTimelineAndReadiness` failed at line 28 because reopening the same identity file returned a different generated timeline ID. | **BLOCKED** — required camera lifecycle and ten-minute mixed-use qualification remains unrun; [report](results/I02.md) |
+| I03 | App JVM tests **22/22 passed** and `:app:assembleDebug` succeeded. App instrumentation compilation failed with **24 Kotlin diagnostics** across six test files, including unresolved Compose test APIs and `compose.activity`; production loop/device scenarios did not run. | **FAIL** — [report](results/I03.md) |
+
+QA logs, XML results, the platform failure logcat, and the emulator launch screenshot are under `docs/verification/project-review/I01/`, `I02/`, and `I03/`. The API 36.1 emulator result does not replace the missing intended-device qualification.
+
+## QA supplement — I04–I05, 2026-10-26
+
+These results use source revision `d8d86219b7822d03f91ecad7a32ad7f405197213`, Android Emulator 36.1.9 / `Medium_Phone_API_36.1` / Android 16 API 36.1 / x86_64 / 1080×2400 at 420 dpi, and debug APK SHA-256 `a7f4fbb8ad25f7c7c565e60672e08f3f83ff04478e8a6864a8357079ef7c764e`. The intended Xiaomi Mi 11 Lite NE / Android 14 API 34 was unavailable. No camera, Usage Access, or accessibility permission was granted during the limited UI smoke.
+
+| Task | Command/result | QA decision |
+| --- | --- | --- |
+| I04 | `python3 verification/check_source.py` passed. App JVM tests **22/22** and core tests **311/311** passed. `:app:assembleDebug`, `:app:assembleRelease`, `:app:lintDebug`, and `:platform:assembleDebugAndroidTest` succeeded. `:platform:connectedDebugAndroidTest` ran **37 tests: 36 passed, 1 failed** in `RestoreSafetyTest.restoredInstallGetsFreshDeviceLocalTimelineAndReadiness` because reopening returned a different generated timeline ID. A limited emulator smoke opened Push-ups exercise-only mode and the guide, but did not run camera recognition or qualification matrices. | **BLOCKED** — [report](results/I04.md); I02 and I11 gates, the Android-test compile issue, and intended-device evidence remain open |
+| I05 | `:app:testDebugUnitTest :core:test --rerun-tasks` passed: **22 app tests and 311 core tests**, including all four `MonitorLifecycleTest` cases. `:app:connectedDebugAndroidTest` failed at `:app:compileDebugAndroidTestKotlin` with the same **24 Kotlin diagnostics across six app test files**; the service lifecycle instrumentation did not execute. Device boot/persistence/metadata failure injection was not run. | **BLOCKED** — [report](results/I05.md) |
+
+The app Android-test compiler blocker includes unresolved Compose semantics helpers and `disposeContent`, unresolved `compose.activity` references, and one related type-inference error. The compiler diagnostics are logged at `docs/verification/project-review/I05/app-connected.log`; the platform test failure is in `docs/verification/project-review/I04/platform-connected.log`. Both task reports describe the evidence and remaining gates.
+
+## QA repair follow-up — I02–I05, 2026-10-26
+
+This follow-up supersedes the automated failure counts above for the repaired dirty source. The earlier report sections preserve the original findings and tested source identity.
+
+| Field | Value |
+| --- | --- |
+| Base revision | `d8d86219b7822d03f91ecad7a32ad7f405197213` |
+| Dirty-source identity | `fd23f7f583279e31e16c3b8b419c088a14b1e3ab1878406320fd50a6fd6404db` — SHA-256 over sorted modified files under `app/src/` and `platform/src/`, path and exact file bytes separated by NULs |
+| Emulator | Android Emulator 36.1.9; `Medium_Phone_API_36.1`; Android 16 / API 36.1; x86_64; 1080×2400 at 420 dpi |
+| Intended physical device | Xiaomi Mi 11 Lite NE / Android 14 / API 34 unavailable |
+| Tested debug APK | `app/build/outputs/apk/debug/app-debug.apk`; application ID `com.example.scrollfit`; versionCode 2; versionName `0.2.0-t02`; SHA-256 `69c0a1d1656e0c9fd1b3d122b863286de71d30c06d137d6e6b826d32b407a708` |
+
+| Task | Fresh result | Current QA status |
+| --- | --- | --- |
+| I02 | `./gradlew :platform:connectedDebugAndroidTest --console=plain` — **37/37 passed**, including the persisted install timeline reopening case. | **BLOCKED** — camera lifecycle and ten-minute mixed-use evidence remain unrun. |
+| I03 | `./gradlew :app:connectedDebugAndroidTest --console=plain` — **36/36 passed**, including `ProductionLoopTest`; app test compilation succeeds. | **BLOCKED** — I03-01–I03-06, dependencies I02/I05–I09, and intended-device qualification remain open. |
+| I04 | Same app and platform connected suites passed; workout accessibility/layout and restore-safety tests passed. | **BLOCKED** — PG01–PG06, recognition, physical journeys, participant and I11 rows remain unrun. |
+| I05 | Same app connected suite passed, including both `MonitoringServiceLifecycleTest` cases. | **BLOCKED** — device failure injection and real service stop/destroy/rebind remain unrun. |
+
+`./gradlew :app:testDebugUnitTest :core:test --rerun-tasks --console=plain` passed **22 app and 311 core tests**. `python3 verification/check_source.py` passed XML/TOML, localized resource parity, string references, narrow accessibility capability and whitespace checks. App and platform XML results are preserved in [the repair evidence directory](../../verification/project-review/2026-10-26-repair/). The automated source/test defects are resolved; the task-level acceptance gates listed above remain.
