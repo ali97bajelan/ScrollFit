@@ -1,7 +1,15 @@
 <resources>
     <string name="app_name">ScrollFit</string>
     <string name="welcome">Welcome to ScrollFit</string>
-    <string name="welcome_body">ScrollFit helps you manage app usage time and earn time through exercise. Camera processing happens on your phone; photos and videos are not saved or sent.</string>
+    <string name="welcome_body">Set daily limits for selected apps and earn extra time by exercising.</string>
+    <string name="welcome_how_it_works">How it works</string>
+    <string name="welcome_limits_title">Suggested limits</string>
+    <string name="welcome_limits_body">You can edit the defaults: 30 free minutes per app each day, a 60-minute shared daily limit, up to 20 reward minutes per app each day, and 5-minute sessions.</string>
+    <string name="welcome_privacy_title">Your privacy</string>
+    <string name="welcome_privacy_body">ScrollFit checks only the foreground app’s name for usage tracking. Exercise images are processed on your phone; no photos or videos are saved or sent.</string>
+    <string name="welcome_monitoring_title">Monitoring stays in your control</string>
+    <string name="welcome_monitoring_body">Monitoring starts only when you enable it. Android Usage Access and Accessibility access must remain enabled; monitoring may miss app use if access is removed or the service stops.</string>
+    <string name="welcome_setup">Set app limits</string>
     <string name="bootstrap_notice">Four exercise challenges and time rewards are ready for testing. Camera and monitoring behavior on a phone remains unverified.</string>
     <string name="open_spike">30-second monitoring test</string>
     <string name="enter_dashboard">Open dashboard</string>

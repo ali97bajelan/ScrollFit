@@ -181,24 +181,41 @@ fun MonitoringSetup() {
         else -> status.health
     }
     Column(Modifier.fillMaxSize()) {
-      Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.monitor_title), style = MaterialTheme.typography.headlineMedium)
-        Text(stringResource(R.string.monitor_explanation))
-        Text(stringResource(when (currentHealth) {
-            MonitoringHealth.DISABLED -> R.string.monitoring_disabled
-            MonitoringHealth.PERMISSION_MISSING -> R.string.monitor_permission_missing
-            MonitoringHealth.SERVICE_STOPPED -> R.string.monitor_service_stopped
-            MonitoringHealth.HEALTHY -> R.string.monitor_healthy
-        }), style = MaterialTheme.typography.titleMedium)
-        if (status.failure != MonitorFailure.NONE) Text(stringResource(status.failure.message()))
-        if (status.hasUnmonitoredGap) Text(stringResource(R.string.monitor_gap))
-        Text(stringResource(R.string.monitor_reboot_notice))
-        TextButton(onClick = { perform { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) } }) {
-            Text(stringResource(R.string.monitor_usage_settings))
+      Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(stringResource(R.string.monitor_title), style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.monitor_explanation), style = MaterialTheme.typography.bodyMedium)
         }
-        TextButton(onClick = { perform { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) } }) {
-            Text(stringResource(R.string.monitor_accessibility_settings))
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(when (currentHealth) {
+                    MonitoringHealth.DISABLED -> R.string.monitoring_disabled
+                    MonitoringHealth.PERMISSION_MISSING -> R.string.monitor_permission_missing
+                    MonitoringHealth.SERVICE_STOPPED -> R.string.monitor_service_stopped
+                    MonitoringHealth.HEALTHY -> R.string.monitor_healthy
+                }), style = MaterialTheme.typography.titleMedium)
+                if (status.failure != MonitorFailure.NONE) Text(
+                    stringResource(status.failure.message()), color = MaterialTheme.colorScheme.error)
+                if (status.hasUnmonitoredGap) Text(stringResource(R.string.monitor_gap))
+                Text(stringResource(R.string.monitor_reboot_notice), style = MaterialTheme.typography.bodySmall)
+                HorizontalDivider()
+                ReadinessLine(R.string.monitor_usage_readiness, usageReady)
+                ReadinessLine(R.string.monitor_accessibility_readiness, accessibilityReady)
+                ReadinessLine(R.string.monitor_service_readiness, serviceReady)
+                if (!usageReady) {
+                    TextButton(enabled = !busy,
+                        onClick = { perform { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) } }) {
+                        Text(stringResource(R.string.monitor_usage_settings))
+                    }
+                }
+                if (!accessibilityReady || !serviceReady) {
+                    TextButton(enabled = !busy,
+                        onClick = { perform { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) } }) {
+                        Text(stringResource(R.string.monitor_accessibility_settings))
+                    }
+                }
+            }
         }
         if (preferenceError) TextButton(onClick = {
             preferenceRetry++; MonitorRuntime.configurationChanged()
@@ -303,14 +320,9 @@ fun MonitoringSetup() {
       }
       Surface(tonalElevation = 3.dp) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(stringResource(R.string.monitor_enable_prerequisites), style = MaterialTheme.typography.bodySmall)
-            ReadinessLine(R.string.monitor_usage_readiness, usageReady)
-            ReadinessLine(R.string.monitor_accessibility_readiness, accessibilityReady)
-            ReadinessLine(R.string.monitor_service_readiness, serviceReady)
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (!fieldsValid) Text(stringResource(R.string.product_correct_fields), color = MaterialTheme.colorScheme.error)
             if (selected.none { name -> apps.any { it.packageName == name } }) Text(stringResource(R.string.no_targets))
-            if (!accessReady) Text(stringResource(R.string.product_enable_access))
             error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
             if (saved) Text(stringResource(R.string.monitor_saved))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -323,12 +335,14 @@ fun MonitoringSetup() {
                         save(); persistence.preferences.update { it.copy(monitoringEnabled = true) }
                     } }) { Text(stringResource(R.string.monitor_enable)) }
             }
-            Button(modifier = Modifier.fillMaxWidth(), enabled = !busy && prefs?.monitoringEnabled == true,
-                onClick = { perform {
-                    MonitorRuntime.service?.pauseForDisable()
-                    persistence.preferences.update { it.copy(monitoringEnabled = false) }
-                    preferenceRetry++; MonitorRuntime.configurationChanged()
-                } }) { Text(stringResource(R.string.monitor_disable)) }
+            if (prefs?.monitoringEnabled == true) {
+                OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy,
+                    onClick = { perform {
+                        MonitorRuntime.service?.pauseForDisable()
+                        persistence.preferences.update { it.copy(monitoringEnabled = false) }
+                        preferenceRetry++; MonitorRuntime.configurationChanged()
+                    } }) { Text(stringResource(R.string.monitor_disable)) }
+            }
         }
       }
     }

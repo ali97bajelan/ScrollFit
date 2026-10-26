@@ -1,7 +1,15 @@
 <resources>
     <string name="app_name">ScrollFit</string>
     <string name="welcome">به اسکرول‌فیت خوش آمدید</string>
-    <string name="welcome_body">اسکرول‌فیت برای مدیریت زمان استفاده از برنامه‌ها و کسب زمان با ورزش طراحی شده است. پردازش دوربین روی گوشی انجام خواهد شد؛ عکس و ویدئو ذخیره یا ارسال نمی‌شوند.</string>
+    <string name="welcome_body">برای برنامه‌های دلخواه محدودیت روزانه بگذارید و با ورزش زمان بیشتری به دست آورید.</string>
+    <string name="welcome_how_it_works">شروع کار</string>
+    <string name="welcome_limits_title">سهمیه‌های پیشنهادی</string>
+    <string name="welcome_limits_body">مقادیر اولیه قابل‌تغییرند: ۳۰ دقیقه زمان رایگان برای هر برنامه در روز، سقف مشترک ۶۰ دقیقه در روز، حداکثر ۲۰ دقیقه پاداش برای هر برنامه در روز و نوبت‌های ۵ دقیقه‌ای.</string>
+    <string name="welcome_privacy_title">حریم خصوصی</string>
+    <string name="welcome_privacy_body">فقط نام برنامهٔ پیش‌زمینه برای محاسبهٔ مصرف بررسی می‌شود. پردازش تصویر تمرین روی گوشی انجام می‌شود و هیچ عکس یا ویدئویی ذخیره یا ارسال نمی‌شود.</string>
+    <string name="welcome_monitoring_title">پایش در اختیار شماست</string>
+    <string name="welcome_monitoring_body">پایش فقط پس از فعال‌سازی شما آغاز می‌شود. دسترسی مصرف برنامه‌ها و دسترس‌پذیری اندروید باید برقرار بماند؛ با قطع دسترسی یا سرویس ممکن است بخشی از مصرف ثبت نشود.</string>
+    <string name="welcome_setup">تنظیم محدودیت برنامه‌ها</string>
     <string name="bootstrap_notice">چالش‌های چهار ورزش و پاداش زمانی برای آزمایش آماده‌اند؛ رفتار دوربین و پایش روی گوشی هنوز تأیید نشده است.</string>
     <string name="open_spike">تست پایش ۳۰ ثانیه‌ای</string>
     <string name="enter_dashboard">ورود به خانه</string>

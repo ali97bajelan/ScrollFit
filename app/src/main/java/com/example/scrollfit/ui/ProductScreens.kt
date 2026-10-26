@@ -1,5 +1,6 @@
 package com.example.scrollfit.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -126,13 +127,19 @@ internal fun WelcomeScreen(onSetup: () -> Unit, onEnter: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     ProductPage(R.string.welcome) {
-        Text(stringResource(R.string.welcome_body))
-        Text(stringResource(R.string.monitor_service_description))
-        Text(stringResource(R.string.product_onboarding_limits))
-        Text(stringResource(R.string.product_defaults_notice))
-        Text(stringResource(R.string.monitor_limits_notice))
-        Button(onClick = onSetup, enabled = !busy) { Text(stringResource(R.string.monitor_title)) }
-        Button(enabled = !busy, onClick = {
+        Text(stringResource(R.string.welcome_body), style = MaterialTheme.typography.bodyLarge)
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(stringResource(R.string.welcome_how_it_works), style = MaterialTheme.typography.titleLarge)
+                WelcomeDetail(R.string.welcome_limits_title, R.string.welcome_limits_body)
+                WelcomeDetail(R.string.welcome_privacy_title, R.string.welcome_privacy_body)
+                WelcomeDetail(R.string.welcome_monitoring_title, R.string.welcome_monitoring_body)
+            }
+        }
+        Button(onClick = onSetup, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.welcome_setup))
+        }
+        TextButton(enabled = !busy, modifier = Modifier.fillMaxWidth(), onClick = {
             busy = true; failed = false
             scope.launch {
                 try { persistence.preferences.update { it.copy(onboardingCompleted = true) }; onEnter() }
@@ -142,5 +149,13 @@ internal fun WelcomeScreen(onSetup: () -> Unit, onEnter: () -> Unit) {
             }
         }) { Text(stringResource(R.string.enter_dashboard)) }
         if (failed) Text(stringResource(R.string.product_save_error), color = MaterialTheme.colorScheme.error)
+    }
+}
+
+@Composable
+private fun WelcomeDetail(@StringRes title: Int, @StringRes body: Int) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(body), style = MaterialTheme.typography.bodyMedium)
     }
 }

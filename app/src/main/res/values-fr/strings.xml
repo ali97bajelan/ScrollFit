@@ -1,7 +1,15 @@
 <resources>
     <string name="app_name">ScrollFit</string>
     <string name="welcome">Bienvenue dans ScrollFit</string>
-    <string name="welcome_body">ScrollFit vous aide à gérer le temps passé dans vos applications et à gagner du temps grâce à l’exercice. Les images de la caméra sont traitées sur votre téléphone ; aucune photo ni vidéo n’est enregistrée ou envoyée.</string>
+    <string name="welcome_body">Fixez des limites quotidiennes pour les applications choisies et gagnez du temps supplémentaire en faisant de l’exercice.</string>
+    <string name="welcome_how_it_works">Comment ça marche</string>
+    <string name="welcome_limits_title">Limites suggérées</string>
+    <string name="welcome_limits_body">Les valeurs par défaut sont modifiables : 30 minutes gratuites par application et par jour, une limite quotidienne partagée de 60 minutes, jusqu’à 20 minutes de récompense par application et par jour, et des sessions de 5 minutes.</string>
+    <string name="welcome_privacy_title">Vos données restent privées</string>
+    <string name="welcome_privacy_body">ScrollFit vérifie uniquement le nom de l’application au premier plan pour suivre son utilisation. Les images des exercices sont traitées sur votre téléphone ; aucune photo ni vidéo n’est enregistrée ou envoyée.</string>
+    <string name="welcome_monitoring_title">Vous gardez le contrôle du suivi</string>
+    <string name="welcome_monitoring_body">Le suivi commence uniquement après votre activation. L’accès aux données d’utilisation et l’autorisation d’accessibilité d’Android doivent rester actifs ; certaines utilisations peuvent ne pas être enregistrées si un accès est retiré ou si le service s’arrête.</string>
+    <string name="welcome_setup">Configurer les limites</string>
     <string name="bootstrap_notice">Les défis des quatre exercices et les récompenses en temps sont prêts à être testés. La caméra et le suivi sur téléphone restent à vérifier.</string>
     <string name="open_spike">Test de suivi de 30 secondes</string>
     <string name="enter_dashboard">Ouvrir l’accueil</string>

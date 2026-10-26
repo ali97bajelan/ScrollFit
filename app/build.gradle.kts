@@ -12,8 +12,8 @@ android {
     defaultConfig {
         applicationId = "com.example.scrollfit"
         minSdk = 28
-        targetSdk = 37
-        versionCode = 1
+        targetSdk = 35
+        versionCode = 2
         versionName = "0.2.0-t02"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
