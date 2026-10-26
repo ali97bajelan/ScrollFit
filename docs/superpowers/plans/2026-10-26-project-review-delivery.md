@@ -265,8 +265,8 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Prepare 365/1,095-day × 20-package seed datasets including removed/hidden rows and coverage scope/zone differences; write visibility/equivalence assertions and timing/query-count harness. Do not profile yet.
-- [ ] If returning from QA with a measured trigger, implement bounded reads/batching and wire required UI windows; retain existing lazy rendering. Otherwise this phase ends with harness only.
+- [x] Prepare 7-day baseline and 365/1,095-day × 20-package seed datasets including removed/hidden rows and coverage scope/zone differences; write visibility/equivalence assertions and timing/query-count harness. Do not profile yet.
+- [x] No measured QA trigger has been returned, so this implementation phase ends with the harness only; query changes remain gated on I12 profiling.
 
 ### Phase 2 — QA
 
