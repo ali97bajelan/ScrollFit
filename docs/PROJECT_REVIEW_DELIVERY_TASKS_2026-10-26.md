@@ -1,6 +1,6 @@
 # ScrollFit review delivery — tasks, specifications, plans and QA
 
-Created: **2026-10-26**, Asia/Tehran. Status: **planning package only; no product implementation or runtime QA performed**.
+Created: **2026-10-26**, Asia/Tehran. Status: **planning package; I01 and I02 implementation completed, runtime QA not run**.
 
 Source: [project review and priorities](PROJECT_REVIEW_AND_PRIORITIES_2026-10-26.md). The review's snapshot is `f4a10bf`; execution must inventory the then-current revision and local changes. Preserve the review and historical T01–T16 / PG01–PG06 evidence.
 
@@ -21,8 +21,8 @@ Priorities I01–I12 and F-A–F-G come from the review. M01/M02/P01 are additio
 
 | ID | Deliverable | Priority / effort | Entry dependency | Implementation | QA |
 | --- | --- | --- | --- | --- | --- |
-| [I01](superpowers/plans/2026-10-26-project-review-delivery.md#task-i01--core-test-classpath) | [Restore the full Android-free core test classpath](superpowers/specs/2026-10-26-project-review-delivery-design.md#i01--full-core-test-classpath) | P0 / S | None | NOT STARTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i01--core-test-classpath) |
-| [I02](superpowers/plans/2026-10-26-project-review-delivery.md#task-i02--caller-owned-bitmap-inference) | [Consistent caller-owned bitmap inference and cleanup](superpowers/specs/2026-10-26-project-review-delivery-design.md#i02--bitmap-ownership-and-native-cleanup) | P0 / M | None; I01 before combined gate | NOT STARTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i02--bitmap-ownership) |
+| [I01](superpowers/plans/2026-10-26-project-review-delivery.md#task-i01--core-test-classpath) | [Restore the full Android-free core test classpath](superpowers/specs/2026-10-26-project-review-delivery-design.md#i01--full-core-test-classpath) | P0 / S | None | IMPLEMENTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i01--core-test-classpath) |
+| [I02](superpowers/plans/2026-10-26-project-review-delivery.md#task-i02--caller-owned-bitmap-inference) | [Consistent caller-owned bitmap inference and cleanup](superpowers/specs/2026-10-26-project-review-delivery-design.md#i02--bitmap-ownership-and-native-cleanup) | P0 / M | None; I01 before combined gate | IMPLEMENTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i02--bitmap-ownership) |
 | [I03](superpowers/plans/2026-10-26-project-review-delivery.md#task-i03--production-enforcement-and-reward-loop) | [Qualify production monitoring and earning/reblocking](superpowers/specs/2026-10-26-project-review-delivery-design.md#i03--production-monitoring-qualification) | P0 / L | I01, I02, I05–I09; I04 for final recognition claim | NOT STARTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i03--production-monitoring-and-reward-loop) |
 | [I04](superpowers/plans/2026-10-26-project-review-delivery.md#task-i04--position-guide-qualification) | [Requalify PG01–PG05 and execute PG06](superpowers/specs/2026-10-26-project-review-delivery-design.md#i04--guide-requalification) | P0 / M–L | I01, I02; I11 shared matrix | NOT STARTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i04--guide-qualification) |
 | [I05](superpowers/plans/2026-10-26-project-review-delivery.md#task-i05--initialization-recovery) | [Serialized, explicitly retryable service initialization](superpowers/specs/2026-10-26-project-review-delivery-design.md#i05--recoverable-initialization-and-orchestration-seams) | P1 / M | I01 for QA | NOT STARTED | [NOT RUN](qa/project-review/2026-10-26-scenarios.md#i05--initialization-retry) |

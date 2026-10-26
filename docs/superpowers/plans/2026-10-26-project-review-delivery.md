@@ -67,8 +67,8 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Add both aliases using `version.ref = "coroutines"`; add required `testImplementation` entries in core alongside JUnit.
-- [ ] Inspect existing imports against the new classpath and remove no tests or assertions. Document unfiltered command/profile CORE and the previously failing compiler stage in the handoff. Do not execute Gradle.
+- [x] Add both aliases using `version.ref = "coroutines"`; add required `testImplementation` entries in core alongside JUnit.
+- [x] Inspect existing imports against the new classpath and remove no tests or assertions. Document unfiltered command/profile CORE and the previously failing compiler stage in the handoff. Do not execute Gradle.
 
 ### Phase 2 — QA
 
@@ -83,9 +83,9 @@ During Implementation, source reading, XML/TOML parsing, Markdown validation and
 
 ### Phase 1 — Implementation
 
-- [ ] Copy valid caller input to owned software ARGB_8888 storage; reject recycled inputs; capture dimensions before disposal and preserve strict timestamp checks.
-- [ ] Close wrapper/copy on success, null result and exceptions, including construction failure. Deduplicate camera bitmap cleanup by object identity and retain `ImageProxy.close()` in final cleanup. Queue close behind inference.
-- [ ] Write `sameCallerBitmapRemainsUsableAcrossInference`, `recycledInputRejectedBeforeNativeEntry`, `cropRotationAliasesReleasedOnce` and `closeWaitsForInference` assertions covering input usability, dimensions, 0/90/180/270 rotations and exact cleanup. Keep blank-image repeated inference. Do not run them yet.
+- [x] Copy valid caller input to owned software ARGB_8888 storage; reject recycled inputs; capture dimensions before disposal and preserve strict timestamp checks.
+- [x] Close wrapper/copy on success, null result and exceptions, including construction failure. Deduplicate camera bitmap cleanup by object identity and retain `ImageProxy.close()` in final cleanup. Queue close behind inference.
+- [x] Write `sameCallerBitmapRemainsUsableAcrossInference`, `recycledInputRejectedBeforeNativeEntry`, `cropRotationAliasesReleasedOnce` and `closeWaitsForInference` assertions covering input usability, dimensions, 0/90/180/270 rotations and exact cleanup. Keep blank-image repeated inference. Do not run them yet.
 
 ### Phase 2 — QA
 

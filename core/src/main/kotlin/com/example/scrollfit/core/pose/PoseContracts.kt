@@ -17,7 +17,10 @@ data class PoseSample(
     val imageAspectRatio: Float = 1f,
 )
 
-/** Platform adapter owns frame conversion, rotation and resource cleanup (T06). */
+/**
+ * Platform adapter owns frame conversion, rotation and temporary resources.
+ * The caller retains ownership of [Frame] and may reuse it after [estimate] returns.
+ */
 interface PoseEstimator<Frame> : AutoCloseable {
     fun estimate(frame: Frame, timestampMonotonicMs: Long): PoseSample?
 }

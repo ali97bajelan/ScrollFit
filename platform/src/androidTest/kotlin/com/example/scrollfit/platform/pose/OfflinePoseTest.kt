@@ -1,5 +1,6 @@
 package com.example.scrollfit.platform.pose
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.test.core.app.ApplicationProvider
@@ -18,9 +19,15 @@ class OfflinePoseTest {
         val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
         bitmap.eraseColor(Color.BLACK)
         try {
-            MediaPipePoseEstimator(ApplicationProvider.getApplicationContext()).use {
+            MediaPipePoseEstimator(
+                ApplicationProvider.getApplicationContext<Context>(),
+            ).use {
                 assertNull(it.estimate(bitmap, 100))
+                assertFalse(bitmap.isRecycled)
+                assertEquals(Color.BLACK, bitmap.getPixel(0, 0))
                 assertNull(it.estimate(bitmap, 200))
+                assertFalse(bitmap.isRecycled)
+                assertEquals(Color.BLACK, bitmap.getPixel(0, 0))
             }
         } finally {
             bitmap.recycle()

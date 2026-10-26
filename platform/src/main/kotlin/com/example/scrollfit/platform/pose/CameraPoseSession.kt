@@ -34,10 +34,32 @@ import com.example.scrollfit.core.pose.PoseFilter
 import com.example.scrollfit.core.pose.PoseSample
 import com.example.scrollfit.core.pose.PoseSessionGate
 import com.example.scrollfit.core.pose.TrackingState
-import java.util.concurrent.Executors
+import java.util.Collections
+import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+internal fun enqueueAfterInference(worker: ExecutorService, action: () -> Unit) {
+    worker.execute { action() }
+}
+
+internal fun <T : Any> releaseDistinctByIdentity(resources: Iterable<T?>, release: (T) -> Unit) {
+    val seen = Collections.newSetFromMap(IdentityHashMap<T, Boolean>())
+    var failure: Throwable? = null
+    for (resource in resources) {
+        if (resource == null || !seen.add(resource)) continue
+        try {
+            release(resource)
+        } catch (caught: Throwable) {
+            val first = failure
+            if (first == null) failure = caught else if (first !== caught) first.addSuppressed(caught)
+        }
+    }
+    failure?.let { throw it }
+}
 
 enum class CameraPoseStatus {
     INITIALIZING, SEARCHING, TRACKING, TRACKING_LOST, PAUSED,
@@ -301,11 +323,17 @@ class CameraPoseSession(
         } catch (_: Exception) {
             main.post { fail(current, CameraPoseStatus.INFERENCE_ERROR) }
         } finally {
-            if (upright != null && upright !== cropped && upright !== bitmap) upright.recycle()
-            if (cropped != null && cropped !== bitmap) cropped.recycle()
-            bitmap?.recycle()
-            image.close()
-            if (admitted) gate.finish(current)
+            try {
+                releaseDistinctByIdentity(listOf(upright, cropped, bitmap)) { owned ->
+                    if (!owned.isRecycled) owned.recycle()
+                }
+            } finally {
+                try {
+                    image.close()
+                } finally {
+                    if (admitted) gate.finish(current)
+                }
+            }
         }
     }
 
@@ -352,7 +380,7 @@ class CameraPoseSession(
         if (owned.isNotEmpty()) provider?.unbind(*owned)
         preview = null
         analysis = null
-        worker.execute {
+        enqueueAfterInference(worker) {
             try { model?.close() } finally {
                 model = null
                 filter.reset()
